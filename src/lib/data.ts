@@ -932,7 +932,7 @@ export const courses: Course[] = [
       },
     ],
     description: "Prezident maktablariga tayyorlov",
-    image: "https://img.freepik.com/premium-vector/letter-pm-logo-symbol-template-vector_387989-1282.jpg?semt=ais_incoming&w=740&q=80"
+    image: "/images/courses/course_logo.jpg"
   },
   {
     id: 2,
@@ -986,6 +986,6 @@ export const courses: Course[] = [
       },
     ],
     description: "Oliy ta'lim muassasalariga tayyorlov",
-    image: "https://img.freepik.com/premium-vector/letter-pm-logo-symbol-template-vector_387989-1282.jpg?semt=ais_incoming&w=740&q=80"
+    image: "/images/courses/course_logo.jpg"
   },
 ];

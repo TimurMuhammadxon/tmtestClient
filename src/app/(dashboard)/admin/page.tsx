@@ -1,7 +1,11 @@
+import CoursePage from "@/app/courses/page"
 
 const AdminPage = () =>{
     return(
-        <div className=''>AdminPage</div>
+        <>
+            <div className=''>AdminPage</div>
+            <CoursePage/>
+        </>
     )
 }
 
