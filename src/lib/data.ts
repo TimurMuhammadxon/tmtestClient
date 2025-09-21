@@ -2,127 +2,24 @@
 
 export let role = "admin";
 
-export const teachersData = [
+export const usersData = [
   {
     id: 1,
-    teacherId: "1234567890",
-    name: "John Doe",
-    email: "john@doe.com",
-    photo:
-      "https://images.pexels.com/photos/2888150/pexels-photo-2888150.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    phone: "1234567890",
-    subjects: ["Math", "Geometry"],
-    classes: ["1B", "2A", "3C"],
-    address: "123 Main St, Anytown, USA",
+    userId: "1234567890",
+    name: "Timur Muhammadxon",
+    email: "timurmuhammadxon@gmail.com",
+    phone: "+998998161605",
+    role: "Owner",
   },
   {
     id: 2,
-    teacherId: "1234567890",
-    name: "Jane Doe",
-    email: "jane@doe.com",
-    photo:
-      "https://images.pexels.com/photos/936126/pexels-photo-936126.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    phone: "1234567890",
-    subjects: ["Physics", "Chemistry"],
-    classes: ["5A", "4B", "3C"],
-    address: "123 Main St, Anytown, USA",
+    userId: "9999999999",
+    name: "Super Admin",
+    email: "superadmin@example.com",
+    phone: "+998911112233",
+    role: "SuperAdmin",
   },
-  {
-    id: 3,
-    teacherId: "1234567890",
-    name: "Mike Geller",
-    email: "mike@geller.com",
-    photo:
-      "https://images.pexels.com/photos/428328/pexels-photo-428328.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    phone: "1234567890",
-    subjects: ["Biology"],
-    classes: ["5A", "4B", "3C"],
-    address: "123 Main St, Anytown, USA",
-  },
-  {
-    id: 4,
-    teacherId: "1234567890",
-    name: "Jay French",
-    email: "jay@gmail.com",
-    photo:
-      "https://images.pexels.com/photos/1187765/pexels-photo-1187765.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    phone: "1234567890",
-    subjects: ["History"],
-    classes: ["5A", "4B", "3C"],
-    address: "123 Main St, Anytown, USA",
-  },
-  {
-    id: 5,
-    teacherId: "1234567890",
-    name: "Jane Smith",
-    email: "jane@gmail.com",
-    photo:
-      "https://images.pexels.com/photos/1102341/pexels-photo-1102341.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    phone: "1234567890",
-    subjects: ["Music", "History"],
-    classes: ["5A", "4B", "3C"],
-    address: "123 Main St, Anytown, USA",
-  },
-  {
-    id: 6,
-    teacherId: "1234567890",
-    name: "Anna Santiago",
-    email: "anna@gmail.com",
-    photo:
-      "https://images.pexels.com/photos/712513/pexels-photo-712513.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    phone: "1234567890",
-    subjects: ["Physics"],
-    classes: ["5A", "4B", "3C"],
-    address: "123 Main St, Anytown, USA",
-  },
-  {
-    id: 7,
-    teacherId: "1234567890",
-    name: "Allen Black",
-    email: "allen@black.com",
-    photo:
-      "https://images.pexels.com/photos/1438081/pexels-photo-1438081.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    phone: "1234567890",
-    subjects: ["English", "Spanish"],
-    classes: ["5A", "4B", "3C"],
-    address: "123 Main St, Anytown, USA",
-  },
-  {
-    id: 8,
-    teacherId: "1234567890",
-    name: "Ophelia Castro",
-    email: "ophelia@castro.com",
-    photo:
-      "https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    phone: "1234567890",
-    subjects: ["Math", "Geometry"],
-    classes: ["5A", "4B", "3C"],
-    address: "123 Main St, Anytown, USA",
-  },
-  {
-    id: 9,
-    teacherId: "1234567890",
-    name: "Derek Briggs",
-    email: "derek@briggs.com",
-    photo:
-      "https://images.pexels.com/photos/842980/pexels-photo-842980.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    phone: "1234567890",
-    subjects: ["Literature", "English"],
-    classes: ["5A", "4B", "3C"],
-    address: "123 Main St, Anytown, USA",
-  },
-  {
-    id: 10,
-    teacherId: "1234567890",
-    name: "John Glover",
-    email: "john@glover.com",
-    photo:
-      "https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    phone: "1234567890",
-    subjects: ["Biology"],
-    classes: ["5A", "4B", "3C"],
-    address: "123 Main St, Anytown, USA",
-  },
+  
 ];
 
 export const studentsData = [
@@ -520,151 +417,6 @@ export const lessonsData = [
   },
 ];
 
-export const examsData = [
-  {
-    id: 1,
-    subject: "Math",
-    class: "1A",
-    teacher: "Martha Morris",
-    date: "2025-01-01",
-  },
-  {
-    id: 2,
-    subject: "English",
-    class: "2A",
-    teacher: "Randall Garcia",
-    date: "2025-01-01",
-  },
-  {
-    id: 3,
-    subject: "Science",
-    class: "3A",
-    teacher: "Myrtie Scott",
-    date: "2025-01-01",
-  },
-  {
-    id: 4,
-    subject: "Social Studies",
-    class: "1B",
-    teacher: "Alvin Swanson",
-    date: "2025-01-01",
-  },
-  {
-    id: 5,
-    subject: "Art",
-    class: "4A",
-    teacher: "Mabelle Wallace",
-    date: "2025-01-01",
-  },
-  {
-    id: 6,
-    subject: "Music",
-    class: "5A",
-    teacher: "Dale Thompson",
-    date: "2025-01-01",
-  },
-  {
-    id: 7,
-    subject: "History",
-    class: "6A",
-    teacher: "Allie Conner",
-    date: "2025-01-01",
-  },
-  {
-    id: 8,
-    subject: "Geography",
-    class: "6B",
-    teacher: "Hunter Fuller",
-    date: "2025-01-01",
-  },
-  {
-    id: 9,
-    subject: "Physics",
-    class: "7A",
-    teacher: "Lois Lindsey",
-    date: "2025-01-01",
-  },
-  {
-    id: 10,
-    subject: "Chemistry",
-    class: "8A",
-    teacher: "Vera Soto",
-    date: "2025-01-01",
-  },
-];
-
-export const assignmentsData = [
-  {
-    id: 1,
-    subject: "Math",
-    class: "1A",
-    teacher: "Anthony Boone",
-    dueDate: "2025-01-01",
-  },
-  {
-    id: 2,
-    subject: "English",
-    class: "2A",
-    teacher: "Clifford Bowen",
-    dueDate: "2025-01-01",
-  },
-  {
-    id: 3,
-    subject: "Science",
-    class: "3A",
-    teacher: "Catherine Malone",
-    dueDate: "2025-01-01",
-  },
-  {
-    id: 4,
-    subject: "Social Studies",
-    class: "1B",
-    teacher: "Willie Medina",
-    dueDate: "2025-01-01",
-  },
-  {
-    id: 5,
-    subject: "Art",
-    class: "4A",
-    teacher: "Jose Ruiz",
-    dueDate: "2025-01-01",
-  },
-  {
-    id: 6,
-    subject: "Music",
-    class: "5A",
-    teacher: "Katharine Owens",
-    dueDate: "2025-01-01",
-  },
-  {
-    id: 7,
-    subject: "History",
-    class: "6A",
-    teacher: "Shawn Norman",
-    dueDate: "2025-01-01",
-  },
-  {
-    id: 8,
-    subject: "Geography",
-    class: "6B",
-    teacher: "Don Holloway",
-    dueDate: "2025-01-01",
-  },
-  {
-    id: 9,
-    subject: "Physics",
-    class: "7A",
-    teacher: "Franklin Gregory",
-    dueDate: "2025-01-01",
-  },
-  {
-    id: 10,
-    subject: "Chemistry",
-    class: "8A",
-    teacher: "Danny Nguyen",
-    dueDate: "2025-01-01",
-  },
-];
 
 export const resultsData = [
   {
@@ -1059,5 +811,181 @@ export const calendarEvents = [
     allDay: false,
     start: new Date(2024, 7, 16, 14, 0),
     end: new Date(2024, 7, 16, 14, 45),
+  },
+];
+
+// lib/data.ts
+
+export type Question = {
+  id: number;
+  text: string;
+  options: string[];
+  answer: number; // индекс правильного ответа
+};
+
+export type Test = {
+  id: number;
+  title: string;
+  questions: Question[];
+  description: string;
+};
+
+export type Topic = {
+  id: number;
+  title: string;
+  tests: Test[];
+  description: string;
+};
+
+export type Subject = {
+  id: number;
+  name: string;
+  topics: Topic[];
+  description: string;
+};
+
+export type Course = {
+  id: number;
+  name: string;
+  subjects: Subject[];
+  description: string;
+  image: string;
+};
+
+
+export const courses: Course[] = [
+  {
+    id: 1,
+    name: "PM",
+    subjects: [
+      {
+        id: 1,
+        name: "Matematika",
+        topics: [
+          {
+            id: 1,
+            title: "JSX Basics",
+            tests: [
+              {
+                id: 1,
+                title: "JSX Quiz",
+                questions: [
+                  {
+                    id: 1,
+                    text: "Что возвращает React-компонент?",
+                    options: ["HTML", "JSX", "CSS", "JSON"],
+                    answer: 1,
+                  },
+                  {
+                    id: 2,
+                    text: "Какой хук используется для состояния?",
+                    options: ["useState", "useEffect", "useContext", "useReducer"],
+                    answer: 0,
+                  },
+                ],
+                description: "Test1"
+              },
+            ],
+            description: "Mavzu"
+          },
+        ],
+        description: "Prezident maktablariga matematikadan testlar"
+      },
+      {
+        id: 2,
+        name: "Ingliz tili",
+        topics: [
+          {
+            id: 1,
+            title: "Present Simple",
+            tests: [],
+            description: "Mavzu"
+          },
+        ],
+        description: "Prezident maktablariga ingliz tilidan tayyorlov"
+      },
+      {
+        id: 3,
+        name: "Tanqidiy fikrlash",
+        topics: [
+          {
+            id: 1,
+            title: "Основы типов",
+            tests: [],
+            description: "Mavzu"
+          },
+        ],
+        description: "Prezident maktablariga Tanqidiy fikrlashdan tayyorlov"
+      },
+      {
+        id: 4,
+        name: "Muammoli masalalar",
+        topics: [
+          {
+            id: 1,
+            title: "Основы типов",
+            tests: [],
+            description: "Mavzu"
+          },
+        ],
+        description: "Prezident maktablariga Muammoli masalalardan tayyorlov"
+      },
+    ],
+    description: "Prezident maktablariga tayyorlov",
+    image: "https://img.freepik.com/premium-vector/letter-pm-logo-symbol-template-vector_387989-1282.jpg?semt=ais_incoming&w=740&q=80"
+  },
+  {
+    id: 2,
+    name: "DTM",
+    subjects: [
+      {
+        id: 1,
+        name: "Matematika",
+        topics: [
+          {
+            id: 1,
+            title: "JSX Basics",
+            tests: [
+              {
+                id: 1,
+                title: "JSX Quiz",
+                questions: [
+                  {
+                    id: 1,
+                    text: "Что возвращает React-компонент?",
+                    options: ["HTML", "JSX", "CSS", "JSON"],
+                    answer: 1,
+                  },
+                  {
+                    id: 2,
+                    text: "Какой хук используется для состояния?",
+                    options: ["useState", "useEffect", "useContext", "useReducer"],
+                    answer: 0,
+                  },
+                ],
+                description: "Test"
+              },
+            ],
+            description: "Mavzu"
+          },
+        ],
+        description: "DTM ga Matematikadan tayyorlov"
+      },
+      {
+        id: 2,
+        name: "Ona tili",
+        topics: [
+          {
+            id: 1,
+            title: "Основы типов",
+            tests: [],
+            description: "Mavzu"
+          },
+        ],
+        description: "DTM ga Ona tilidan tayyorlov"
+      },
+    ],
+    description: "Oliy ta'lim muassasalariga tayyorlov",
+    image: "https://img.freepik.com/premium-vector/letter-pm-logo-symbol-template-vector_387989-1282.jpg?semt=ais_incoming&w=740&q=80"
   },
 ];
