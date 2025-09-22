@@ -1,8 +1,10 @@
+import ProtectedRoute from "@/components/ProtectedRoute";
 
-const TeacherPage = () =>{
-    return(
-        <div className=''>TeacherPage</div>
-    )
+export default function TeacherPage() {
+  return (
+    <ProtectedRoute allowedRoles={["teacher", "admin", "superadmin", "owner"]}>
+      <h1>Страница преподавателя</h1>
+      {/* тут контент */}
+    </ProtectedRoute>
+  );
 }
-
-export default TeacherPage

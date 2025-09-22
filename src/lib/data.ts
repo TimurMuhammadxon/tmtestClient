@@ -993,9 +993,11 @@ export const courses: Course[] = [
 // lib/data.ts
 type User = {
   id: string;
+  name: string;
   phone?: string;   // normalized digits, e.g. "998901234567"
   email?: string;
   password?: string;
+  role: "owner" | "superadmin" | "admin" | "teacher" | "student" | "parent";
 };
 
 const users = new Map<string, User>();
@@ -1004,9 +1006,11 @@ const otps = new Map<string, { code: string; expires: number }>();
 // seed test user
 users.set("user-1", {
   id: "user-1",
-  phone: "998901234567", // +998 90 123 45 67
+  name: "Timur Muhammadxon",
+  phone: "998998161605", // +998 90 123 45 67
   email: "test@example.com",
   password: "password123",
+  role: "teacher"
 });
 
 function now() {
@@ -1037,6 +1041,7 @@ export async function sendOtp(phoneRaw: string) {
   return { ok: true, code };
 }
 
+// lib/data.ts
 export async function verifyOtp(phoneRaw: string, code: string) {
   const phone = normalizePhone(phoneRaw);
   const rec = otps.get(phone);
@@ -1048,28 +1053,35 @@ export async function verifyOtp(phoneRaw: string, code: string) {
   // find user by phone or create
   let user = Array.from(users.values()).find((u) => u.phone === phone);
   if (!user) {
-    user = { id: "u-" + Date.now(), phone };
+    user = { id: "u-" + Date.now(), name:"Foydalanuvchi", phone, role: "student" }; // <- добавляем роль по умолчанию
     users.set(user.id, user);
   }
 
   const token = "mock-token-" + Math.random().toString(36).slice(2);
-  return { ok: true, user, token };
+
+  // Возвращаем токен, пользователя и роль
+  return { ok: true, user, token, role: user.role };
 }
+
 
 export async function loginWithEmail(email: string, password: string) {
   const user = Array.from(users.values()).find((u) => u.email === email);
   if (!user || user.password !== password) throw new Error("Invalid credentials");
   const token = "mock-token-" + Math.random().toString(36).slice(2);
-  return { ok: true, user, token };
+  return { ok: true, user, token, role: user.role };
 }
 
 export async function registerWithEmail(email: string, password: string) {
   if (Array.from(users.values()).some((u) => u.email === email)) {
     throw new Error("Email already taken");
   }
-  const user: User = { id: "u-" + Date.now(), email, password };
-  users.set(user.id, user);
-  const token = "mock-token-" + Math.random().toString(36).slice(2);
-  return { ok: true, user, token };
-}
 
+  // Добавляем роль по умолчанию, например "student"
+  const user: User = { id: "u-" + Date.now(), name:"Foydalanuvchi", email, password, role: "student" };
+  users.set(user.id, user);
+
+  const token = "mock-token-" + Math.random().toString(36).slice(2);
+
+  // Возвращаем роль вместе с токеном
+  return { ok: true, user, token, role: user.role };
+}
