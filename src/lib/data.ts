@@ -989,3 +989,87 @@ export const courses: Course[] = [
     image: "/images/courses/course_logo.jpg"
   },
 ];
+
+// lib/data.ts
+type User = {
+  id: string;
+  phone?: string;   // normalized digits, e.g. "998901234567"
+  email?: string;
+  password?: string;
+};
+
+const users = new Map<string, User>();
+const otps = new Map<string, { code: string; expires: number }>();
+
+// seed test user
+users.set("user-1", {
+  id: "user-1",
+  phone: "998901234567", // +998 90 123 45 67
+  email: "test@example.com",
+  password: "password123",
+});
+
+function now() {
+  return Date.now();
+}
+
+function normalizePhone(input: string) {
+  const digits = (input || "").replace(/\D/g, "");
+  // If already has 998 and length 12 -> ok
+  if (digits.length === 12 && digits.startsWith("998")) return digits;
+  // If user entered local 9 digits, prepend 998
+  if (digits.length === 9) return "998" + digits;
+  // If user pasted full with +, etc. try to take last 12 digits
+  if (digits.length > 12) return digits.slice(-12);
+  // fallback — return digits (may be incomplete)
+  return digits;
+}
+
+export async function sendOtp(phoneRaw: string) {
+  const phone = normalizePhone(phoneRaw);
+  if (!phone || phone.length !== 12 || !phone.startsWith("998")) {
+    throw new Error("Invalid phone");
+  }
+  const code = String(Math.floor(100000 + Math.random() * 900000));
+  otps.set(phone, { code, expires: now() + 5 * 60 * 1000 }); // 5 min
+  // For testing we log and return the code
+  console.log(`[MOCK SMS] to ${phone} code=${code}`);
+  return { ok: true, code };
+}
+
+export async function verifyOtp(phoneRaw: string, code: string) {
+  const phone = normalizePhone(phoneRaw);
+  const rec = otps.get(phone);
+  if (!rec || rec.code !== code || rec.expires < now()) {
+    throw new Error("Invalid or expired code");
+  }
+  otps.delete(phone);
+
+  // find user by phone or create
+  let user = Array.from(users.values()).find((u) => u.phone === phone);
+  if (!user) {
+    user = { id: "u-" + Date.now(), phone };
+    users.set(user.id, user);
+  }
+
+  const token = "mock-token-" + Math.random().toString(36).slice(2);
+  return { ok: true, user, token };
+}
+
+export async function loginWithEmail(email: string, password: string) {
+  const user = Array.from(users.values()).find((u) => u.email === email);
+  if (!user || user.password !== password) throw new Error("Invalid credentials");
+  const token = "mock-token-" + Math.random().toString(36).slice(2);
+  return { ok: true, user, token };
+}
+
+export async function registerWithEmail(email: string, password: string) {
+  if (Array.from(users.values()).some((u) => u.email === email)) {
+    throw new Error("Email already taken");
+  }
+  const user: User = { id: "u-" + Date.now(), email, password };
+  users.set(user.id, user);
+  const token = "mock-token-" + Math.random().toString(36).slice(2);
+  return { ok: true, user, token };
+}
+
