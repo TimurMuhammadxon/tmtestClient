@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { courses } from "@/lib/data";
+import Breadcrumbs from "@/components/BreadCrumbs";
 
 export default function SubjectPage({
   params,
@@ -12,6 +13,7 @@ export default function SubjectPage({
 
   return (
     <div className="p-6">
+      <Breadcrumbs/>
       <h1 className="mb-6 text-xl font-bold">{subject.name}</h1>
       <ul className="list-disc pl-6">
         {subject.topics.map((topic) => (

@@ -1,4 +1,4 @@
-import CoursePage from "@/app/courses/page"
+import CoursePage from "@/app/(dashboard)/courses/page"
 
 const AdminPage = () =>{
     return(

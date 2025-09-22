@@ -888,6 +888,32 @@ export const courses: Course[] = [
             ],
             description: "Mavzu"
           },
+          {
+            id: 2,
+            title: "JSX Basics",
+            tests: [
+              {
+                id: 1,
+                title: "JSX Quiz",
+                questions: [
+                  {
+                    id: 1,
+                    text: "Что возвращает React-компонент?",
+                    options: ["HTML", "JSX", "CSS", "JSON"],
+                    answer: 1,
+                  },
+                  {
+                    id: 2,
+                    text: "Какой хук используется для состояния?",
+                    options: ["useState", "useEffect", "useContext", "useReducer"],
+                    answer: 0,
+                  },
+                ],
+                description: "Test1"
+              },
+            ],
+            description: "Mavzu"
+          },
         ],
         description: "Prezident maktablariga matematikadan testlar"
       },
