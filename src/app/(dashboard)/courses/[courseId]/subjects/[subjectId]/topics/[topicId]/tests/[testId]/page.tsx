@@ -1,8 +1,20 @@
 "use client";
 
-import Breadcrumbs from "@/components/BreadCrumbs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaTrash, FaCopy, FaPlus, FaImage } from "react-icons/fa";
+import Breadcrumbs from "@/components/Breadcrumbs";
+
+// маленький debounce-хук (чтобы не дергать сервер на каждый символ)
+function useDebounce<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+
+  return debounced;
+}
 
 type Option = {
   id: number;
@@ -20,19 +32,52 @@ type Question = {
 
 export default function TestEditorPage() {
   const [testTitle, setTestTitle] = useState<string>("");
-  const [questions, setQuestions] = useState<Question[]>([
-    {
-      id: Date.now(),
-      text: "",
-      options: Array.from({ length: 4 }, (_, i) => ({
-        id: Date.now() + i + 1,
-        text: "",
-      })),
-    },
-  ]);
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [previewMode, setPreviewMode] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  // откладываемое значение для автосохранения
+const debouncedData = useDebounce({ title: testTitle, questions }, 600);
 
-  // Добавить вопрос (с 4 вариантами)
+// автосохранение на сервер при изменениях
+useEffect(() => {
+  // сохраняем тест на сервере
+  const saveTest = async () => {
+    const testData = { title: testTitle, questions };
+    await fetch("/api/tests/1", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(testData),
+    });
+  };
+  saveTest();
+}, [testTitle, questions]);
+
+  // ⚡ Имитация загрузки с сервера
+  useEffect(() => {
+    setTimeout(() => {
+      const fakeData = {
+        title: "Тест по математике",
+        questions: [
+          {
+            id: 1,
+            text: "Сколько будет 2+2?",
+            options: [
+              { id: 11, text: "3" },
+              { id: 12, text: "4" },
+              { id: 13, text: "5" },
+              { id: 14, text: "22" },
+            ],
+            correctOptionId: 12,
+          },
+        ],
+      };
+      setTestTitle(fakeData.title);
+      setQuestions(fakeData.questions);
+      setLoading(false);
+    }, 1000);
+  }, []);
+
+  // 👉 добавить вопрос
   const addQuestion = () => {
     setQuestions([
       ...questions,
@@ -47,10 +92,12 @@ export default function TestEditorPage() {
     ]);
   };
 
+  // 👉 обновить текст вопроса
   const updateQuestionText = (qId: number, value: string) => {
     setQuestions(questions.map((q) => (q.id === qId ? { ...q, text: value } : q)));
   };
 
+  // 👉 обновить текст варианта
   const updateOptionText = (qId: number, optId: number, value: string) => {
     setQuestions(
       questions.map((q) =>
@@ -66,16 +113,19 @@ export default function TestEditorPage() {
     );
   };
 
+  // 👉 назначить правильный вариант
   const setCorrectOption = (qId: number, optId: number) => {
     setQuestions(
       questions.map((q) => (q.id === qId ? { ...q, correctOptionId: optId } : q))
     );
   };
 
+  // 👉 удалить вопрос
   const deleteQuestion = (qId: number) => {
     setQuestions(questions.filter((q) => q.id !== qId));
   };
 
+  // 👉 дублировать вопрос
   const duplicateQuestion = (qId: number) => {
     const q = questions.find((q) => q.id === qId);
     if (!q) return;
@@ -90,17 +140,20 @@ export default function TestEditorPage() {
     setQuestions([...questions, clone]);
   };
 
-  // Загрузка картинок
+  // 👉 загрузка картинки для вопроса
   const uploadQuestionImage = (qId: number, file: File) => {
     const reader = new FileReader();
     reader.onload = () => {
       setQuestions(
-        questions.map((q) => (q.id === qId ? { ...q, image: reader.result as string } : q))
+        questions.map((q) =>
+          q.id === qId ? { ...q, image: reader.result as string } : q
+        )
       );
     };
     reader.readAsDataURL(file);
   };
 
+  // 👉 загрузка картинки для варианта
   const uploadOptionImage = (qId: number, optId: number, file: File) => {
     const reader = new FileReader();
     reader.onload = () => {
@@ -120,15 +173,11 @@ export default function TestEditorPage() {
     reader.readAsDataURL(file);
   };
 
-  const publishTest = () => {
-    const testData = { title: testTitle, questions };
-    console.log("📤 Отправка на сервер:", testData);
-    alert("✅ Тест опубликован!");
-  };
+  if (loading) return <p className="p-6">⏳ Загружаем тест...</p>;
 
   return (
     <div className="p-6 space-y-6">
-      <Breadcrumbs/>
+      <Breadcrumbs />
       <h1 className="text-2xl font-bold">Редактор теста</h1>
 
       {/* Название теста */}
@@ -140,29 +189,27 @@ export default function TestEditorPage() {
         className="w-full border-b p-2 text-lg font-semibold focus:outline-none"
       />
 
-      {/* Кнопки управления */}
-      <div className="flex gap-4">
-        <button
-          onClick={() => setPreviewMode(!previewMode)}
-          className="rounded bg-gray-600 px-4 py-2 text-white hover:bg-gray-700"
-        >
-          {previewMode ? "✏ Редактировать" : "👀 Предпросмотр"}
-        </button>
-        <button
-          onClick={publishTest}
-          className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-        >
-          🚀 Опубликовать
-        </button>
-      </div>
+      {/* Если нет вопросов */}
+      {!previewMode && questions.length === 0 && (
+        <div className="rounded-lg border bg-white p-3 shadow space-y-3">
+          <p className="text-gray-500">Пока нет вопросов. Добавьте первый:</p>
+          <button
+            onClick={addQuestion}
+            className="flex items-center gap-2 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+          >
+            <FaPlus /> Добавить первый вопрос
+          </button>
+        </div>
+      )}
 
-      {/* Редактирование */}
+      {/* Если вопросы уже есть */}
       {!previewMode &&
         questions.map((q) => (
           <div
             key={q.id}
             className="rounded-lg border bg-white p-3 shadow space-y-3"
           >
+            {/* Текст вопроса */}
             <input
               type="text"
               placeholder="Введите вопрос"
@@ -248,38 +295,14 @@ export default function TestEditorPage() {
           </div>
         ))}
 
-      {/* Добавить вопрос */}
-      {!previewMode && (
+      {/* Кнопка добавить вопрос (только если есть вопросы) */}
+      {!previewMode && questions.length > 0 && (
         <button
           onClick={addQuestion}
           className="flex items-center gap-2 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
         >
           <FaPlus /> Добавить вопрос
         </button>
-      )}
-
-      {/* Предпросмотр */}
-      {previewMode && (
-        <div className="space-y-4 rounded-lg border bg-gray-50 p-4">
-          <h2 className="text-xl font-bold">{testTitle || "Без названия"}</h2>
-          {questions.map((q, idx) => (
-            <div key={q.id} className="space-y-2 border-b pb-3">
-              <p className="text-base font-medium">{idx + 1}. {q.text}</p>
-              {q.image && <img src={q.image} alt="question" className="h-32 rounded object-cover" />}
-              <ul className="space-y-1">
-                {q.options.map((opt) => (
-                  <li key={opt.id} className="flex items-center gap-2 rounded border p-2">
-                    <input type="radio" disabled />
-                    <span>{opt.text}</span>
-                    {opt.image && (
-                      <img src={opt.image} alt="option" className="h-12 rounded object-cover" />
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
       )}
     </div>
   );

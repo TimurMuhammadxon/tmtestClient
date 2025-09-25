@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { courses } from "@/lib/data";
-import Breadcrumbs from "@/components/BreadCrumbs";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 export default function TopicPage({
   params,
@@ -16,7 +16,7 @@ export default function TopicPage({
   return (
     <div className="p-6">
       <Breadcrumbs/>
-      <h1 className="mb-6 text-xl font-bold">{topic.title}</h1>
+      <h1 className="mb-6 text-xl font-bold">{topic.name}</h1>
       <ul className="list-disc pl-6">
         {topic.tests.map((test) => (
           <li key={test.id}>

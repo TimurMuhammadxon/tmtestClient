@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { courses } from "@/lib/data";
-import Breadcrumbs from "@/components/BreadCrumbs";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 export default function CoursesPage() {
   return (

@@ -832,7 +832,7 @@ export type Test = {
 
 export type Topic = {
   id: number;
-  title: string;
+  name: string;
   tests: Test[];
   description: string;
 };
@@ -863,12 +863,12 @@ export const courses: Course[] = [
         name: "Matematika",
         topics: [
           {
-            id: 1,
-            title: "JSX Basics",
+            id: 5,
+            name: "Natural sonlar",
             tests: [
               {
                 id: 1,
-                title: "JSX Quiz",
+                title: "Test1",
                 questions: [
                   {
                     id: 1,
@@ -890,16 +890,16 @@ export const courses: Course[] = [
           },
           {
             id: 2,
-            title: "JSX Basics",
+            name: "Kasr sonlar",
             tests: [
               {
                 id: 1,
-                title: "JSX Quiz",
+                title: "Test 2",
                 questions: [
                   {
                     id: 1,
-                    text: "Что возвращает React-компонент?",
-                    options: ["HTML", "JSX", "CSS", "JSON"],
+                    text: "Natural sonlar deb nimaga aytiladi?",
+                    options: ["Butun sonlar", "Kasr sonlar", "CSS", "JSON"],
                     answer: 1,
                   },
                   {
@@ -909,7 +909,7 @@ export const courses: Course[] = [
                     answer: 0,
                   },
                 ],
-                description: "Test1"
+                description: "Test2"
               },
             ],
             description: "Mavzu"
@@ -923,7 +923,7 @@ export const courses: Course[] = [
         topics: [
           {
             id: 1,
-            title: "Present Simple",
+            name: "Present Simple",
             tests: [],
             description: "Mavzu"
           },
@@ -936,7 +936,7 @@ export const courses: Course[] = [
         topics: [
           {
             id: 1,
-            title: "Основы типов",
+            name: "Основы типов",
             tests: [],
             description: "Mavzu"
           },
@@ -949,7 +949,7 @@ export const courses: Course[] = [
         topics: [
           {
             id: 1,
-            title: "Основы типов",
+            name: "Основы типов",
             tests: [],
             description: "Mavzu"
           },
@@ -970,7 +970,7 @@ export const courses: Course[] = [
         topics: [
           {
             id: 1,
-            title: "JSX Basics",
+            name: "JSX Basics",
             tests: [
               {
                 id: 1,
@@ -1003,7 +1003,7 @@ export const courses: Course[] = [
         topics: [
           {
             id: 1,
-            title: "Основы типов",
+            name: "Основы типов",
             tests: [],
             description: "Mavzu"
           },

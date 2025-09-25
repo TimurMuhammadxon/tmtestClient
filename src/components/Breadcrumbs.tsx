@@ -8,38 +8,41 @@ import { courses } from "@/lib/data"; // твои данные
 function getLabel(segments: string[], index: number): string {
   const seg = segments[index];
 
-  // если сегмент число → пробуем найти в данных
-  if (!isNaN(Number(seg))) {
-    const courseId = Number(segments[1]);
-    const subjectId = Number(segments[3]);
-    const topicId = Number(segments[5]);
-    const testId = Number(segments[7]);
+  // статические сегменты
+  if (seg === "courses") return "Курсы";
+  if (seg === "subjects") return "Предметы";
+  if (seg === "topics") return "Темы";
+  if (seg === "tests") return "Тесты";
 
-    // уровни
-    if (index === 1) {
-      return courses.find((c) => c.id === courseId)?.name || seg;
-    }
-    if (index === 3) {
-      return courses
-        .find((c) => c.id === courseId)
-        ?.subjects.find((s) => s.id === subjectId)?.name || seg;
-    }
-    if (index === 5) {
-      return courses
-        .find((c) => c.id === courseId)
-        ?.subjects.find((s) => s.id === subjectId)
-        ?.topics.find((t) => t.id === topicId)?.name || seg;
-    }
-    if (index === 7) {
-      return courses
-        .find((c) => c.id === courseId)
-        ?.subjects.find((s) => s.id === subjectId)
-        ?.topics.find((t) => t.id === topicId)
-        ?.tests.find((t) => t.id === testId)?.title || seg;
-    }
+  // динамические сегменты (ID)
+  const courseId = Number(segments[1]);
+  const subjectId = Number(segments[3]);
+  const topicId = Number(segments[5]);
+  const testId = Number(segments[7]);
+
+  if (index === 1) {
+    return courses.find((c) => c.id === courseId)?.name || seg;
+  }
+  if (index === 3) {
+    return courses
+      .find((c) => c.id === courseId)
+      ?.subjects.find((s) => s.id === subjectId)?.name || seg;
+  }
+  if (index === 5) {
+    return courses
+      .find((c) => c.id === courseId)
+      ?.subjects.find((s) => s.id === subjectId)
+      ?.topics.find((t) => t.id === topicId)?.name || seg;
+  }
+  if (index === 7) {
+    return courses
+      .find((c) => c.id === courseId)
+      ?.subjects.find((s) => s.id === subjectId)
+      ?.topics.find((t) => t.id === topicId)
+      ?.tests.find((t) => t.id === testId)?.title || seg;
   }
 
-  // иначе выводим сам сегмент
+  // по умолчанию
   return seg;
 }
 

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { courses } from "@/lib/data";
-import Breadcrumbs from "@/components/BreadCrumbs";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 export default function SubjectPage({
   params,
@@ -21,7 +21,7 @@ export default function SubjectPage({
             <Link
               href={`/courses/${course?.id}/subjects/${subject.id}/topics/${topic.id}`}
             >
-              {topic.title}
+              {topic.name}
             </Link>
           </li>
         ))}
