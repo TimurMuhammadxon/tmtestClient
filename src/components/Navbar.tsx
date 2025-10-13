@@ -32,6 +32,13 @@ const Navbar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Подтверждение выхода
+  const handleLogout = () => {
+    if (confirm("Вы действительно хотите выйти?")) {
+      logout();
+    }
+  };
+
   return (
     <div className="flex items-center justify-between p-4 relative">
       {/* SEARCH BAR */}
@@ -96,8 +103,8 @@ const Navbar = () => {
               </button>
               <hr className="my-1" />
               <button
+                onClick={handleLogout}   // 👈 вот здесь она используется
                 className="block w-full text-left px-3 py-2 text-sm rounded text-red-500 hover:bg-red-100"
-                onClick={logout}
               >
                 🚪 Выйти
               </button>
@@ -106,6 +113,7 @@ const Navbar = () => {
         </div>
       </div>
     </div>
+    
   );
 };
 
