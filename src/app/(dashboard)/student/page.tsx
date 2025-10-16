@@ -1,7 +1,10 @@
-
+import UserForm from "@/components/UserForm"
 const StudentPage = () =>{
     return(
-        <div className=''>StudentPage</div>
+        <>
+            <div className=''>StudentPage</div>
+            <UserForm/>
+        </>
     )
 }
 

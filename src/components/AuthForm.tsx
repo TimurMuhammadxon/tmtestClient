@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import UserForm from "./UserForm";
 
 type AuthMode = "login" | "register";
 type AuthMethod = "phone" | "email" | "telegram";
@@ -47,30 +48,39 @@ export default function AuthForm({ mode, onSuccess }: AuthFormProps) {
     setDebugOtp(null);
   };
 
-  const redirectByRole = (role: string) => {
-    switch (role) {
-      case "0":
+  const redirectByRole = (role: number, fullname: string) => {
+    if(fullname === "New User")
+    {
+      window.location.href = "/completeprofile";
+    }
+    else
+    {
+      switch (role) {
+      case 0:
         window.location.href = "/owner";
         break;
-      case "1":
+      case 1:
         window.location.href = "/superadmin";
         break;
-      case "2":
+      case 2:
         window.location.href = "/admin";
         break;
-      case "3":
+      case 3:
         window.location.href = "/teacher";
         break;
-      case "4":
+      case 4:
         window.location.href = "/student";
         break;
-      case "5":
+      case 5:
         window.location.href = "/parent";
         break;
       default:
-        window.location.href = "/dashboard";
+        window.location.href = "app";
         break;
     }
+    }
+
+    
   };
 
   const getChannel = () => {
@@ -165,7 +175,7 @@ export default function AuthForm({ mode, onSuccess }: AuthFormProps) {
     onSuccess?.(userData, userData.Token);
 
     // ✅ Переход по роли
-    redirectByRole(userData.Role);
+    redirectByRole(userData.Role, userData.FullName);
     } catch (e: any) {
       setError(e.message || "Ошибка");
     }
