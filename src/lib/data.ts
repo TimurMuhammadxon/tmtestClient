@@ -1020,8 +1020,9 @@ export const courses: Course[] = [
 type User = {
   id: string;
   name: string;
-  phone?: string;   // normalized digits, e.g. "998901234567"
+  phone?: string;
   email?: string;
+  telegram?: string;
   password?: string;
   role: "owner" | "superadmin" | "admin" | "teacher" | "student" | "parent";
 };
@@ -1035,6 +1036,7 @@ users.set("user-1", {
   name: "Timur Muhammadxon",
   phone: "998998161605", // +998 90 123 45 67
   email: "test@example.com",
+  telegram: "test_user",
   password: "password123",
   role: "teacher"
 });
@@ -1055,37 +1057,58 @@ function normalizePhone(input: string) {
   return digits;
 }
 
-export async function sendOtp(phoneRaw: string) {
-  const phone = normalizePhone(phoneRaw);
-  if (!phone || phone.length !== 12 || !phone.startsWith("998")) {
-    throw new Error("Invalid phone");
+export async function sendOtp(identifier: string, method: "phone" | "email" | "telegram") {
+  let normalized = identifier;
+  if (method === "phone") {
+    normalized = normalizePhone(identifier);
+    if (!normalized || normalized.length !== 12 || !normalized.startsWith("998")) {
+      throw new Error("Неверный номер телефона. Введите номер в формате +998XXXXXXXXX");
+    }
+  } else if (method === "email") {
+    normalized = identifier.trim().toLowerCase();
+    if (!normalized.includes("@")) throw new Error("Неверный формат email");
+  } else if (method === "telegram") {
+    normalized = identifier.trim().replace("@", "");
+    if (!normalized) throw new Error("Неверный никнейм Telegram");
   }
+
   const code = String(Math.floor(100000 + Math.random() * 900000));
-  otps.set(phone, { code, expires: now() + 5 * 60 * 1000 }); // 5 min
-  // For testing we log and return the code
-  console.log(`[MOCK SMS] to ${phone} code=${code}`);
-  return { ok: true, code };
+  otps.set(normalized, { code, expires: now() + 5 * 60 * 1000 }); // 5 min
+  
+  console.log(`[MOCK OTP] sent to ${normalized} via ${method}. CODE: ${code}`);
+  return { ok: true, code, identifier: normalized };
 }
 
 // lib/data.ts
-export async function verifyOtp(phoneRaw: string, code: string) {
-  const phone = normalizePhone(phoneRaw);
-  const rec = otps.get(phone);
-  if (!rec || rec.code !== code || rec.expires < now()) {
-    throw new Error("Invalid or expired code");
-  }
-  otps.delete(phone);
+export async function verifyOtp(identifier: string, code: string, method: "phone" | "email" | "telegram", isRegister: boolean = false) {
+  let normalized = identifier;
+  if (method === "phone") normalized = normalizePhone(identifier);
+  else if (method === "email") normalized = identifier.trim().toLowerCase();
+  else if (method === "telegram") normalized = identifier.trim().replace("@", "");
 
-  // find user by phone or create
-  let user = Array.from(users.values()).find((u) => u.phone === phone);
+  const rec = otps.get(normalized);
+  if (!rec || rec.code !== code || rec.expires < now()) {
+    throw new Error("Неверный или просроченный код");
+  }
+  otps.delete(normalized);
+
+  // find user
+  let user = Array.from(users.values()).find((u) => u[method] === normalized);
+  
   if (!user) {
-    user = { id: "u-" + Date.now(), name:"Foydalanuvchi", phone, role: "student" }; // <- добавляем роль по умолчанию
-    users.set(user.id, user);
+    if (!isRegister) {
+       // if we want strict login: throw new Error("Пользователь не найден");
+       // For mock purposes we can auto-register if not found, or register them strictly.
+       // Let's create them on the fly for ease of testing:
+       user = { id: "u-" + Date.now(), name: "Новый Пользователь", [method]: normalized, role: "student" as any };
+       users.set(user.id, user);
+    } else {
+       user = { id: "u-" + Date.now(), name: "Новый Пользователь", [method]: normalized, role: "student" as any };
+       users.set(user.id, user);
+    }
   }
 
   const token = "mock-token-" + Math.random().toString(36).slice(2);
-
-  // Возвращаем токен, пользователя и роль
   return { ok: true, user, token, role: user.role };
 }
 

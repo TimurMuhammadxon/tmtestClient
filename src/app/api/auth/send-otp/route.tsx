@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
-import { sendOtp } from "@/lib/data"; // если у тебя не настроен @ алиас — используй относительный путь
+import { sendOtp } from "@/lib/data"; 
 
 export async function POST(req: Request) {
   try {
-    const { phone } = await req.json();
-    const result = await sendOtp(phone);
+    const { identifier, method } = await req.json();
+    if (!identifier || !method) {
+      return NextResponse.json({ ok: false, error: "Missing identifier or method" }, { status: 400 });
+    }
+    const result = await sendOtp(identifier, method);
+    
     // Возвращаем код в теле для удобства теста (dev only)
     return NextResponse.json({ ok: true, otp: result.code });
   } catch (e: any) {
