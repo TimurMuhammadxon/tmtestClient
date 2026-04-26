@@ -12,10 +12,11 @@ import {
   Link as LinkIcon,
   LogOut,
   Menu,
-  Zap
+  Zap,
+  PlusCircle
 } from "lucide-react";
 
-type Role = "owner" | "superadmin" | "admin" | "instructor" | "student" | null;
+type Role = "owner" | "superadmin" | "admin" | "instructor" | "teacher" | "student" | null;
 
 interface NavItem {
   name: string;
@@ -29,13 +30,13 @@ const navItems: NavItem[] = [
     name: "Главная",
     href: "/dashboard",
     icon: LayoutDashboard,
-    roles: ["owner", "superadmin", "admin", "instructor", "student"],
+    roles: ["owner", "superadmin", "admin", "instructor", "teacher", "student"],
   },
   {
     name: "Тесты и Экзамены",
     href: "/dashboard/tests",
     icon: BookOpen,
-    roles: ["owner", "superadmin", "admin", "instructor", "student"],
+    roles: ["owner", "superadmin", "admin", "instructor", "teacher", "student"],
   },
   {
     name: "Управление пользователями",
@@ -44,28 +45,34 @@ const navItems: NavItem[] = [
     roles: ["owner", "superadmin", "admin"],
   },
   {
+    name: "Создать тест",
+    href: "/dashboard/create-test",
+    icon: PlusCircle,
+    roles: ["owner", "superadmin", "admin"],
+  },
+  {
     name: "Мои ученики",
     href: "/dashboard/students",
     icon: Users,
-    roles: ["instructor"],
+    roles: ["instructor", "teacher"],
   },
   {
     name: "Ссылки на тесты",
     href: "/dashboard/links",
     icon: LinkIcon,
-    roles: ["owner", "superadmin", "admin", "instructor"],
+    roles: ["owner", "superadmin", "admin", "instructor", "teacher"],
   },
   {
     name: "Тарифы (Upgrade)",
     href: "/dashboard/upgrade",
     icon: Zap,
-    roles: ["owner", "superadmin", "admin", "instructor", "student"],
+    roles: ["owner", "superadmin", "admin", "instructor", "teacher", "student"],
   },
   {
     name: "Статистика",
     href: "/dashboard/statistics",
     icon: BarChart3,
-    roles: ["owner", "superadmin", "admin", "instructor"],
+    roles: ["owner", "superadmin", "admin", "instructor", "teacher"],
   },
 ];
 

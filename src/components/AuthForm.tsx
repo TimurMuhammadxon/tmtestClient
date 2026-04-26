@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Phone, MessageCircle, ArrowLeft, ShieldCheck, ChevronRight, UserCircle2 } from "lucide-react";
+import { Phone, MessageCircle, ArrowLeft, ShieldCheck, ChevronRight, UserCircle2, X, User } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -18,10 +18,13 @@ export default function AuthForm({ mode, onSuccess }: AuthFormProps) {
   const [identifier, setIdentifier] = useState("");
   const [smsCode, setSmsCode] = useState("");
   const [error, setError] = useState("");
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [debugOtp, setDebugOtp] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [pendingUserData, setPendingUserData] = useState<any>(null);
 
   // OTP inputs ref for modern 6-digit input
   const [otpArray, setOtpArray] = useState(["", "", "", "", "", ""]);
@@ -53,17 +56,13 @@ export default function AuthForm({ mode, onSuccess }: AuthFormProps) {
     setDebugOtp(null);
   };
 
-  const redirectByRole = (role: string, fullname: string) => {
-    if (fullname === "Новый Пользователь" || fullname === "New User") {
-      window.location.href = "/completeprofile";
-      return;
-    }
-    // All recognized roles now go to the unified dashboard
-    const allowedRoles = ["owner", "superadmin", "admin", "instructor", "student"];
+  const redirectByRole = (role: string, _fullname: string) => {
+    // All recognized roles go to the unified dashboard
+    const allowedRoles = ["owner", "superadmin", "admin", "instructor", "teacher", "student"];
     if (allowedRoles.includes(role.toLowerCase())) {
       window.location.href = "/dashboard";
     } else {
-      window.location.href = "/app";
+      window.location.href = "/dashboard";
     }
   };
 
@@ -119,12 +118,23 @@ export default function AuthForm({ mode, onSuccess }: AuthFormProps) {
       localStorage.setItem("token", json.token);
       localStorage.setItem("role", userData.role);
       localStorage.setItem("userId", userData.id);
-      localStorage.setItem("name", userData.name || "Без имени");
 
-      setIsSuccess(true);
-      onSuccess?.(userData, json.token);
-
-      setTimeout(() => redirectByRole(userData.role, userData.name), 800);
+      const isNewUser = userData.name === "Новый Пользователь" || userData.name === "New User";
+      
+      if (isNewUser) {
+        // New user — show name input form (step 3)
+        localStorage.setItem("name", userData.id);
+        setPendingUserData(userData);
+        setIsSuccess(true);
+        onSuccess?.(userData, json.token);
+        setTimeout(() => { setIsSuccess(false); setStep(3); }, 800);
+      } else {
+        // Existing user with name — go straight to dashboard
+        localStorage.setItem("name", userData.name);
+        setIsSuccess(true);
+        onSuccess?.(userData, json.token);
+        setTimeout(() => redirectByRole(userData.role, userData.name), 800);
+      }
     } catch (e: any) {
       setError(e.message || "Ошибка верификации");
       setOtpArray(["", "", "", "", "", ""]);
@@ -199,7 +209,8 @@ export default function AuthForm({ mode, onSuccess }: AuthFormProps) {
         )}
         </AnimatePresence>
 
-        {/* Header */}
+        {/* Header — hidden on step 3 */}
+        {step !== 3 && (
         <div className="text-center mb-10">
           <motion.div 
             whileHover={{ rotate: 10, scale: 1.05 }}
@@ -214,6 +225,7 @@ export default function AuthForm({ mode, onSuccess }: AuthFormProps) {
             {mode === "login" ? "Войдите в систему для продолжения" : "Присоединяйтесь к нашей платформе"}
           </p>
         </div>
+        )}
 
         {/* Tabs for Methods */}
         <AnimatePresence mode="wait">
@@ -394,6 +406,77 @@ export default function AuthForm({ mode, onSuccess }: AuthFormProps) {
           )}
           </AnimatePresence>
 
+          {/* Step 3 — Name Input for new users */}
+          <AnimatePresence>
+          {step === 3 && (
+            <motion.div
+              key="step3"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="space-y-5"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
+                    <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div>
+                    <h3 className="font-heading text-lg font-bold text-gray-900 dark:text-white">Как вас зовут?</h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Введите имя и фамилию</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    // Close without name — use userId
+                    window.location.href = "/dashboard";
+                  }}
+                  className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+                  title="Пропустить"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                <input
+                  type="text"
+                  placeholder="Имя"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  autoFocus
+                  className="block w-full px-4 py-3.5 bg-gray-50 dark:bg-zinc-900/50 border border-gray-200 dark:border-zinc-800 rounded-2xl text-gray-900 dark:text-white placeholder-gray-400 focus:bg-white dark:focus:bg-zinc-900 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none font-medium"
+                />
+                <input
+                  type="text"
+                  placeholder="Фамилия"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  className="block w-full px-4 py-3.5 bg-gray-50 dark:bg-zinc-900/50 border border-gray-200 dark:border-zinc-800 rounded-2xl text-gray-900 dark:text-white placeholder-gray-400 focus:bg-white dark:focus:bg-zinc-900 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none font-medium"
+                />
+              </div>
+
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  const fn = firstName.trim();
+                  const ln = lastName.trim();
+                  if (fn || ln) {
+                    const displayName = ln && fn ? `${ln} ${fn}` : fn || ln;
+                    localStorage.setItem("name", displayName);
+                  }
+                  window.location.href = "/dashboard";
+                }}
+                disabled={!firstName.trim() && !lastName.trim()}
+                className="w-full flex items-center justify-center gap-2 bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-100 dark:text-gray-900 text-white px-6 py-4 rounded-2xl font-semibold shadow-xl shadow-gray-900/20 dark:shadow-white/10 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <span>Сохранить</span>
+                <ChevronRight className="w-5 h-5" />
+              </motion.button>
+            </motion.div>
+          )}
+          </AnimatePresence>
+
           <AnimatePresence>
           {error && (
             <motion.div 
@@ -410,7 +493,8 @@ export default function AuthForm({ mode, onSuccess }: AuthFormProps) {
         </div>
       </div>
       
-      {/* Bottom link toggle */}
+      {/* Bottom link toggle — hide on step 3 */}
+      {step !== 3 && (
       <div className="mt-8 text-center text-sm font-medium text-gray-500 dark:text-gray-400">
         {mode === "login" ? (
           <p className="flex items-center justify-center gap-1.5">
@@ -428,6 +512,7 @@ export default function AuthForm({ mode, onSuccess }: AuthFormProps) {
           </p>
         )}
       </div>
+      )}
     </div>
   );
 }

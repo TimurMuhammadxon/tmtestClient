@@ -16,10 +16,26 @@ export const usersData = [
     userId: "9999999999",
     name: "Super Admin",
     email: "superadmin@example.com",
-    phone: "+998911112233",
+    phone: "+998999852570",
     role: "SuperAdmin",
   },
-  
+  {
+    id: 3,
+    userId: "9999999999",
+    name: "Sherdorbek Muzaffarov",
+    email: "[EMAIL_ADDRESS]",
+    phone: "+998999852571",
+    role: "Admin",
+  },
+  {
+    id: 4,
+    userId: "9999999999",
+    name: "Murodbek Muzaffarov",
+    email: "[EMAIL_ADDRESS]",
+    phone: "+998999852572",
+    role: "Teacher",
+  },
+
 ];
 
 export const studentsData = [
@@ -1030,15 +1046,16 @@ type User = {
 const users = new Map<string, User>();
 const otps = new Map<string, { code: string; expires: number }>();
 
-// seed test user
-users.set("user-1", {
-  id: "user-1",
-  name: "Timur Muhammadxon",
-  phone: "998998161605", // +998 90 123 45 67
-  email: "test@example.com",
-  telegram: "test_user",
-  password: "password123",
-  role: "teacher"
+// seed users from usersData so OTP login can find them
+usersData.forEach((u) => {
+  const phone = (u.phone || "").replace(/\D/g, "");
+  users.set(`user-${u.id}`, {
+    id: `user-${u.id}`,
+    name: u.name,
+    phone: phone,
+    email: u.email,
+    role: u.role.toLowerCase() as User["role"],
+  });
 });
 
 function now() {
@@ -1074,7 +1091,7 @@ export async function sendOtp(identifier: string, method: "phone" | "email" | "t
 
   const code = String(Math.floor(100000 + Math.random() * 900000));
   otps.set(normalized, { code, expires: now() + 5 * 60 * 1000 }); // 5 min
-  
+
   console.log(`[MOCK OTP] sent to ${normalized} via ${method}. CODE: ${code}`);
   return { ok: true, code, identifier: normalized };
 }
@@ -1094,17 +1111,17 @@ export async function verifyOtp(identifier: string, code: string, method: "phone
 
   // find user
   let user = Array.from(users.values()).find((u) => u[method] === normalized);
-  
+
   if (!user) {
     if (!isRegister) {
-       // if we want strict login: throw new Error("Пользователь не найден");
-       // For mock purposes we can auto-register if not found, or register them strictly.
-       // Let's create them on the fly for ease of testing:
-       user = { id: "u-" + Date.now(), name: "Новый Пользователь", [method]: normalized, role: "student" as any };
-       users.set(user.id, user);
+      // if we want strict login: throw new Error("Пользователь не найден");
+      // For mock purposes we can auto-register if not found, or register them strictly.
+      // Let's create them on the fly for ease of testing:
+      user = { id: "u-" + Date.now(), name: "Новый Пользователь", [method]: normalized, role: "student" as any };
+      users.set(user.id, user);
     } else {
-       user = { id: "u-" + Date.now(), name: "Новый Пользователь", [method]: normalized, role: "student" as any };
-       users.set(user.id, user);
+      user = { id: "u-" + Date.now(), name: "Новый Пользователь", [method]: normalized, role: "student" as any };
+      users.set(user.id, user);
     }
   }
 
@@ -1126,7 +1143,7 @@ export async function registerWithEmail(email: string, password: string) {
   }
 
   // Добавляем роль по умолчанию, например "student"
-  const user: User = { id: "u-" + Date.now(), name:"Foydalanuvchi", email, password, role: "student" };
+  const user: User = { id: "u-" + Date.now(), name: "Foydalanuvchi", email, password, role: "student" };
   users.set(user.id, user);
 
   const token = "mock-token-" + Math.random().toString(36).slice(2);

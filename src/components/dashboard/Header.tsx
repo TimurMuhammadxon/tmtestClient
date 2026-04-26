@@ -10,12 +10,15 @@ export default function Header() {
 
   useEffect(() => {
     const storedName = localStorage.getItem("name");
+    const storedUserId = localStorage.getItem("userId");
     const storedRoleRaw = localStorage.getItem("role");
     
-    if (storedName) setName(storedName);
+    if (storedName && storedName !== "Новый Пользователь" && storedName !== "Без имени") {
+      setName(storedName);
+    } else if (storedUserId) {
+      setName(storedUserId);
+    }
     if (storedRoleRaw) {
-       // Map the raw role string back to our unified format if needed, 
-       // for now we just capitalize it or use a helper.
        setRole(storedRoleRaw.charAt(0).toUpperCase() + storedRoleRaw.slice(1));
     }
   }, []);
