@@ -1,0 +1,553 @@
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRef, useState } from "react";
+import {
+  adminQuestionsApi,
+  adminTopicsApi,
+  type QuestionAdminListItemDto,
+  type QuestionAdminDto,
+  type AnswerInput,
+} from "@/api/admin";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PageLoader, LoadingSpinner } from "@/components/shared/LoadingSpinner";
+import { toast } from "@/components/ui/use-toast";
+import {
+  Plus, Pencil, Trash2, ChevronLeft, ChevronRight,
+  ImagePlus, X, Search, ImageOff,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+
+interface AnswerDraft {
+  orderIndex: number;
+  textUz: string;
+  textRu: string;
+  isCorrect: boolean;
+}
+
+const defaultAnswers = (): AnswerDraft[] => [
+  { orderIndex: 1, textUz: "", textRu: "", isCorrect: false },
+  { orderIndex: 2, textUz: "", textRu: "", isCorrect: false },
+  { orderIndex: 3, textUz: "", textRu: "", isCorrect: false },
+  { orderIndex: 4, textUz: "", textRu: "", isCorrect: false },
+];
+
+function toAnswerInputs(drafts: AnswerDraft[]): AnswerInput[] {
+  return drafts.map((d) => ({
+    orderIndex: d.orderIndex,
+    isCorrect: d.isCorrect,
+    translations: [
+      { languageCode: "uz-latn", text: d.textUz },
+      ...(d.textRu ? [{ languageCode: "ru", text: d.textRu }] : []),
+    ],
+  }));
+}
+
+export function QuestionsPage() {
+  const qc = useQueryClient();
+  const [page, setPage] = useState(1);
+  const [topicFilter, setTopicFilter] = useState<string>("all");
+  const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [imageDialogId, setImageDialogId] = useState<string | null>(null);
+
+  // Form state
+  const [selectedTopic, setSelectedTopic] = useState("");
+  const [textUz, setTextUz] = useState("");
+  const [textRu, setTextRu] = useState("");
+  const [explanationUz, setExplanationUz] = useState("");
+  const [answers, setAnswers] = useState<AnswerDraft[]>(defaultAnswers());
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { data: topicsData } = useQuery({
+    queryKey: ["admin-topics-all"],
+    queryFn: () => adminTopicsApi.list({ page: 1, pageSize: 200 }),
+  });
+  const topics = topicsData?.items ?? [];
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["admin-questions", page, topicFilter, search],
+    queryFn: () =>
+      adminQuestionsApi.list({
+        page,
+        pageSize: 20,
+        topicId: topicFilter !== "all" ? topicFilter : undefined,
+        search: search || undefined,
+      }),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: () =>
+      adminQuestionsApi.create({
+        topicId: selectedTopic,
+        translations: [
+          { languageCode: "uz-latn", text: textUz, explanation: explanationUz || undefined },
+          ...(textRu ? [{ languageCode: "ru", text: textRu }] : []),
+        ],
+        answers: toAnswerInputs(answers),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-questions"] });
+      setDialogOpen(false);
+      toast({ title: "Savol qo'shildi" });
+    },
+    onError: (e: unknown) => {
+      const msg = (e as { response?: { data?: { title?: string } } })?.response?.data?.title;
+      toast({ variant: "destructive", title: msg ?? "Xatolik yuz berdi" });
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await adminQuestionsApi.upsertTranslation(id, "uz-latn", textUz, explanationUz || undefined);
+      if (textRu) await adminQuestionsApi.upsertTranslation(id, "ru", textRu);
+      await adminQuestionsApi.update(id, {
+        topicId: selectedTopic,
+        answers: toAnswerInputs(answers),
+      });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-questions"] });
+      setDialogOpen(false);
+      toast({ title: "Savol yangilandi" });
+    },
+    onError: () => toast({ variant: "destructive", title: "Xatolik yuz berdi" }),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: adminQuestionsApi.delete,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-questions"] });
+      toast({ title: "Savol o'chirildi" });
+    },
+    onError: () => toast({ variant: "destructive", title: "O'chirib bo'lmadi (biletda ishlatilgan bo'lishi mumkin)" }),
+  });
+
+  const toggleActiveMutation = useMutation({
+    mutationFn: ({ id, active }: { id: string; active: boolean }) =>
+      active ? adminQuestionsApi.activate(id) : adminQuestionsApi.deactivate(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-questions"] }),
+  });
+
+  const uploadImageMutation = useMutation({
+    mutationFn: ({ id, file }: { id: string; file: File }) =>
+      adminQuestionsApi.uploadImage(id, file),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-questions"] });
+      setImageDialogId(null);
+      toast({ title: "Rasm yuklandi" });
+    },
+    onError: () => toast({ variant: "destructive", title: "Rasm yuklanmadi" }),
+  });
+
+  const deleteImageMutation = useMutation({
+    mutationFn: adminQuestionsApi.deleteImage,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-questions"] });
+      toast({ title: "Rasm o'chirildi" });
+    },
+  });
+
+  const openCreate = () => {
+    setEditingId(null);
+    setSelectedTopic(topics[0]?.id ?? "");
+    setTextUz("");
+    setTextRu("");
+    setExplanationUz("");
+    setAnswers(defaultAnswers());
+    setDialogOpen(true);
+  };
+
+  const openEdit = async (q: QuestionAdminListItemDto) => {
+    setEditingId(q.id);
+    const full: QuestionAdminDto = await adminQuestionsApi.getById(q.id);
+    const uz = full.translations.find((t) => t.languageCode === "uz-latn");
+    const ru = full.translations.find((t) => t.languageCode === "ru");
+    setSelectedTopic(full.topicId);
+    setTextUz(uz?.text ?? "");
+    setTextRu(ru?.text ?? "");
+    setExplanationUz(uz?.explanation ?? "");
+    setAnswers(
+      full.answers.map((a) => ({
+        orderIndex: a.orderIndex,
+        isCorrect: a.isCorrect,
+        textUz: a.translations.find((t) => t.languageCode === "uz-latn")?.text ?? "",
+        textRu: a.translations.find((t) => t.languageCode === "ru")?.text ?? "",
+      }))
+    );
+    setDialogOpen(true);
+  };
+
+  const handleSave = () => {
+    if (!selectedTopic) return;
+    const correctCount = answers.filter((a) => a.isCorrect).length;
+    if (correctCount !== 1) {
+      toast({ variant: "destructive", title: "Aynan 1 ta to'g'ri javob bo'lishi kerak" });
+      return;
+    }
+    if (editingId) {
+      updateMutation.mutate(editingId);
+    } else {
+      createMutation.mutate();
+    }
+  };
+
+  const setAnswer = (i: number, field: keyof AnswerDraft, value: string | boolean) => {
+    setAnswers((prev) => {
+      const next = [...prev];
+      if (field === "isCorrect" && value === true) {
+        next.forEach((a, idx) => (next[idx] = { ...a, isCorrect: idx === i }));
+      } else {
+        next[i] = { ...next[i], [field]: value };
+      }
+      return next;
+    });
+  };
+
+  const isPending = createMutation.isPending || updateMutation.isPending;
+  const totalPages = data ? Math.ceil(data.total / 20) : 1;
+
+  return (
+    <div className="max-w-6xl mx-auto space-y-6">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">Savollar</h1>
+          <p className="text-muted-foreground mt-1">Jami: {data?.total ?? "..."} ta savol</p>
+        </div>
+        <Button onClick={openCreate}>
+          <Plus className="h-4 w-4 mr-2" />
+          Savol qo'shish
+        </Button>
+      </div>
+
+      {/* Filters */}
+      <div className="flex gap-3 flex-wrap">
+        <Select value={topicFilter} onValueChange={(v) => { setTopicFilter(v); setPage(1); }}>
+          <SelectTrigger className="w-56">
+            <SelectValue placeholder="Mavzu" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Barcha mavzular</SelectItem>
+            {topics.map((t) => (
+              <SelectItem key={t.id} value={t.id}>{t.code}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <div className="flex gap-2 flex-1 min-w-48">
+          <Input
+            placeholder="Savol matni bo'yicha qidirish..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") { setSearch(searchInput); setPage(1); } }}
+          />
+          <Button variant="outline" onClick={() => { setSearch(searchInput); setPage(1); }}>
+            <Search className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Table */}
+      <Card>
+        <CardContent className="p-0">
+          {isLoading ? (
+            <div className="py-12 flex justify-center"><LoadingSpinner /></div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-12"></TableHead>
+                  <TableHead>Savol matni</TableHead>
+                  <TableHead className="w-36">Mavzu</TableHead>
+                  <TableHead className="w-20">Javoblar</TableHead>
+                  <TableHead className="w-28">Holat</TableHead>
+                  <TableHead className="text-right w-32">Amallar</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data?.items.map((q) => (
+                  <TableRow key={q.id}>
+                    <TableCell>
+                      {q.imageUrl ? (
+                        <img
+                          src={q.imageUrl}
+                          alt=""
+                          className="w-10 h-10 object-cover rounded border cursor-pointer"
+                          onClick={() => setImageDialogId(q.id)}
+                        />
+                      ) : (
+                        <button
+                          onClick={() => setImageDialogId(q.id)}
+                          className="w-10 h-10 rounded border border-dashed flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary transition-colors"
+                        >
+                          <ImagePlus className="h-4 w-4" />
+                        </button>
+                      )}
+                    </TableCell>
+                    <TableCell className="max-w-xs">
+                      <p className="text-sm line-clamp-2">{q.defaultText || "—"}</p>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-xs font-mono text-muted-foreground">
+                        {topics.find((t) => t.id === q.topicId)?.code ?? q.topicId.slice(0, 8)}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {q.answersCount}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={q.isActive}
+                          onCheckedChange={(v) =>
+                            toggleActiveMutation.mutate({ id: q.id, active: v })
+                          }
+                        />
+                        <Badge variant={q.isActive ? "success" : "secondary"} className="text-xs">
+                          {q.isActive ? "Faol" : "Nofaol"}
+                        </Badge>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => openEdit(q)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-muted-foreground hover:text-destructive"
+                          onClick={() => {
+                            if (confirm("Bu savolni o'chirishni tasdiqlaysizmi?"))
+                              deleteMutation.mutate(q.id);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {data?.items.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center text-muted-foreground py-12">
+                      Savollar topilmadi
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-3">
+          <Button variant="outline" size="sm" onClick={() => setPage((p) => p - 1)} disabled={page === 1}>
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="text-sm text-muted-foreground">{page} / {totalPages}</span>
+          <Button variant="outline" size="sm" onClick={() => setPage((p) => p + 1)} disabled={page >= totalPages}>
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+
+      {/* Create/Edit dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingId ? "Savolni tahrirlash" : "Yangi savol"}</DialogTitle>
+          </DialogHeader>
+
+          <Tabs defaultValue="uz">
+            <TabsList className="mb-4">
+              <TabsTrigger value="uz">O'zbek (uz-latn)</TabsTrigger>
+              <TabsTrigger value="ru">Русский (ru)</TabsTrigger>
+              <TabsTrigger value="answers">Javoblar</TabsTrigger>
+              <TabsTrigger value="meta">Meta</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="uz" className="space-y-4">
+              <div className="space-y-2">
+                <Label>Savol matni (uz-latn) *</Label>
+                <Textarea
+                  rows={3}
+                  placeholder="Savol matnini kiriting..."
+                  value={textUz}
+                  onChange={(e) => setTextUz(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Tushuntirish (ixtiyoriy)</Label>
+                <Textarea
+                  rows={2}
+                  placeholder="To'g'ri javob uchun tushuntirish..."
+                  value={explanationUz}
+                  onChange={(e) => setExplanationUz(e.target.value)}
+                />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="ru" className="space-y-4">
+              <div className="space-y-2">
+                <Label>Текст вопроса (ru) — необязательно</Label>
+                <Textarea
+                  rows={3}
+                  placeholder="Введите текст вопроса..."
+                  value={textRu}
+                  onChange={(e) => setTextRu(e.target.value)}
+                />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="answers" className="space-y-4">
+              <p className="text-sm text-muted-foreground">Aynan 1 ta to'g'ri javob belgilang</p>
+              {answers.map((answer, i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    "border rounded-lg p-4 space-y-3",
+                    answer.isCorrect && "border-green-500 bg-green-50"
+                  )}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-sm">
+                      {String.fromCharCode(65 + i)} javob
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        checked={answer.isCorrect}
+                        onCheckedChange={(v) => setAnswer(i, "isCorrect", !!v)}
+                      />
+                      <Label className="text-sm cursor-pointer">To'g'ri javob</Label>
+                    </div>
+                  </div>
+                  <Input
+                    placeholder={`Javob matni (uz-latn) *`}
+                    value={answer.textUz}
+                    onChange={(e) => setAnswer(i, "textUz", e.target.value)}
+                  />
+                  <Input
+                    placeholder={`Javob matni (ru) — ixtiyoriy`}
+                    value={answer.textRu}
+                    onChange={(e) => setAnswer(i, "textRu", e.target.value)}
+                  />
+                </div>
+              ))}
+            </TabsContent>
+
+            <TabsContent value="meta" className="space-y-4">
+              <div className="space-y-2">
+                <Label>Mavzu *</Label>
+                <Select value={selectedTopic} onValueChange={setSelectedTopic}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Mavzuni tanlang" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {topics.map((t) => (
+                      <SelectItem key={t.id} value={t.id}>{t.code}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>Bekor qilish</Button>
+            <Button
+              onClick={handleSave}
+              disabled={!textUz.trim() || !selectedTopic || isPending}
+            >
+              {isPending ? "Saqlanmoqda..." : "Saqlash"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Image upload dialog */}
+      <Dialog open={!!imageDialogId} onOpenChange={(o) => !o && setImageDialogId(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Savol rasmi</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            {data?.items.find((q) => q.id === imageDialogId)?.imageUrl ? (
+              <div className="space-y-3">
+                <img
+                  src={data?.items.find((q) => q.id === imageDialogId)?.imageUrl}
+                  alt="Savol rasmi"
+                  className="w-full rounded-lg border"
+                />
+                <Button
+                  variant="destructive"
+                  className="w-full"
+                  onClick={() => {
+                    if (imageDialogId) deleteImageMutation.mutate(imageDialogId);
+                  }}
+                  disabled={deleteImageMutation.isPending}
+                >
+                  <ImageOff className="h-4 w-4 mr-2" />
+                  {deleteImageMutation.isPending ? "O'chirilmoqda..." : "Rasmni o'chirish"}
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div
+                  className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:border-primary transition-colors"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <ImagePlus className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                  <p className="text-sm text-muted-foreground">
+                    Rasmni yuklash uchun bosing
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">PNG, JPG — maks. 5 MB</p>
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file && imageDialogId) {
+                      uploadImageMutation.mutate({ id: imageDialogId, file });
+                    }
+                  }}
+                />
+                {uploadImageMutation.isPending && (
+                  <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                    <LoadingSpinner size="sm" />
+                    Yuklanmoqda...
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setImageDialogId(null)}>
+              <X className="h-4 w-4 mr-2" />
+              Yopish
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
