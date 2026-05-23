@@ -1,6 +1,5 @@
 import { api } from "./axios";
 import {
-  type TeacherApplicationDto,
   type SubscriptionPlanDto,
   type PagedResult,
 } from "@/types";
@@ -120,11 +119,85 @@ export const adminQuestionsApi = {
   deleteImage: (id: string) => api.delete(`/admin/questions/${id}/image`),
 };
 
-// --- Teacher applications ---
+// --- Bilets ---
+export interface BiletListItemDto {
+  id: string;
+  number: number;
+  isDemo: boolean;
+  isActive: boolean;
+  questionsCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BiletAnswerDto {
+  id: string;
+  orderIndex: number;
+  text: string;
+  language: string;
+  isFallback: boolean;
+  isCorrect: boolean;
+}
+
+export interface BiletQuestionDto {
+  orderIndex: number;
+  questionId: string;
+  imageKey?: string;
+  text: string;
+  explanation?: string;
+  language: string;
+  isFallback: boolean;
+  answers: BiletAnswerDto[];
+}
+
+export interface BiletDetailsDto {
+  id: string;
+  number: number;
+  isDemo: boolean;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  questions: BiletQuestionDto[];
+}
+
+export const adminBiletsApi = {
+  list: (params?: { isActive?: boolean; isDemo?: boolean; page?: number; pageSize?: number }) =>
+    api.get<PagedResult<BiletListItemDto>>("/admin/bilets", { params }).then((r) => r.data),
+
+  getById: (id: string) =>
+    api.get<BiletDetailsDto>(`/admin/bilets/${id}`).then((r) => r.data),
+
+  create: (data: { number: number; questionIds: string[]; isDemo: boolean }) =>
+    api.post<{ id: string }>("/admin/bilets", data).then((r) => r.data),
+
+  update: (id: string, questionIds: string[]) =>
+    api.put(`/admin/bilets/${id}`, { questionIds }),
+
+  delete: (id: string) => api.delete(`/admin/bilets/${id}`),
+
+  activate: (id: string) => api.post(`/admin/bilets/${id}/activate`),
+  deactivate: (id: string) => api.post(`/admin/bilets/${id}/deactivate`),
+  markDemo: (id: string) => api.post(`/admin/bilets/${id}/mark-demo`),
+  unmarkDemo: (id: string) => api.post(`/admin/bilets/${id}/unmark-demo`),
+};
+
+// --- Teacher applications (admin view) ---
+export interface ApplicationListItemDto {
+  id: string;
+  userId: string;
+  userEmail: string;
+  fullName: string;
+  phoneNumber: string;
+  organizationName?: string;
+  status: string;
+  submittedAt: string;
+  reviewedAt?: string;
+}
+
 export const adminApplicationsApi = {
-  list: (status?: string) =>
+  list: (params?: { status?: string; page?: number; pageSize?: number }) =>
     api
-      .get<TeacherApplicationDto[]>("/admin/teacher-applications", { params: { status } })
+      .get<PagedResult<ApplicationListItemDto>>("/admin/teacher-applications", { params })
       .then((r) => r.data),
 
   approve: (id: string) => api.post(`/admin/teacher-applications/${id}/approve`),
@@ -139,11 +212,11 @@ export const adminPlansApi = {
     api.get<SubscriptionPlanDto[]>("/admin/subscription-plans").then((r) => r.data),
 
   setPlanPrice: (id: string, price: number) =>
-    api.patch(`/admin/subscription-plans/${id}`, { price }),
+    api.patch(`/admin/subscription-plans/${id}/price`, { price }),
 
-  togglePlan: (id: string) =>
-    api.patch(`/admin/subscription-plans/${id}`, { toggleActive: true }),
+  togglePlan: (id: string, isActive: boolean) =>
+    api.patch(`/admin/subscription-plans/${id}/toggle`, { isActive }),
 
-  grantSubscription: (userId: string, planId: string, note?: string) =>
-    api.post(`/admin/users/${userId}/subscription`, { planId, note }),
+  grantSubscription: (userId: string, planId: string) =>
+    api.post(`/admin/users/${userId}/subscription`, { planId }),
 };

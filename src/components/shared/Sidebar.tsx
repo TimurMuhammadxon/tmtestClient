@@ -14,6 +14,7 @@ import {
   Menu,
   GraduationCap,
   MessageSquare,
+  ClipboardList,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,7 @@ const navItems: NavItem[] = [
   { to: "/bilets", icon: BookOpen, label: t.bilets },
   { to: "/progress", icon: TrendingUp, label: t.progress },
   { to: "/subscription", icon: CreditCard, label: t.subscription },
+  { to: "/teacher-application", icon: ClipboardList, label: "O'qituvchi bo'lish" },
 ];
 
 const teacherItems: NavItem[] = [
@@ -45,6 +47,7 @@ const teacherItems: NavItem[] = [
 const adminItems: NavItem[] = [
   { to: "/admin/topics", icon: FileText, label: t.topics, roles: ["Admin", "SuperAdmin", "Owner"] },
   { to: "/admin/questions", icon: MessageSquare, label: "Savollar", roles: ["Admin", "SuperAdmin", "Owner"] },
+  { to: "/admin/bilets", icon: BookOpen, label: "Biletlar", roles: ["Admin", "SuperAdmin", "Owner"] },
   { to: "/admin/applications", icon: HelpCircle, label: t.applications, roles: ["Admin", "SuperAdmin", "Owner"] },
   { to: "/admin/plans", icon: Settings, label: t.plans, roles: ["Admin", "SuperAdmin", "Owner"] },
 ];

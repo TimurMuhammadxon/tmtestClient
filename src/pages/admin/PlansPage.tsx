@@ -37,7 +37,8 @@ export function PlansPage() {
   });
 
   const toggleMutation = useMutation({
-    mutationFn: (id: string) => adminPlansApi.togglePlan(id),
+    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
+      adminPlansApi.togglePlan(id, isActive),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-plans"] });
       toast({ title: "Holat o'zgartirildi" });
@@ -78,7 +79,9 @@ export function PlansPage() {
                     </Badge>
                     <Switch
                       checked={plan.isActive}
-                      onCheckedChange={() => toggleMutation.mutate(plan.id)}
+                      onCheckedChange={(checked) =>
+                        toggleMutation.mutate({ id: plan.id, isActive: checked })
+                      }
                     />
                     <Button
                       variant="outline"

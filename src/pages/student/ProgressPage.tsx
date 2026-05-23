@@ -186,7 +186,7 @@ export function ProgressPage() {
               ))}
 
               {/* Pagination */}
-              {history && history.total > history.pageSize && (
+              {history && history.totalCount > history.pageSize && (
                 <div className="flex items-center justify-center gap-3 pt-2">
                   <Button
                     variant="outline"
@@ -197,13 +197,13 @@ export function ProgressPage() {
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
                   <span className="text-sm text-muted-foreground">
-                    {historyPage} / {Math.ceil(history.total / history.pageSize)}
+                    {historyPage} / {Math.ceil(history.totalCount / history.pageSize)}
                   </span>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setHistoryPage((p) => p + 1)}
-                    disabled={historyPage >= Math.ceil(history.total / history.pageSize)}
+                    disabled={historyPage >= Math.ceil(history.totalCount / history.pageSize)}
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>

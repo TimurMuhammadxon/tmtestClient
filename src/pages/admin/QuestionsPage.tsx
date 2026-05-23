@@ -41,8 +41,6 @@ interface AnswerDraft {
 const defaultAnswers = (): AnswerDraft[] => [
   { orderIndex: 1, textUz: "", textRu: "", isCorrect: false },
   { orderIndex: 2, textUz: "", textRu: "", isCorrect: false },
-  { orderIndex: 3, textUz: "", textRu: "", isCorrect: false },
-  { orderIndex: 4, textUz: "", textRu: "", isCorrect: false },
 ];
 
 function toAnswerInputs(drafts: AnswerDraft[]): AnswerInput[] {
@@ -50,8 +48,8 @@ function toAnswerInputs(drafts: AnswerDraft[]): AnswerInput[] {
     orderIndex: d.orderIndex,
     isCorrect: d.isCorrect,
     translations: [
-      { languageCode: "uz-latn", text: d.textUz },
-      ...(d.textRu ? [{ languageCode: "ru", text: d.textRu }] : []),
+      ...(d.textUz.trim() ? [{ languageCode: "uz-latn", text: d.textUz.trim() }] : []),
+      ...(d.textRu.trim() ? [{ languageCode: "ru", text: d.textRu.trim() }] : []),
     ],
   }));
 }
@@ -127,7 +125,13 @@ export function QuestionsPage() {
       setDialogOpen(false);
       toast({ title: "Savol yangilandi" });
     },
-    onError: () => toast({ variant: "destructive", title: "Xatolik yuz berdi" }),
+    onError: (e: unknown) => {
+      const err = e as { response?: { data?: { title?: string; errors?: Record<string, string[]> } } };
+      const errors = err?.response?.data?.errors;
+      const firstError = errors ? Object.values(errors)[0]?.[0] : null;
+      const msg = firstError ?? err?.response?.data?.title ?? "Xatolik yuz berdi";
+      toast({ variant: "destructive", title: msg });
+    },
   });
 
   const deleteMutation = useMutation({
@@ -201,6 +205,11 @@ export function QuestionsPage() {
       toast({ variant: "destructive", title: "Aynan 1 ta to'g'ri javob bo'lishi kerak" });
       return;
     }
+    const emptyAnswer = answers.find((a) => !a.textUz.trim());
+    if (emptyAnswer) {
+      toast({ variant: "destructive", title: "Barcha javoblarning uz-latn matni to'ldirilishi kerak" });
+      return;
+    }
     if (editingId) {
       updateMutation.mutate(editingId);
     } else {
@@ -220,15 +229,32 @@ export function QuestionsPage() {
     });
   };
 
+  const addAnswer = () => {
+    if (answers.length >= 6) return;
+    setAnswers((prev) => [
+      ...prev,
+      { orderIndex: prev.length + 1, textUz: "", textRu: "", isCorrect: false },
+    ]);
+  };
+
+  const removeAnswer = (i: number) => {
+    if (answers.length <= 2) return;
+    setAnswers((prev) => {
+      const next = prev.filter((_, idx) => idx !== i).map((a, idx) => ({ ...a, orderIndex: idx + 1 }));
+      // if removed answer was correct, clear correct flag
+      return next;
+    });
+  };
+
   const isPending = createMutation.isPending || updateMutation.isPending;
-  const totalPages = data ? Math.ceil(data.total / 20) : 1;
+  const totalPages = data ? Math.ceil(data.totalCount / 20) : 1;
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold">Savollar</h1>
-          <p className="text-muted-foreground mt-1">Jami: {data?.total ?? "..."} ta savol</p>
+          <p className="text-muted-foreground mt-1">Jami: {data?.totalCount ?? "..."} ta savol</p>
         </div>
         <Button onClick={openCreate}>
           <Plus className="h-4 w-4 mr-2" />
@@ -416,8 +442,18 @@ export function QuestionsPage() {
               </div>
             </TabsContent>
 
-            <TabsContent value="answers" className="space-y-4">
-              <p className="text-sm text-muted-foreground">Aynan 1 ta to'g'ri javob belgilang</p>
+            <TabsContent value="answers" className="space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">
+                  Aynan 1 ta to'g'ri javob belgilang ({answers.length}/6)
+                </p>
+                {answers.length < 6 && (
+                  <Button type="button" variant="outline" size="sm" onClick={addAnswer}>
+                    <Plus className="h-3.5 w-3.5 mr-1" />
+                    Javob qo'shish
+                  </Button>
+                )}
+              </div>
               {answers.map((answer, i) => (
                 <div
                   key={i}
@@ -429,22 +465,36 @@ export function QuestionsPage() {
                   <div className="flex items-center justify-between">
                     <span className="font-medium text-sm">
                       {String.fromCharCode(65 + i)} javob
+                      {i < 2 && <span className="text-xs text-muted-foreground ml-1">(majburiy)</span>}
                     </span>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        checked={answer.isCorrect}
-                        onCheckedChange={(v) => setAnswer(i, "isCorrect", !!v)}
-                      />
-                      <Label className="text-sm cursor-pointer">To'g'ri javob</Label>
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          checked={answer.isCorrect}
+                          onCheckedChange={(v) => setAnswer(i, "isCorrect", !!v)}
+                        />
+                        <Label className="text-sm cursor-pointer">To'g'ri javob</Label>
+                      </div>
+                      {answers.length > 2 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                          onClick={() => removeAnswer(i)}
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                   <Input
-                    placeholder={`Javob matni (uz-latn) *`}
+                    placeholder="Javob matni (uz-latn) *"
                     value={answer.textUz}
                     onChange={(e) => setAnswer(i, "textUz", e.target.value)}
                   />
                   <Input
-                    placeholder={`Javob matni (ru) — ixtiyoriy`}
+                    placeholder="Javob matni (ru) — ixtiyoriy"
                     value={answer.textRu}
                     onChange={(e) => setAnswer(i, "textRu", e.target.value)}
                   />

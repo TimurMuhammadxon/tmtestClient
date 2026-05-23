@@ -14,8 +14,10 @@ import { GroupsPage } from "@/pages/teacher/GroupsPage";
 import { TestLinksPage } from "@/pages/teacher/TestLinksPage";
 import { TopicsPage } from "@/pages/admin/TopicsPage";
 import { QuestionsPage } from "@/pages/admin/QuestionsPage";
+import { BiletsPage as AdminBiletsPage } from "@/pages/admin/BiletsPage";
 import { ApplicationsPage } from "@/pages/admin/ApplicationsPage";
 import { PlansPage } from "@/pages/admin/PlansPage";
+import { TeacherApplicationPage } from "@/pages/student/TeacherApplicationPage";
 import { TestLinkPublicPage } from "@/pages/public/TestLinkPublicPage";
 
 export const router = createBrowserRouter([
@@ -46,6 +48,7 @@ export const router = createBrowserRouter([
       { path: "/attempts/:id", element: <AttemptPage /> },
       { path: "/progress", element: <ProgressPage /> },
       { path: "/subscription", element: <SubscriptionPage /> },
+      { path: "/teacher-application", element: <TeacherApplicationPage /> },
       {
         path: "/teacher/groups",
         element: (
@@ -75,6 +78,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute roles={["Admin", "SuperAdmin", "Owner"]}>
             <QuestionsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/admin/bilets",
+        element: (
+          <ProtectedRoute roles={["Admin", "SuperAdmin", "Owner"]}>
+            <AdminBiletsPage />
           </ProtectedRoute>
         ),
       },

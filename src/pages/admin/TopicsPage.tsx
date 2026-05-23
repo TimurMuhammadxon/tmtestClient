@@ -92,7 +92,13 @@ export function TopicsPage() {
       setDialogOpen(false);
       toast({ title: "Mavzu yangilandi" });
     },
-    onError: () => toast({ variant: "destructive", title: "Xatolik yuz berdi" }),
+    onError: (e: unknown) => {
+      const err = e as { response?: { data?: { title?: string; errors?: Record<string, string[]> } } };
+      const errors = err?.response?.data?.errors;
+      const firstError = errors ? Object.values(errors)[0]?.[0] : null;
+      const msg = firstError ?? err?.response?.data?.title ?? "Xatolik yuz berdi";
+      toast({ variant: "destructive", title: msg });
+    },
   });
 
   const deleteMutation = useMutation({
@@ -112,7 +118,7 @@ export function TopicsPage() {
 
   const openCreate = () => {
     setEditingTopic(null);
-    setForm({ ...emptyForm(), orderIndex: String((data?.total ?? 0) + 1) });
+    setForm({ ...emptyForm(), orderIndex: String((data?.totalCount ?? 0) + 1) });
     setDialogOpen(true);
   };
 
@@ -141,7 +147,7 @@ export function TopicsPage() {
   };
 
   const isPending = createMutation.isPending || updateMutation.isPending;
-  const totalPages = data ? Math.ceil(data.total / 20) : 1;
+  const totalPages = data ? Math.ceil(data.totalCount / 20) : 1;
 
   if (isLoading) return <PageLoader />;
 
@@ -150,7 +156,7 @@ export function TopicsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Mavzular</h1>
-          <p className="text-muted-foreground mt-1">Jami: {data?.total ?? 0} ta mavzu</p>
+          <p className="text-muted-foreground mt-1">Jami: {data?.totalCount ?? 0} ta mavzu</p>
         </div>
         <Button onClick={openCreate}>
           <Plus className="h-4 w-4 mr-2" />
