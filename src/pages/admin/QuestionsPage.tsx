@@ -19,9 +19,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PageLoader, LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { toast } from "@/components/ui/use-toast";
@@ -288,99 +285,97 @@ export function QuestionsPage() {
         </div>
       </div>
 
-      {/* Table */}
-      <Card>
-        <CardContent className="p-0">
-          {isLoading ? (
-            <div className="py-12 flex justify-center"><LoadingSpinner /></div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12"></TableHead>
-                  <TableHead>Savol matni</TableHead>
-                  <TableHead className="w-36">Mavzu</TableHead>
-                  <TableHead className="w-20">Javoblar</TableHead>
-                  <TableHead className="w-28">Holat</TableHead>
-                  <TableHead className="text-right w-32">Amallar</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {data?.items.map((q) => (
-                  <TableRow key={q.id}>
-                    <TableCell>
-                      {q.imageUrl ? (
-                        <img
-                          src={q.imageUrl}
-                          alt=""
-                          className="w-10 h-10 object-cover rounded border cursor-pointer"
-                          onClick={() => setImageDialogId(q.id)}
-                        />
-                      ) : (
-                        <button
-                          onClick={() => setImageDialogId(q.id)}
-                          className="w-10 h-10 rounded border border-dashed flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary transition-colors"
-                        >
-                          <ImagePlus className="h-4 w-4" />
-                        </button>
-                      )}
-                    </TableCell>
-                    <TableCell className="max-w-xs">
-                      <p className="text-sm line-clamp-2">{q.defaultText || "—"}</p>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-xs font-mono text-muted-foreground">
-                        {topics.find((t) => t.id === q.topicId)?.code ?? q.topicId.slice(0, 8)}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {q.answersCount}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
+      {/* Question Cards */}
+      {isLoading ? (
+        <div className="py-12 flex justify-center"><LoadingSpinner /></div>
+      ) : data?.items.length === 0 ? (
+        <div className="py-12 text-center text-muted-foreground">Savollar topilmadi</div>
+      ) : (
+        <div className="space-y-3">
+          {data?.items.map((q) => (
+            <Card key={q.id} className={cn(!q.isActive && "opacity-60")}>
+              <CardContent className="p-4">
+                <div className="flex gap-4">
+                  {/* Image */}
+                  <div className="flex-shrink-0">
+                    {q.imageUrl ? (
+                      <img
+                        src={q.imageUrl}
+                        alt=""
+                        className="w-28 h-20 object-cover rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
+                        onClick={() => setImageDialogId(q.id)}
+                      />
+                    ) : (
+                      <button
+                        onClick={() => setImageDialogId(q.id)}
+                        className="w-28 h-20 rounded-lg border-2 border-dashed flex flex-col items-center justify-center text-muted-foreground hover:text-primary hover:border-primary transition-colors gap-1"
+                      >
+                        <ImagePlus className="h-5 w-5" />
+                        <span className="text-xs">Rasm</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0 space-y-2">
+                    {/* Header row */}
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-sm font-medium leading-snug">{q.defaultText || "—"}</p>
+                      <div className="flex items-center gap-1 flex-shrink-0">
                         <Switch
                           checked={q.isActive}
-                          onCheckedChange={(v) =>
-                            toggleActiveMutation.mutate({ id: q.id, active: v })
-                          }
+                          onCheckedChange={(v) => toggleActiveMutation.mutate({ id: q.id, active: v })}
                         />
-                        <Badge variant={q.isActive ? "success" : "secondary"} className="text-xs">
-                          {q.isActive ? "Faol" : "Nofaol"}
-                        </Badge>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => openEdit(q)}>
-                          <Pencil className="h-4 w-4" />
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(q)}>
+                          <Pencil className="h-3.5 w-3.5" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="text-muted-foreground hover:text-destructive"
-                          onClick={() => {
-                            if (confirm("Bu savolni o'chirishni tasdiqlaysizmi?"))
-                              deleteMutation.mutate(q.id);
-                          }}
+                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                          onClick={() => { if (confirm("Bu savolni o'chirishni tasdiqlaysizmi?")) deleteMutation.mutate(q.id); }}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {data?.items.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center text-muted-foreground py-12">
-                      Savollar topilmadi
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+                    </div>
+
+                    {/* Answers */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
+                      {q.answers.map((a, i) => (
+                        <div
+                          key={a.id}
+                          className={cn(
+                            "flex items-center gap-2 rounded-md px-2 py-1 text-xs",
+                            a.isCorrect
+                              ? "bg-green-50 text-green-800 border border-green-200"
+                              : "bg-muted/50 text-muted-foreground"
+                          )}
+                        >
+                          <span className="font-semibold flex-shrink-0">
+                            {String.fromCharCode(65 + i)}.
+                          </span>
+                          <span className="line-clamp-1">{a.text}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Footer */}
+                    <div className="flex items-center gap-2">
+                      <Badge variant={q.isActive ? "success" : "secondary"} className="text-xs">
+                        {q.isActive ? "Faol" : "Nofaol"}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground font-mono">
+                        {topics.find((t) => t.id === q.topicId)?.code ?? q.topicId.slice(0, 8)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-3">

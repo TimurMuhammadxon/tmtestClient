@@ -15,6 +15,9 @@ import {
   GraduationCap,
   MessageSquare,
   ClipboardList,
+  Banknote,
+  UserCog,
+  Dumbbell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -33,7 +36,6 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { to: "/dashboard", icon: LayoutDashboard, label: t.dashboard },
-  { to: "/bilets", icon: BookOpen, label: t.bilets },
   { to: "/progress", icon: TrendingUp, label: t.progress },
   { to: "/subscription", icon: CreditCard, label: t.subscription },
   { to: "/teacher-application", icon: ClipboardList, label: "O'qituvchi bo'lish" },
@@ -50,6 +52,8 @@ const adminItems: NavItem[] = [
   { to: "/admin/bilets", icon: BookOpen, label: "Biletlar", roles: ["Admin", "SuperAdmin", "Owner"] },
   { to: "/admin/applications", icon: HelpCircle, label: t.applications, roles: ["Admin", "SuperAdmin", "Owner"] },
   { to: "/admin/plans", icon: Settings, label: t.plans, roles: ["Admin", "SuperAdmin", "Owner"] },
+  { to: "/admin/users", icon: UserCog, label: "Foydalanuvchilar", roles: ["Owner"] },
+  { to: "/admin/payments", icon: Banknote, label: "To'lovlar", roles: ["Owner"] },
 ];
 
 interface SidebarProps {
@@ -134,7 +138,7 @@ export function Sidebar({ collapsed, onToggle, mobile, onClose }: SidebarProps) 
                 Admin
               </p>
             )}
-            {adminItems.map((item) => (
+            {adminItems.filter(item => !item.roles || item.roles.includes(user?.role ?? "")).map((item) => (
               <SidebarLink key={item.to} item={item} collapsed={collapsed && !mobile} onClose={onClose} />
             ))}
           </>

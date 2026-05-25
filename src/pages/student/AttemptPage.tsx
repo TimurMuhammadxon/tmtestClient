@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { useEffect, useState, useRef } from "react";
 import { CheckCircle, XCircle, Clock, ArrowLeft, ArrowRight, Flag } from "lucide-react";
 import type { AttemptQuestionDto, SubmitAnswerResult } from "@/types";
+import { toast } from "@/components/ui/use-toast";
 
 function formatTime(seconds: number) {
   const m = Math.floor(seconds / 60);
@@ -96,19 +97,21 @@ export function AttemptPage() {
     mutationFn: ({ questionId, answerId }: { questionId: string; answerId: string }) =>
       attemptsApi.answer(id!, questionId, answerId),
     onSuccess: (result: SubmitAnswerResult, vars) => {
-      const question = attempt?.questions.find((q) => q.questionId === vars.questionId);
-      const correctId = question?.answers.find((a) => a.isCorrect)?.id ?? vars.answerId;
       setAnswerStates((prev) => ({
         ...prev,
         [vars.questionId]: {
           chosenId: vars.answerId,
           isCorrect: result.isCorrect,
-          correctId: result.correctAnswerId ?? correctId,
+          correctId: result.correctAnswerId,
         },
       }));
       if (result.isFinished) {
         handleFinish();
       }
+    },
+    onError: (e: unknown) => {
+      const msg = (e as { response?: { data?: { detail?: string; title?: string } } })?.response?.data?.detail ?? (e as any)?.response?.data?.title;
+      toast({ variant: "destructive", title: msg ?? "Javob saqlanmadi. Qayta urinib ko'ring." });
     },
   });
 

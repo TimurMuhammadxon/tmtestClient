@@ -460,20 +460,54 @@ function QuestionPicker({
       {isLoading ? (
         <div className="text-center py-4 text-sm text-muted-foreground">Yuklanmoqda...</div>
       ) : (
-        <div className="space-y-1 max-h-60 overflow-y-auto">
-          {questions?.items.map((q) => (
-            <label
-              key={q.id}
-              className="flex items-start gap-2 p-2 rounded hover:bg-accent cursor-pointer"
-            >
-              <Checkbox
-                checked={selectedIds.includes(q.id)}
-                onCheckedChange={() => toggle(q)}
-                className="mt-0.5 flex-shrink-0"
-              />
-              <span className="text-sm leading-snug line-clamp-2">{q.defaultText}</span>
-            </label>
-          ))}
+        <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
+          {questions?.items.map((q) => {
+            const selected = selectedIds.includes(q.id);
+            return (
+              <label
+                key={q.id}
+                className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                  selected
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:bg-accent"
+                }`}
+              >
+                <Checkbox
+                  checked={selected}
+                  onCheckedChange={() => toggle(q)}
+                  className="mt-1 flex-shrink-0"
+                />
+                <div className="flex gap-3 flex-1 min-w-0">
+                  {/* Image */}
+                  {q.imageUrl && (
+                    <img
+                      src={q.imageUrl}
+                      alt=""
+                      className="w-20 h-14 object-cover rounded border flex-shrink-0"
+                    />
+                  )}
+                  <div className="flex-1 min-w-0 space-y-1.5">
+                    <p className="text-sm font-medium leading-snug line-clamp-2">{q.defaultText}</p>
+                    <div className="grid grid-cols-2 gap-1">
+                      {q.answers.map((a, i) => (
+                        <div
+                          key={a.id}
+                          className={`flex items-center gap-1 rounded px-1.5 py-0.5 text-xs ${
+                            a.isCorrect
+                              ? "bg-green-50 text-green-700 border border-green-200"
+                              : "text-muted-foreground"
+                          }`}
+                        >
+                          <span className="font-semibold flex-shrink-0">{String.fromCharCode(65 + i)}.</span>
+                          <span className="line-clamp-1">{a.text}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </label>
+            );
+          })}
           {questions?.items.length === 0 && (
             <p className="text-center text-sm text-muted-foreground py-4">Savollar topilmadi</p>
           )}

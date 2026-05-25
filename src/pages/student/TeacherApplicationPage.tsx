@@ -24,6 +24,7 @@ const emptyForm = (): SubmitApplicationInput => ({
 export function TeacherApplicationPage() {
   const qc = useQueryClient();
   const [form, setForm] = useState<SubmitApplicationInput>(emptyForm());
+  const [resubmitting, setResubmitting] = useState(false);
 
   const { data: existing, isLoading } = useQuery({
     queryKey: ["my-teacher-application"],
@@ -34,18 +35,34 @@ export function TeacherApplicationPage() {
     mutationFn: teacherApplicationApi.submit,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["my-teacher-application"] });
+      setResubmitting(false);
       toast({ title: "Ariza yuborildi! Ko'rib chiqamiz." });
     },
     onError: (e: unknown) => {
-      const msg = (e as { response?: { data?: { title?: string } } })?.response?.data?.title;
+      const msg = (e as { response?: { data?: { detail?: string; title?: string } } })?.response?.data?.detail ?? (e as any)?.response?.data?.title;
       toast({ variant: "destructive", title: msg ?? "Xatolik yuz berdi" });
     },
   });
 
   if (isLoading) return <PageLoader />;
 
-  if (existing) {
-    return <ApplicationStatus app={existing} />;
+  if (existing && !(existing.status === "Rejected" && resubmitting)) {
+    return (
+      <ApplicationStatus
+        app={existing}
+        onResubmit={() => {
+          setForm({
+            fullName: existing.fullName,
+            phoneNumber: existing.phoneNumber,
+            telegramUsername: existing.telegramUsername ?? "",
+            organizationName: existing.organizationName ?? "",
+            experienceText: existing.experienceText ?? "",
+            additionalNotes: existing.additionalNotes ?? "",
+          });
+          setResubmitting(true);
+        }}
+      />
+    );
   }
 
   const field = (key: keyof SubmitApplicationInput) => ({
@@ -61,9 +78,13 @@ export function TeacherApplicationPage() {
           <GraduationCap className="h-5 w-5 text-primary-foreground" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold">O'qituvchi bo'lish</h1>
+          <h1 className="text-2xl font-bold">
+            {resubmitting ? "Arizani qayta yuborish" : "O'qituvchi bo'lish"}
+          </h1>
           <p className="text-muted-foreground text-sm mt-0.5">
-            Ariza qoldiring — ko'rib chiqqach siz bilan bog'lanamiz
+            {resubmitting
+              ? "Ma'lumotlarni yangilab arizani qayta yuboring"
+              : "Ariza qoldiring — ko'rib chiqqach siz bilan bog'lanamiz"}
           </p>
         </div>
       </div>
@@ -114,13 +135,20 @@ export function TeacherApplicationPage() {
             />
           </div>
 
-          <Button
-            className="w-full"
-            onClick={() => submitMutation.mutate(form)}
-            disabled={!form.fullName.trim() || !form.phoneNumber.trim() || submitMutation.isPending}
-          >
-            {submitMutation.isPending ? "Yuborilmoqda..." : "Ariza yuborish"}
-          </Button>
+          <div className="flex gap-2">
+            {resubmitting && (
+              <Button variant="outline" className="flex-1" onClick={() => setResubmitting(false)}>
+                Bekor qilish
+              </Button>
+            )}
+            <Button
+              className="flex-1"
+              onClick={() => submitMutation.mutate(form)}
+              disabled={!form.fullName.trim() || !form.phoneNumber.trim() || submitMutation.isPending}
+            >
+              {submitMutation.isPending ? "Yuborilmoqda..." : resubmitting ? "Qayta yuborish" : "Ariza yuborish"}
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -129,8 +157,10 @@ export function TeacherApplicationPage() {
 
 function ApplicationStatus({
   app,
+  onResubmit,
 }: {
   app: NonNullable<Awaited<ReturnType<typeof teacherApplicationApi.getMy>>>;
+  onResubmit?: () => void;
 }) {
   const config = {
     Pending: {
@@ -194,6 +224,14 @@ function ApplicationStatus({
               />
             )}
           </dl>
+
+          {app.status === "Rejected" && onResubmit && (
+            <div className="mt-5 pt-4 border-t">
+              <Button className="w-full" onClick={onResubmit}>
+                Qayta ariza yuborish
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

@@ -3,7 +3,7 @@ import { useAuthStore } from "@/store/auth";
 
 export const api = axios.create({
   baseURL: "/api",
-  headers: { "Content-Type": "application/json" },
+  headers: { "Content-Type": "application/json", "Accept-Language": "uz-latn" },
 });
 
 api.interceptors.request.use((config) => {

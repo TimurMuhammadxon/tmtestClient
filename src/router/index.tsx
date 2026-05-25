@@ -18,7 +18,10 @@ import { BiletsPage as AdminBiletsPage } from "@/pages/admin/BiletsPage";
 import { ApplicationsPage } from "@/pages/admin/ApplicationsPage";
 import { PlansPage } from "@/pages/admin/PlansPage";
 import { TeacherApplicationPage } from "@/pages/student/TeacherApplicationPage";
+import { StudentTopicsPage } from "@/pages/student/TopicsPage";
 import { TestLinkPublicPage } from "@/pages/public/TestLinkPublicPage";
+import { UsersPage } from "@/pages/admin/UsersPage";
+import { PaymentsPage } from "@/pages/admin/PaymentsPage";
 
 export const router = createBrowserRouter([
   {
@@ -49,6 +52,7 @@ export const router = createBrowserRouter([
       { path: "/progress", element: <ProgressPage /> },
       { path: "/subscription", element: <SubscriptionPage /> },
       { path: "/teacher-application", element: <TeacherApplicationPage /> },
+      { path: "/topics", element: <StudentTopicsPage /> },
       {
         path: "/teacher/groups",
         element: (
@@ -102,6 +106,22 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute roles={["Admin", "SuperAdmin", "Owner"]}>
             <PlansPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/admin/users",
+        element: (
+          <ProtectedRoute roles={["Owner"]}>
+            <UsersPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/admin/payments",
+        element: (
+          <ProtectedRoute roles={["Owner"]}>
+            <PaymentsPage />
           </ProtectedRoute>
         ),
       },

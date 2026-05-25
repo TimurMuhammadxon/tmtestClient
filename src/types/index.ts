@@ -52,7 +52,6 @@ export interface PublicBiletListItemDto {
   id: string;
   number: number;
   isDemo: boolean;
-  isActive: boolean;
   questionCount: number;
 }
 
@@ -114,6 +113,9 @@ export interface SubmitAnswerResult {
   isCorrect: boolean;
   correctAnswerId: string;
   isFinished: boolean;
+  status: string;
+  correctCount?: number;
+  totalQuestions: number;
 }
 
 export interface FinishAttemptResult {

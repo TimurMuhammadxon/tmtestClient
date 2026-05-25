@@ -44,6 +44,13 @@ export const adminTopicsApi = {
 };
 
 // --- Questions ---
+export interface AnswerListItemDto {
+  id: string;
+  orderIndex: number;
+  isCorrect: boolean;
+  text: string;
+}
+
 export interface QuestionAdminListItemDto {
   id: string;
   topicId: string;
@@ -51,7 +58,7 @@ export interface QuestionAdminListItemDto {
   imageUrl?: string;
   isActive: boolean;
   defaultText: string;
-  answersCount: number;
+  answers: AnswerListItemDto[];
 }
 
 export interface AnswerAdminDto {
@@ -204,6 +211,39 @@ export const adminApplicationsApi = {
 
   reject: (id: string, reason: string) =>
     api.post(`/admin/teacher-applications/${id}/reject`, { reason }),
+};
+
+// --- Users (Owner) ---
+export interface UserAdminDto {
+  id: string;
+  email: string;
+  role: string;
+  isActive: boolean;
+  createdAt: string;
+  subscriptionExpiresAt?: string;
+}
+
+export const adminUsersApi = {
+  list: (params?: { search?: string; page?: number; pageSize?: number }) =>
+    api.get<PagedResult<UserAdminDto>>("/admin/users", { params }).then((r) => r.data),
+
+  grantSubscription: (userId: string, planId: string) =>
+    api.post(`/admin/users/${userId}/subscription`, { planId }),
+};
+
+// --- Payments (Owner) ---
+export interface PaymentOrderAdminDto {
+  id: string;
+  userEmail: string;
+  planLabel: string;
+  amountTiyin: number;
+  status: string;
+  createdAt: string;
+}
+
+export const adminPaymentsApi = {
+  list: (params?: { page?: number; pageSize?: number }) =>
+    api.get<PagedResult<PaymentOrderAdminDto>>("/admin/payments", { params }).then((r) => r.data),
 };
 
 // --- Subscription plans ---
