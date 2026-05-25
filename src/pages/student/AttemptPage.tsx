@@ -45,15 +45,18 @@ export function AttemptPage() {
   });
 
   useEffect(() => {
-    if (attempt?.status !== "InProgress") {
+    if (!attempt) return;
+    if (attempt.status !== "InProgress") {
       setFinished(true);
-      if (attempt?.correctCount !== undefined && attempt?.correctCount !== null) {
+      if (attempt.correctCount !== undefined && attempt.correctCount !== null) {
         setFinishResult({
           status: attempt.status,
           correct: attempt.correctCount,
           total: attempt.totalQuestions,
         });
       }
+    } else {
+      setFinished(false);
     }
     if (attempt?.remainingSeconds !== undefined && attempt.remainingSeconds !== null) {
       setTimeLeft(attempt.remainingSeconds);

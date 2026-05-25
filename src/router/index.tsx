@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
 import { AuthLayout } from "@/layouts/AuthLayout";
 import { AppLayout } from "@/layouts/AppLayout";
 import { ProtectedRoute } from "@/components/shared/ProtectedRoute";
@@ -20,13 +20,14 @@ import { PlansPage } from "@/pages/admin/PlansPage";
 import { TeacherApplicationPage } from "@/pages/student/TeacherApplicationPage";
 import { StudentTopicsPage } from "@/pages/student/TopicsPage";
 import { TestLinkPublicPage } from "@/pages/public/TestLinkPublicPage";
+import { LandingPage } from "@/pages/public/LandingPage";
 import { UsersPage } from "@/pages/admin/UsersPage";
 import { PaymentsPage } from "@/pages/admin/PaymentsPage";
 
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: <Navigate to="/dashboard" replace />,
+    element: <LandingPage />,
   },
   {
     path: "/t/:code",
