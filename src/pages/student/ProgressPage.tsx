@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 function getGradeBadge(grade: string) {
   switch (grade) {
     case "A'lo": return <Badge variant="success">A'lo</Badge>;
-    case "Yaxshi": return <Badge className="bg-blue-100 text-blue-800">Yaxshi</Badge>;
+    case "Yaxshi": return <Badge className="bg-blue-950/60 text-blue-400 border-blue-800/50">Yaxshi</Badge>;
     case "Naqsh": return <Badge variant="warning">Takrorlash kerak</Badge>;
     case "Kritik": return <Badge variant="destructive">Kritik</Badge>;
     default: return <Badge variant="outline">{grade}</Badge>;
@@ -89,9 +89,9 @@ export function ProgressPage() {
                       <div className="text-right flex-shrink-0">
                         <span className={cn(
                           "text-xl font-bold",
-                          topic.accuracyPercent >= 85 ? "text-green-600" :
-                          topic.accuracyPercent >= 65 ? "text-blue-600" :
-                          topic.accuracyPercent >= 40 ? "text-yellow-600" : "text-red-600"
+                          topic.accuracyPercent >= 85 ? "text-emerald-400" :
+                          topic.accuracyPercent >= 65 ? "text-cyan-400" :
+                          topic.accuracyPercent >= 40 ? "text-amber-400" : "text-red-400"
                         )}>
                           {topic.accuracyPercent.toFixed(0)}%
                         </span>
@@ -121,8 +121,8 @@ export function ProgressPage() {
                 <Card key={item.questionId}>
                   <CardContent className="p-4">
                     <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
-                        <span className="text-red-600 font-bold text-xs">{i + 1}</span>
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center" style={{ background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.2)" }}>
+                        <span className="font-bold text-xs" style={{ color: "#f87171" }}>{i + 1}</span>
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium leading-snug">{item.questionText}</p>

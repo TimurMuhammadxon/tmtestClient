@@ -165,24 +165,27 @@ function ApplicationStatus({
   const config = {
     Pending: {
       icon: Clock,
-      color: "text-amber-500",
-      bg: "bg-amber-50",
+      color: "text-amber-400",
+      bg: "",
+      bgStyle: { background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.15)" },
       badge: <Badge variant="secondary">Ko'rib chiqilmoqda</Badge>,
       title: "Arizangiz ko'rib chiqilmoqda",
       desc: "Tez orada siz bilan bog'lanamiz.",
     },
     Approved: {
       icon: CheckCircle,
-      color: "text-green-600",
-      bg: "bg-green-50",
+      color: "text-emerald-400",
+      bg: "",
+      bgStyle: { background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.15)" },
       badge: <Badge variant="success">Tasdiqlandi</Badge>,
       title: "Tabriklaymiz! Arizangiz tasdiqlandi",
       desc: "Endi o'qituvchi sifatida guruh va test havolalar yaratishingiz mumkin.",
     },
     Rejected: {
       icon: XCircle,
-      color: "text-destructive",
-      bg: "bg-red-50",
+      color: "text-red-400",
+      bg: "",
+      bgStyle: { background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.15)" },
       badge: <Badge variant="destructive">Rad etildi</Badge>,
       title: "Ariza rad etildi",
       desc: app.rejectionReason ?? "Batafsil ma'lumot uchun administrator bilan bog'laning.",
@@ -199,7 +202,7 @@ function ApplicationStatus({
 
       <Card>
         <CardContent className="p-6">
-          <div className={`flex items-start gap-4 p-4 rounded-lg ${config.bg} mb-5`}>
+          <div className="flex items-start gap-4 p-4 rounded-lg mb-5" style={config.bgStyle}>
             <Icon className={`h-6 w-6 flex-shrink-0 mt-0.5 ${config.color}`} />
             <div>
               <p className="font-semibold">{config.title}</p>

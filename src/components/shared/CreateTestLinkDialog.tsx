@@ -79,10 +79,10 @@ export function CreateTestLinkDialog({ open, onClose, defaultTitle, flowType, bi
 
         {createdCode ? (
           <div className="space-y-4 py-2">
-            <div className="rounded-lg bg-green-50 border border-green-200 p-4 space-y-2">
-              <p className="text-sm font-medium text-green-700">Havola muvaffaqiyatli yaratildi!</p>
+            <div className="rounded-lg p-4 space-y-2" style={{ background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)" }}>
+              <p className="text-sm font-medium text-emerald-400">Havola muvaffaqiyatli yaratildi!</p>
               <div className="flex items-center gap-2">
-                <code className="flex-1 text-xs bg-white border rounded px-3 py-2 font-mono break-all">
+                <code className="flex-1 text-xs rounded px-3 py-2 font-mono break-all" style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(0,240,255,0.1)", color: "#00f0ff" }}>
                   {linkUrl}
                 </code>
                 <Button size="icon" variant="outline" onClick={handleCopy} className="flex-shrink-0">

@@ -13,11 +13,11 @@ import { toast } from "@/components/ui/use-toast";
 import { ChevronLeft, ChevronRight, Gift, Search } from "lucide-react";
 
 const ROLE_COLORS: Record<string, string> = {
-  Owner:      "bg-purple-100 text-purple-800",
-  SuperAdmin: "bg-red-100 text-red-800",
-  Admin:      "bg-orange-100 text-orange-800",
-  Teacher:    "bg-blue-100 text-blue-800",
-  Student:    "bg-gray-100 text-gray-700",
+  Owner:      "bg-purple-950/50 text-purple-400 border border-purple-800/30",
+  SuperAdmin: "bg-red-950/50 text-red-400 border border-red-800/30",
+  Admin:      "bg-orange-950/50 text-amber-400 border border-amber-800/30",
+  Teacher:    "bg-blue-950/50 text-cyan-400 border border-cyan-800/30",
+  Student:    "bg-slate-900/50 text-slate-400 border border-slate-700/30",
 };
 
 export function UsersPage() {
@@ -95,7 +95,7 @@ export function UsersPage() {
                   <TableRow key={u.id}>
                     <TableCell className="font-mono text-sm">{u.email}</TableCell>
                     <TableCell>
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${ROLE_COLORS[u.role] ?? "bg-gray-100"}`}>
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${ROLE_COLORS[u.role] ?? "bg-slate-900/50 text-slate-400"}`}>
                         {u.role}
                       </span>
                     </TableCell>

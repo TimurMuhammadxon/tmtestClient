@@ -4,9 +4,8 @@ import { useState } from "react";
 import { attemptsApi } from "@/api/attempts";
 import { topicsApi, type TopicStudentDto } from "@/api/topics";
 import { progressApi } from "@/api/progress";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Progress } from "@/components/ui/progress";
@@ -14,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { PageLoader } from "@/components/shared/LoadingSpinner";
 import { cn } from "@/lib/utils";
 import {
-  Target, Zap, BookOpen, Shuffle, Play, Clock, AlertCircle, CheckCircle2,
+  Target, Zap, BookOpen, Shuffle, Play, Clock, CheckCircle2,
 } from "lucide-react";
 
 // ─── Mode cards data ────────────────────────────────────────────────────────
@@ -25,20 +24,20 @@ const MODES = [
     icon: Target,
     title: "Imtihon",
     description: "20 ta tasodifiy savol · 25 daqiqa · 3 xato = rad",
-    color: "text-red-500",
-    bg: "bg-red-50 border-red-100",
+    color: "text-red-400",
+    bg: "bg-red-950/20 border-red-900/30",
     badge: "Rasmiy",
-    badgeColor: "bg-red-100 text-red-700",
+    badgeColor: "bg-red-950/40 text-red-400",
   },
   {
     id: "marathon",
     icon: Zap,
     title: "Marafon",
     description: "Barcha faol savollar · vaqt chegarasi yo'q",
-    color: "text-orange-500",
-    bg: "bg-orange-50 border-orange-100",
+    color: "text-amber-400",
+    bg: "bg-amber-950/20 border-amber-900/30",
     badge: "Cheksiz",
-    badgeColor: "bg-orange-100 text-orange-700",
+    badgeColor: "bg-amber-950/40 text-amber-400",
   },
 ] as const;
 
@@ -46,10 +45,10 @@ const MODES = [
 
 function gradeColor(grade: string) {
   switch (grade) {
-    case "A'lo":    return "text-green-600";
-    case "Yaxshi":  return "text-blue-600";
-    case "Takrorlash kerak": return "text-yellow-600";
-    case "Kritik":  return "text-red-600";
+    case "A'lo":    return "text-emerald-400";
+    case "Yaxshi":  return "text-cyan-400";
+    case "Takrorlash kerak": return "text-amber-400";
+    case "Kritik":  return "text-red-400";
     default:        return "text-muted-foreground";
   }
 }

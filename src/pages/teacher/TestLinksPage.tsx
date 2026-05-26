@@ -220,7 +220,7 @@ export function TestLinksPage() {
                     <SelectValue placeholder="Bilet tanlang" />
                   </SelectTrigger>
                   <SelectContent>
-                    {bilets?.filter((b) => b.isActive).map((b) => (
+                    {bilets?.map((b) => (
                       <SelectItem key={b.id} value={b.id}>Bilet #{b.number}</SelectItem>
                     ))}
                   </SelectContent>

@@ -34,7 +34,7 @@ export function AppLayout() {
       {/* Main content */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         {/* Mobile header */}
-        <header className="md:hidden flex items-center gap-3 px-4 h-14 border-b bg-white flex-shrink-0">
+        <header className="md:hidden flex items-center gap-3 px-4 h-14 border-b bg-background flex-shrink-0" style={{ borderColor: "rgba(0,240,255,0.08)" }}>
           <Button variant="ghost" size="icon" onClick={() => setMobileOpen(true)}>
             <Menu className="h-5 w-5" />
           </Button>

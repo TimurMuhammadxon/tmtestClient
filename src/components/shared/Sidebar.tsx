@@ -17,12 +17,8 @@ import {
   ClipboardList,
   Banknote,
   UserCog,
-  Dumbbell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
 import { useAuthStore } from "@/store/auth";
 import { authApi } from "@/api/auth";
 import { t } from "@/lib/i18n";
@@ -42,16 +38,16 @@ const navItems: NavItem[] = [
 ];
 
 const teacherItems: NavItem[] = [
-  { to: "/teacher/groups", icon: Users, label: t.groups, roles: ["Teacher", "Admin", "SuperAdmin", "Owner"] },
-  { to: "/teacher/test-links", icon: Link2, label: t.testLinks, roles: ["Teacher", "Admin", "SuperAdmin", "Owner"] },
+  { to: "/teacher/groups", icon: Users, label: t.groups },
+  { to: "/teacher/test-links", icon: Link2, label: t.testLinks },
 ];
 
 const adminItems: NavItem[] = [
-  { to: "/admin/topics", icon: FileText, label: t.topics, roles: ["Admin", "SuperAdmin", "Owner"] },
-  { to: "/admin/questions", icon: MessageSquare, label: "Savollar", roles: ["Admin", "SuperAdmin", "Owner"] },
-  { to: "/admin/bilets", icon: BookOpen, label: "Biletlar", roles: ["Admin", "SuperAdmin", "Owner"] },
-  { to: "/admin/applications", icon: HelpCircle, label: t.applications, roles: ["Admin", "SuperAdmin", "Owner"] },
-  { to: "/admin/plans", icon: Settings, label: t.plans, roles: ["Admin", "SuperAdmin", "Owner"] },
+  { to: "/admin/topics", icon: FileText, label: t.topics },
+  { to: "/admin/questions", icon: MessageSquare, label: "Savollar" },
+  { to: "/admin/bilets", icon: BookOpen, label: "Biletlar" },
+  { to: "/admin/applications", icon: HelpCircle, label: t.applications },
+  { to: "/admin/plans", icon: Settings, label: t.plans },
   { to: "/admin/users", icon: UserCog, label: "Foydalanuvchilar", roles: ["Owner"] },
   { to: "/admin/payments", icon: Banknote, label: "To'lovlar", roles: ["Owner"] },
 ];
@@ -78,49 +74,80 @@ export function Sidebar({ collapsed, onToggle, mobile, onClose }: SidebarProps) 
 
   const isTeacher = user && ["Teacher", "Admin", "SuperAdmin", "Owner"].includes(user.role);
   const isAdmin = user && ["Admin", "SuperAdmin", "Owner"].includes(user.role);
-
   const initials = user?.email?.slice(0, 2).toUpperCase() ?? "U";
 
   return (
     <aside
+      style={{
+        background: "linear-gradient(180deg, #0d0d16 0%, #0a0a12 100%)",
+        borderRight: "1px solid rgba(0, 240, 255, 0.08)",
+        fontFamily: "'Outfit', sans-serif",
+      }}
       className={cn(
-        "flex flex-col bg-white border-r border-border h-full transition-all duration-300",
+        "flex flex-col h-full transition-all duration-300",
         mobile ? "w-72" : collapsed ? "w-16" : "w-64"
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 h-16 border-b">
+      <div
+        style={{ borderBottom: "1px solid rgba(0, 240, 255, 0.08)" }}
+        className="flex items-center justify-between p-4 h-16"
+      >
         {(!collapsed || mobile) && (
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <GraduationCap className="h-4 w-4 text-primary-foreground" />
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div
+              style={{
+                background: "linear-gradient(135deg, #00f0ff, #7c3aed)",
+                boxShadow: "0 0 12px rgba(0, 240, 255, 0.4)",
+              }}
+              className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
+            >
+              <GraduationCap className="h-4 w-4 text-white" />
             </div>
-            <span className="font-semibold text-sm truncate">Haydovchi Test</span>
+            <div className="min-w-0">
+              <span
+                style={{ color: "#e2e8f0", fontSize: "13px", fontWeight: 600, letterSpacing: "0.01em" }}
+                className="truncate block"
+              >
+                Haydovchi Test
+              </span>
+            </div>
           </div>
         )}
         {!mobile && (
-          <Button variant="ghost" size="icon" onClick={onToggle} className="flex-shrink-0">
+          <button
+            onClick={onToggle}
+            style={{ color: "rgba(148, 163, 184, 0.6)" }}
+            className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/5 transition-colors"
+          >
             {collapsed ? <Menu className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-          </Button>
+          </button>
         )}
         {mobile && (
-          <Button variant="ghost" size="icon" onClick={onClose}>
+          <button
+            onClick={onClose}
+            style={{ color: "rgba(148, 163, 184, 0.6)" }}
+            className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/5 transition-colors"
+          >
             <ChevronLeft className="h-4 w-4" />
-          </Button>
+          </button>
         )}
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto p-2 space-y-1">
+      <nav className="flex-1 overflow-y-auto p-2 space-y-0.5">
         {navItems.map((item) => (
           <SidebarLink key={item.to} item={item} collapsed={collapsed && !mobile} onClose={onClose} />
         ))}
 
         {isTeacher && (
           <>
-            <Separator className="my-2" />
+            <div style={{ borderTop: "1px solid rgba(0, 240, 255, 0.06)" }} className="my-2 mx-2" />
             {(!collapsed || mobile) && (
-              <p className="px-3 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              <p
+                style={{ color: "rgba(0, 240, 255, 0.4)", fontSize: "10px", fontWeight: 600, letterSpacing: "0.1em" }}
+                className="px-3 py-1 uppercase"
+              >
                 O'qituvchi
               </p>
             )}
@@ -132,42 +159,55 @@ export function Sidebar({ collapsed, onToggle, mobile, onClose }: SidebarProps) 
 
         {isAdmin && (
           <>
-            <Separator className="my-2" />
+            <div style={{ borderTop: "1px solid rgba(0, 240, 255, 0.06)" }} className="my-2 mx-2" />
             {(!collapsed || mobile) && (
-              <p className="px-3 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              <p
+                style={{ color: "rgba(139, 92, 246, 0.5)", fontSize: "10px", fontWeight: 600, letterSpacing: "0.1em" }}
+                className="px-3 py-1 uppercase"
+              >
                 Admin
               </p>
             )}
-            {adminItems.filter(item => !item.roles || item.roles.includes(user?.role ?? "")).map((item) => (
-              <SidebarLink key={item.to} item={item} collapsed={collapsed && !mobile} onClose={onClose} />
-            ))}
+            {adminItems
+              .filter((item) => !item.roles || item.roles.includes(user?.role ?? ""))
+              .map((item) => (
+                <SidebarLink key={item.to} item={item} collapsed={collapsed && !mobile} onClose={onClose} />
+              ))}
           </>
         )}
       </nav>
 
       {/* Footer */}
-      <div className="p-3 border-t">
+      <div style={{ borderTop: "1px solid rgba(0, 240, 255, 0.08)" }} className="p-3">
         <div className={cn("flex items-center gap-3", collapsed && !mobile && "justify-center")}>
-          <Avatar className="h-8 w-8 flex-shrink-0">
-            <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
+          <div
+            style={{
+              background: "linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(124, 58, 237, 0.15))",
+              border: "1px solid rgba(0, 240, 255, 0.2)",
+              color: "#00f0ff",
+              fontSize: "11px",
+              fontWeight: 700,
+            }}
+            className="h-8 w-8 flex-shrink-0 rounded-lg flex items-center justify-center"
+          >
+            {initials}
+          </div>
           {(!collapsed || mobile) && (
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{user?.email}</p>
-              <p className="text-xs text-muted-foreground">{user?.role}</p>
+              <p style={{ color: "#e2e8f0", fontSize: "12px", fontWeight: 500 }} className="truncate">
+                {user?.email}
+              </p>
+              <p style={{ color: "rgba(148, 163, 184, 0.5)", fontSize: "11px" }}>{user?.role}</p>
             </div>
           )}
-          <Button
-            variant="ghost"
-            size="icon"
+          <button
             onClick={handleLogout}
-            className="flex-shrink-0 text-muted-foreground hover:text-destructive"
             title={t.logout}
+            style={{ color: "rgba(148, 163, 184, 0.4)" }}
+            className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center hover:bg-red-500/10 hover:text-red-400 transition-colors"
           >
             <LogOut className="h-4 w-4" />
-          </Button>
+          </button>
         </div>
       </div>
     </aside>
@@ -188,19 +228,37 @@ function SidebarLink({
     <NavLink
       to={item.to}
       onClick={onClose}
+      title={collapsed ? item.label : undefined}
       className={({ isActive }) =>
         cn(
-          "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
-          isActive
-            ? "bg-primary text-primary-foreground"
-            : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+          "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 group",
+          isActive ? "sidebar-link-active" : "sidebar-link-inactive",
           collapsed && "justify-center px-2"
         )
       }
-      title={collapsed ? item.label : undefined}
+      style={({ isActive }) =>
+        isActive
+          ? {
+              background: "linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(0, 240, 255, 0.05))",
+              color: "#00f0ff",
+              boxShadow: "inset 0 0 0 1px rgba(0, 240, 255, 0.2), 0 0 12px rgba(0, 240, 255, 0.05)",
+            }
+          : {
+              color: "rgba(148, 163, 184, 0.7)",
+            }
+      }
     >
-      <Icon className="h-4 w-4 flex-shrink-0" />
-      {!collapsed && <span>{item.label}</span>}
+      {({ isActive }) => (
+        <>
+          <Icon
+            className="h-4 w-4 flex-shrink-0 transition-all duration-200"
+            style={isActive ? { filter: "drop-shadow(0 0 6px rgba(0, 240, 255, 0.6))" } : {}}
+          />
+          {!collapsed && (
+            <span style={{ fontSize: "13px", fontWeight: isActive ? 600 : 400 }}>{item.label}</span>
+          )}
+        </>
+      )}
     </NavLink>
   );
 }

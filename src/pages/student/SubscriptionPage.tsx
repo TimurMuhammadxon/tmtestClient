@@ -93,7 +93,7 @@ function PricingCard({
       </div>
 
       <ul className="space-y-2.5 flex-1">
-        {features.map(({ icon: Icon, label }, i) => (
+        {features.map(({ label }, i) => (
           <li key={i} className="flex items-center gap-2.5 text-sm">
             <div className={cn(
               "w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0",
@@ -207,12 +207,12 @@ export function SubscriptionPage() {
         <div className={cn(
           "rounded-2xl border p-5 flex items-center gap-4",
           mySub.isActive
-            ? "border-green-200 bg-green-50 dark:bg-green-950/20 dark:border-green-800"
-            : "border-orange-200 bg-orange-50 dark:bg-orange-950/20 dark:border-orange-800"
+            ? "border-green-800/50 bg-green-950/20"
+            : "border-orange-800/50 bg-orange-950/20"
         )}>
           <div className={cn(
             "w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0",
-            mySub.isActive ? "bg-green-100 dark:bg-green-900" : "bg-orange-100 dark:bg-orange-900"
+            mySub.isActive ? "bg-green-900/50" : "bg-orange-900/50"
           )}>
             <Shield className={cn("h-6 w-6", mySub.isActive ? "text-green-600" : "text-orange-500")} />
           </div>

@@ -152,14 +152,22 @@ export function AttemptPage() {
     const completed = finishResult.status === "Completed";
     return (
       <div className="max-w-lg mx-auto flex flex-col items-center justify-center min-h-[60vh] gap-6">
-        <div className={cn(
-          "w-24 h-24 rounded-full flex items-center justify-center",
-          passed ? "bg-green-100" : completed ? "bg-blue-100" : "bg-red-100"
-        )}>
+        <div
+          className="w-24 h-24 rounded-full flex items-center justify-center"
+          style={{
+            background: passed
+              ? "rgba(16,185,129,0.15)"
+              : completed
+              ? "rgba(59,130,246,0.15)"
+              : "rgba(239,68,68,0.15)",
+            border: `2px solid ${passed ? "rgba(16,185,129,0.3)" : completed ? "rgba(59,130,246,0.3)" : "rgba(239,68,68,0.3)"}`,
+            boxShadow: `0 0 30px ${passed ? "rgba(16,185,129,0.2)" : completed ? "rgba(59,130,246,0.2)" : "rgba(239,68,68,0.2)"}`,
+          }}
+        >
           {passed ? (
-            <CheckCircle className="h-12 w-12 text-green-600" />
+            <CheckCircle className="h-12 w-12 text-emerald-400" />
           ) : (
-            <XCircle className={cn("h-12 w-12", completed ? "text-blue-600" : "text-red-600")} />
+            <XCircle className={cn("h-12 w-12", completed ? "text-blue-400" : "text-red-400")} />
           )}
         </div>
         <div className="text-center">
@@ -263,9 +271,9 @@ export function AttemptPage() {
                 className={cn(
                   "w-full text-left p-4 rounded-lg border-2 transition-all text-sm",
                   !revealed && "hover:border-primary/50 hover:bg-primary/5 border-border",
-                  revealed && isCorrectAnswer && "border-green-500 bg-green-50 text-green-900",
-                  revealed && chosen && !isCorrectAnswer && "border-red-500 bg-red-50 text-red-900",
-                  revealed && !chosen && !isCorrectAnswer && "border-border opacity-60",
+                  revealed && isCorrectAnswer && "border-emerald-500/50 bg-emerald-950/30 text-emerald-300",
+                  revealed && chosen && !isCorrectAnswer && "border-red-500/50 bg-red-950/30 text-red-300",
+                  revealed && !chosen && !isCorrectAnswer && "border-border opacity-50",
                   answerMutation.isPending && "cursor-wait"
                 )}
                 onClick={() => handleAnswer(currentQ.questionId, answer.id)}

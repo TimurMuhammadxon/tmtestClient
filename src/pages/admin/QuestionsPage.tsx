@@ -20,7 +20,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PageLoader, LoadingSpinner } from "@/components/shared/LoadingSpinner";
+import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { toast } from "@/components/ui/use-toast";
 import {
   Plus, Pencil, Trash2, ChevronLeft, ChevronRight,
@@ -348,7 +348,7 @@ export function QuestionsPage() {
                           className={cn(
                             "flex items-center gap-2 rounded-md px-2 py-1 text-xs",
                             a.isCorrect
-                              ? "bg-green-50 text-green-800 border border-green-200"
+                              ? "bg-emerald-950/30 text-emerald-400 border border-emerald-800/30"
                               : "bg-muted/50 text-muted-foreground"
                           )}
                         >
@@ -454,7 +454,7 @@ export function QuestionsPage() {
                   key={i}
                   className={cn(
                     "border rounded-lg p-4 space-y-3",
-                    answer.isCorrect && "border-green-500 bg-green-50"
+                    answer.isCorrect && "border-emerald-600/50 bg-emerald-950/20"
                   )}
                 >
                   <div className="flex items-center justify-between">

@@ -98,8 +98,6 @@ export function LandingPage() {
   const [authModal, setAuthModal] = useState(false);
   const [subModal, setSubModal] = useState(false);
   const [hoveredMode, setHoveredMode] = useState<string | null>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
-
   useEffect(() => {
     setMounted(true);
     if (!document.getElementById("lp-fonts")) {

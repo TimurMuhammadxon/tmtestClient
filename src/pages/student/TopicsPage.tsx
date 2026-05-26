@@ -16,10 +16,10 @@ import { toast } from "@/components/ui/use-toast";
 
 function gradeColor(grade: string) {
   switch (grade) {
-    case "A'lo":               return "text-green-600 bg-green-50";
-    case "Yaxshi":             return "text-blue-600 bg-blue-50";
-    case "Takrorlash kerak":   return "text-yellow-600 bg-yellow-50";
-    case "Kritik":             return "text-red-600 bg-red-50";
+    case "A'lo":               return "text-emerald-400 bg-emerald-950/30";
+    case "Yaxshi":             return "text-cyan-400 bg-cyan-950/30";
+    case "Takrorlash kerak":   return "text-amber-400 bg-amber-950/30";
+    case "Kritik":             return "text-red-400 bg-red-950/30";
     default:                   return "text-muted-foreground bg-muted";
   }
 }

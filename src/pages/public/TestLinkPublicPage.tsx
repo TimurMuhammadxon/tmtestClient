@@ -36,15 +36,15 @@ export function TestLinkPublicPage() {
   };
 
   if (isLoading) return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center" style={{ background: "#0a0a0f" }}>
       <PageLoader />
     </div>
   );
 
   if (error || !link) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Card className="max-w-md w-full">
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "#0a0a0f" }}>
+        <Card className="max-w-md w-full" style={{ background: "rgba(13,13,22,0.9)", border: "1px solid rgba(239,68,68,0.2)" }}>
           <CardContent className="flex flex-col items-center py-12 gap-4 text-center">
             <AlertTriangle className="h-12 w-12 text-destructive" />
             <h2 className="text-xl font-bold">Havola topilmadi</h2>
@@ -62,8 +62,8 @@ export function TestLinkPublicPage() {
   const canStart = link.isActive && !isExpired && attemptsLeft > 0;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <Card className="max-w-md w-full shadow-xl">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "#0a0a0f" }}>
+      <Card className="max-w-md w-full" style={{ background: "rgba(13,13,22,0.9)", border: "1px solid rgba(0,240,255,0.1)", boxShadow: "0 25px 50px rgba(0,0,0,0.5)" }}>
         <CardHeader className="text-center">
           <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
             <BookOpen className="h-8 w-8 text-primary" />
@@ -106,7 +106,7 @@ export function TestLinkPublicPage() {
             </div>
           )}
           {attemptsLeft <= 0 && link.isActive && !isExpired && (
-            <div className="flex items-center gap-2 p-3 bg-yellow-50 rounded-lg text-yellow-800 text-sm">
+            <div className="flex items-center gap-2 p-3 rounded-lg text-sm" style={{ background: "rgba(245,158,11,0.1)", color: "#fbbf24", border: "1px solid rgba(245,158,11,0.2)" }}>
               <AlertTriangle className="h-4 w-4" />
               Urinishlar soni tugagan
             </div>

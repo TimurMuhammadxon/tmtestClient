@@ -494,7 +494,7 @@ function QuestionPicker({
                           key={a.id}
                           className={`flex items-center gap-1 rounded px-1.5 py-0.5 text-xs ${
                             a.isCorrect
-                              ? "bg-green-50 text-green-700 border border-green-200"
+                              ? "bg-emerald-950/30 text-emerald-400 border border-emerald-800/30"
                               : "text-muted-foreground"
                           }`}
                         >
