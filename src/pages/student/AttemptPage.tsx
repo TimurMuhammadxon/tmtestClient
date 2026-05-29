@@ -455,7 +455,7 @@ export function AttemptPage() {
                       revealed && !chosen && !isCorrectAnswer && "border-muted-foreground/20"
                     )}
                   >
-                    {String.fromCharCode(65 + currentQ.answers.indexOf(answer))}
+                    {`F${currentQ.answers.indexOf(answer) + 1}`}
                   </span>
                   <span>{answer.text}</span>
                   {revealed && isCorrectAnswer && (

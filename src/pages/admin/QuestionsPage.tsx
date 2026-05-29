@@ -353,7 +353,7 @@ export function QuestionsPage() {
                           )}
                         >
                           <span className="font-semibold flex-shrink-0">
-                            {String.fromCharCode(65 + i)}.
+                            {`F${i + 1}.`}
                           </span>
                           <span className="line-clamp-1">{a.text}</span>
                         </div>
@@ -459,7 +459,7 @@ export function QuestionsPage() {
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-medium text-sm">
-                      {String.fromCharCode(65 + i)} javob
+                      {`F${i + 1}`} javob
                       {i < 2 && <span className="text-xs text-muted-foreground ml-1">(majburiy)</span>}
                     </span>
                     <div className="flex items-center gap-3">

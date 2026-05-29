@@ -498,7 +498,7 @@ function QuestionPicker({
                               : "text-muted-foreground"
                           }`}
                         >
-                          <span className="font-semibold flex-shrink-0">{String.fromCharCode(65 + i)}.</span>
+                          <span className="font-semibold flex-shrink-0">{`F${i + 1}.`}</span>
                           <span className="line-clamp-1">{a.text}</span>
                         </div>
                       ))}

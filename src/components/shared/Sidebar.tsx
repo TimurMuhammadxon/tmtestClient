@@ -1,20 +1,14 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard,
-  BookOpen,
-  TrendingUp,
-  CreditCard,
-  Users,
-  Link2,
-  FileText,
-  HelpCircle,
-  Settings,
-  LogOut,
   ChevronLeft,
   Menu,
-  GraduationCap,
-  MessageSquare,
+  LogOut,
   ClipboardList,
+  FileText,
+  MessageSquare,
+  BookOpen,
+  HelpCircle,
+  Settings,
   Banknote,
   UserCog,
 } from "lucide-react";
@@ -23,33 +17,35 @@ import { useAuthStore } from "@/store/auth";
 import { authApi } from "@/api/auth";
 import { t } from "@/lib/i18n";
 
+type IconType = React.ElementType | string;
+
 interface NavItem {
   to: string;
-  icon: React.ElementType;
+  icon: IconType;
   label: string;
   roles?: string[];
 }
 
 const navItems: NavItem[] = [
-  { to: "/dashboard", icon: LayoutDashboard, label: t.dashboard },
-  { to: "/progress", icon: TrendingUp, label: t.progress },
-  { to: "/subscription", icon: CreditCard, label: t.subscription },
-  { to: "/teacher-application", icon: ClipboardList, label: "O'qituvchi bo'lish" },
+  { to: "/dashboard",           icon: "/pravadrive-icon-umumiy.svg",      label: t.dashboard },
+  { to: "/progress",            icon: "/pravadrive-icon-natijalarim.svg", label: t.progress },
+  { to: "/subscription",        icon: "/pravadrive-icon-obuna.svg",       label: t.subscription },
+  { to: "/teacher-application", icon: ClipboardList,                      label: "O'qituvchi bo'lish" },
 ];
 
 const teacherItems: NavItem[] = [
-  { to: "/teacher/groups", icon: Users, label: t.groups },
-  { to: "/teacher/test-links", icon: Link2, label: t.testLinks },
+  { to: "/teacher/groups",      icon: "/pravadrive-icon-guruhlar.svg",  label: t.groups },
+  { to: "/teacher/test-links",  icon: "/pravadrive-icon-havolalar.svg", label: t.testLinks },
 ];
 
 const adminItems: NavItem[] = [
-  { to: "/admin/topics", icon: FileText, label: t.topics },
-  { to: "/admin/questions", icon: MessageSquare, label: "Savollar" },
-  { to: "/admin/bilets", icon: BookOpen, label: "Biletlar" },
-  { to: "/admin/applications", icon: HelpCircle, label: t.applications },
-  { to: "/admin/plans", icon: Settings, label: t.plans },
-  { to: "/admin/users", icon: UserCog, label: "Foydalanuvchilar", roles: ["Owner"] },
-  { to: "/admin/payments", icon: Banknote, label: "To'lovlar", roles: ["Owner"] },
+  { to: "/admin/topics",       icon: FileText,      label: t.topics },
+  { to: "/admin/questions",    icon: MessageSquare, label: "Savollar" },
+  { to: "/admin/bilets",       icon: BookOpen,      label: "Biletlar" },
+  { to: "/admin/applications", icon: HelpCircle,    label: t.applications },
+  { to: "/admin/plans",        icon: Settings,      label: t.plans },
+  { to: "/admin/users",        icon: UserCog,       label: "Foydalanuvchilar", roles: ["Owner"] },
+  { to: "/admin/payments",     icon: Banknote,      label: "To'lovlar",        roles: ["Owner"] },
 ];
 
 interface SidebarProps {
@@ -95,24 +91,19 @@ export function Sidebar({ collapsed, onToggle, mobile, onClose }: SidebarProps) 
       >
         {(!collapsed || mobile) && (
           <div className="flex items-center gap-2.5 min-w-0">
-            <div
-              style={{
-                background: "linear-gradient(135deg, #00f0ff, #7c3aed)",
-                boxShadow: "0 0 12px rgba(0, 240, 255, 0.4)",
-              }}
-              className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
-            >
-              <GraduationCap className="h-4 w-4 text-white" />
-            </div>
-            <div className="min-w-0">
-              <span
-                style={{ color: "#e2e8f0", fontSize: "13px", fontWeight: 600, letterSpacing: "0.01em" }}
-                className="truncate block"
-              >
-                pravadrive
-              </span>
-            </div>
+            <img
+              src="/pravadrive-logo-horizontal.svg"
+              alt="pravadrive"
+              style={{ height: 36, width: "auto", maxWidth: 150 }}
+            />
           </div>
+        )}
+        {collapsed && !mobile && (
+          <img
+            src="/pravadrive-symbol.svg"
+            alt="pravadrive"
+            style={{ height: 28, width: 28, margin: "0 auto" }}
+          />
         )}
         {!mobile && (
           <button
@@ -224,6 +215,8 @@ function SidebarLink({
   onClose?: () => void;
 }) {
   const Icon = item.icon;
+  const isImgIcon = typeof Icon === "string";
+
   return (
     <NavLink
       to={item.to}
@@ -250,10 +243,22 @@ function SidebarLink({
     >
       {({ isActive }) => (
         <>
-          <Icon
-            className="h-4 w-4 flex-shrink-0 transition-all duration-200"
-            style={isActive ? { filter: "drop-shadow(0 0 6px rgba(0, 240, 255, 0.6))" } : {}}
-          />
+          {isImgIcon ? (
+            <img
+              src={Icon as string}
+              alt=""
+              className="h-4 w-4 flex-shrink-0 transition-all duration-200"
+              style={{
+                opacity: isActive ? 1 : 0.6,
+                filter: isActive ? "drop-shadow(0 0 6px rgba(0, 240, 255, 0.6))" : "none",
+              }}
+            />
+          ) : (
+            <Icon
+              className="h-4 w-4 flex-shrink-0 transition-all duration-200"
+              style={isActive ? { filter: "drop-shadow(0 0 6px rgba(0, 240, 255, 0.6))" } : {}}
+            />
+          )}
           {!collapsed && (
             <span style={{ fontSize: "13px", fontWeight: isActive ? 600 : 400 }}>{item.label}</span>
           )}

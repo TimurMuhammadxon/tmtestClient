@@ -1,0 +1,25 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="neon" x1="20" y1="20" x2="180" y2="180" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#67E8F9"/>
+      <stop offset=".5" stop-color="#22D3EE"/>
+      <stop offset="1" stop-color="#3B82F6"/>
+    </linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="3.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <!-- steering wheel -->
+  <g fill="none" stroke="url(#neon)" stroke-width="11" stroke-linecap="round" filter="url(#glow)">
+    <circle cx="100" cy="100" r="62"/>
+    <line x1="100" y1="83" x2="100" y2="44"/>
+    <line x1="85" y1="109" x2="52" y2="128"/>
+    <line x1="115" y1="109" x2="148" y2="128"/>
+  </g>
+  <!-- hub -->
+  <circle cx="100" cy="100" r="17" fill="#070B16" stroke="url(#neon)" stroke-width="6" filter="url(#glow)"/>
+  <!-- top marker = forward / progress -->
+  <path d="M92 41 L100 29 L108 41" fill="none" stroke="#9BEEFF" stroke-width="7"
+        stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
+</svg>

@@ -23,7 +23,6 @@ export function LoginPage() {
   const setTokens = useAuthStore((s) => s.setTokens);
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [googleLoading, setGoogleLoading] = useState(false);
 
   const {
     register,
@@ -166,7 +165,6 @@ export function LoginPage() {
             shape="rectangular"
             onSuccess={async (credentialResponse) => {
               if (!credentialResponse.credential) return;
-              setGoogleLoading(true);
               setError(null);
               try {
                 const res = await authApi.googleLogin(credentialResponse.credential);
@@ -174,8 +172,6 @@ export function LoginPage() {
                 navigate("/dashboard");
               } catch {
                 setError("Google orqali kirishda xatolik yuz berdi");
-              } finally {
-                setGoogleLoading(false);
               }
             }}
             onError={() => setError("Google orqali kirishda xatolik yuz berdi")}
@@ -183,7 +179,7 @@ export function LoginPage() {
         </div>
 
         <a
-          href="https://t.me/HaydovchiTestUzBot"
+          href="https://t.me/pravadrive_bot"
           target="_blank"
           rel="noopener noreferrer"
           style={{

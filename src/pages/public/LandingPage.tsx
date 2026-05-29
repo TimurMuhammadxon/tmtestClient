@@ -70,27 +70,27 @@ const CSS = `
 
 const MODES = [
   {
-    id: "topics",   icon: "🗺️",  title: "Mavzular",
+    id: "topics", icon: "/pravadrive-icon-mavzular.svg", title: "Mavzular",
     desc: "Mavzu bo'yicha savollar · rivojlanishni kuzating",
     color: "#38bdf8", badge: "Tavsiya", to: "/topics",
   },
   {
-    id: "bilets",   icon: "📋",  title: "Biletlar",
+    id: "bilets", icon: "/pravadrive-icon-biletlar.svg", title: "Biletlar",
     desc: "Rasmiy 100 ta bilet · aniq tartibda",
-    color: "#10b981", badge: "100 ta",  to: "/bilets",
+    color: "#10b981", badge: "100 ta", to: "/bilets",
   },
   {
-    id: "exam",     icon: "🏁",  title: "Imtihon",
+    id: "exam", icon: "/pravadrive-icon-imtihon.svg", title: "Imtihon",
     desc: "20 ta savol · 25 daqiqa · 3 xato = rad etiladi",
-    color: "#ef4444", badge: "Rasmiy",  to: "/dashboard", flowType: 4,
+    color: "#ef4444", badge: "Rasmiy", to: "/dashboard", flowType: 4,
   },
   {
-    id: "marathon", icon: "⚡",  title: "Marafon",
+    id: "marathon", icon: "/pravadrive-icon-marafon.svg", title: "Marafon",
     desc: "Barcha faol savollar · vaqt chegarasi yo'q",
     color: "#f59e0b", badge: "Cheksiz", to: "/dashboard", flowType: 5,
   },
   {
-    id: "custom",   icon: "🔀",  title: "Ixtiyoriy",
+    id: "custom", icon: "/pravadrive-icon-ixtiyoriy.svg", title: "Ixtiyoriy",
     desc: "Mavzularni tanlang · savol sonini belgilang",
     color: "#8b5cf6", badge: "Sozlanadi", to: "/dashboard",
   },
@@ -99,10 +99,10 @@ const MODES = [
 // ─── Platform stats ───────────────────────────────────────────────────────────
 
 const STATS = [
-  { value: "700+",  label: "Savol",        icon: "📝" },
-  { value: "100",   label: "Rasmiy bilet", icon: "📋" },
-  { value: "42",    label: "Mavzu",        icon: "📚" },
-  { value: "5",     label: "Test rejimi",  icon: "🎮" },
+  { value: "1200+", label: "Savol", icon: "📝" },
+  { value: "60+", label: "Biletlar", icon: "📋" },
+  { value: "42", label: "Mavzular", icon: "📚" },
+  { value: "∞", label: "Imtihon", icon: "🎮" },
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -177,14 +177,8 @@ export function LandingPage() {
           <div className="lp-header-inner">
 
             {/* Logo */}
-            <div style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }} onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-              <div style={{ width: 38, height: 38, borderRadius: 10, background: "linear-gradient(135deg,#00f0ff,#6366f1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, boxShadow: "0 0 20px rgba(0,240,255,.3)", animation: "lp-float 4s ease-in-out infinite" }}>🚗</div>
-              <div>
-                <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: "-0.02em", background: "linear-gradient(135deg,#fff,#94a3b8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                  pravadrive
-                </div>
-                <div style={{ fontSize: 10, color: "#475569", marginTop: -2 }}>O'zbekiston · 2026</div>
-              </div>
+            <div style={{ display: "flex", alignItems: "center", cursor: "pointer" }} onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+              <img src="/pravadrive-logo-horizontal.svg" alt="pravadrive" style={{ height: 42, width: "auto" }} />
             </div>
 
             {/* Nav */}
@@ -194,6 +188,14 @@ export function LandingPage() {
                   <span className="lp-username" style={{ fontSize: 13, color: "#64748b", marginRight: 4 }}>
                     {user?.email?.split("@")[0]}
                   </span>
+                  <button
+                    className="lp-btn-outline"
+                    style={{ padding: "9px 16px", fontSize: 13, display: "flex", alignItems: "center", gap: 7 }}
+                    onClick={() => navigate("/subscription")}
+                  >
+                    <img src="/pravadrive-icon-obuna.svg" alt="" style={{ width: 16, height: 16 }} />
+                    Obuna
+                  </button>
                   <button
                     className="lp-btn-primary"
                     style={{ padding: "9px 22px", fontSize: 13 }}
@@ -251,11 +253,11 @@ export function LandingPage() {
               WebkitTextFillColor: "transparent",
               animation: "lp-shimmer 6s linear infinite",
             }}>
-              Imtihonga tayyor<br />bo'ling — birinchi urinishdan
+              Birinchi urinishdayoq<br />Imtihondan o'ting!
             </h1>
 
             <p style={{ fontSize: "clamp(15px, 2vw, 18px)", color: "#64748b", maxWidth: 560, margin: "0 auto 40px", lineHeight: 1.7 }}>
-              700+ savol, 100 ta rasmiy bilet, 5 ta test rejimi. Mavzular bo'yicha o'rganib, imtihon formatida mashq qiling.
+              1200+ savol, 60+ ta rasmiy bilet, Cheksiz test rejimi. Mavzular bo'yicha o'rganib, imtihon formatida mashq qiling.
             </p>
 
             <div className="lp-hero-btns">
@@ -312,8 +314,8 @@ export function LandingPage() {
               {isLoggedIn && hasAccess
                 ? "Rejimni tanlang va mashqni boshlang"
                 : isLoggedIn
-                ? "Barcha rejimlardan foydalanish uchun obuna kerak"
-                : "Barcha rejimlardan foydalanish uchun ro'yxatdan o'ting"}
+                  ? "Barcha rejimlardan foydalanish uchun obuna kerak"
+                  : "Barcha rejimlardan foydalanish uchun ro'yxatdan o'ting"}
             </p>
           </div>
 
@@ -345,11 +347,10 @@ export function LandingPage() {
                         background: `linear-gradient(135deg, ${mode.color}20, ${mode.color}10)`,
                         border: `1px solid ${mode.color}25`,
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        fontSize: 24,
                         boxShadow: hovered ? `0 0 20px ${mode.color}25` : "none",
                         transition: "box-shadow .3s",
                       }}>
-                        {mode.icon}
+                        <img src={mode.icon} alt={mode.title} style={{ width: 28, height: 28 }} />
                       </div>
                     </div>
 
@@ -420,7 +421,7 @@ export function LandingPage() {
         <footer style={{ borderTop: "1px solid rgba(255,255,255,.06)", padding: "32px 28px" }}>
           <div style={{ maxWidth: 1280, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ width: 28, height: 28, borderRadius: 7, background: "linear-gradient(135deg,#00f0ff,#6366f1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>🚗</div>
+              <img src="/pravadrive-symbol.svg" alt="pravadrive" style={{ height: 24, width: 24 }} />
               <span style={{ fontSize: 13, fontWeight: 600, color: "#475569" }}>pravadrive · O'zbekiston 2026</span>
             </div>
             <span style={{ fontSize: 12, color: "#334155" }}>Haydovchilik imtihoniga professional tayyorlanish</span>

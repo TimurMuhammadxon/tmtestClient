@@ -120,12 +120,14 @@ const CSS = `
   .dp-main-grid{display:grid;grid-template-columns:1fr 340px;gap:18px}
   .dp-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px}
   .dp-exam-btn{padding:10px 20px;border-radius:12px;background:linear-gradient(135deg,rgba(0,240,255,.12),rgba(99,102,241,.12));border:1px solid rgba(0,240,255,.2);font-size:13px;font-weight:600;color:#00f0ff;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .3s;white-space:nowrap}
+  .dp-header-btns{display:flex;gap:10px;align-items:center}
   @media(max-width:640px){
     .dp-container{padding:16px}
     .dp-stats-grid{grid-template-columns:repeat(2,1fr);gap:10px}
     .dp-main-grid{grid-template-columns:1fr}
     .dp-header{flex-direction:column;align-items:flex-start;gap:14px;margin-bottom:20px}
-    .dp-exam-btn{width:100%;justify-content:center}
+    .dp-header-btns{width:100%}
+    .dp-exam-btn{flex:1;justify-content:center}
   }
 `;
 
@@ -139,6 +141,7 @@ export function DashboardPage() {
   const [activeTab, setActiveTab] = useState<"overview" | "bilets" | "topics">("overview");
   const [mounted, setMounted] = useState(false);
   const [starting, setStarting] = useState<string | null>(null);
+  const [subModal, setSubModal] = useState(false);
   const [customOpen, setCustomOpen] = useState(false);
   const [linkMode, setLinkMode] = useState<{ flowType: number; title: string } | null>(null);
   const [linkBilet, setLinkBilet] = useState<PublicBiletListItemDto | null>(null);
@@ -172,8 +175,14 @@ export function DashboardPage() {
       const { id } = await attemptsApi.start({ flowType, ...extra });
       navigate(`/attempts/${id}`);
     } catch (e: unknown) {
-      const msg = (e as any)?.response?.data?.detail ?? (e as any)?.response?.data?.title;
-      toast({ variant: "destructive", title: msg ?? "Test boshlanmadi. Qayta urinib ko'ring." });
+      const status = (e as any)?.response?.status;
+      const detail = (e as any)?.response?.data?.detail ?? "";
+      if (status === 409 && detail.toLowerCase().includes("subscription")) {
+        setSubModal(true);
+      } else {
+        const msg = (e as any)?.response?.data?.title ?? detail;
+        toast({ variant: "destructive", title: msg ?? "Test boshlanmadi. Qayta urinib ko'ring." });
+      }
     } finally {
       setStarting(null);
     }
@@ -227,35 +236,51 @@ export function DashboardPage() {
         <div className="dp-header" style={{ animation: mounted ? "dp-fadeIn .6s ease" : "none" }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
-              <div style={{ width: 42, height: 42, borderRadius: 11, background: "linear-gradient(135deg,#00f0ff,#6366f1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, boxShadow: "0 0 24px rgba(0,240,255,.3)" }}>🚗</div>
-              <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: "-0.02em", background: "linear-gradient(135deg,#fff 0%,#94a3b8 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                pravadrive
-              </h1>
+              <img src="/pravadrive-logo-horizontal.svg" alt="pravadrive" style={{ height: 40, width: "auto" }} />
             </div>
             <p style={{ fontSize: 13, color: "#64748b", marginLeft: 54 }}>
               Salom, <span style={{ color: "#94a3b8", fontWeight: 500 }}>{user?.email?.split("@")[0]}</span>! Bugun ham mashq qilamizmi?
             </p>
           </div>
-          <button
-            disabled={!!starting}
-            onClick={() => startFlow(4)}
-            className="dp-exam-btn"
-            style={{
-              fontFamily: "inherit",
-              cursor: starting ? "wait" : "pointer",
-              opacity: starting === "4" ? 0.7 : 1,
-            }}
-          >
-            ⚡ {starting === "4" ? "Yuklanmoqda..." : "Imtihon boshlash"}
-          </button>
+          <div className="dp-header-btns">
+            <button
+              onClick={() => navigate("/subscription")}
+              style={{
+                padding: "10px 16px", borderRadius: 12,
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                color: "#94a3b8", cursor: "pointer",
+                fontFamily: "inherit", transition: "all .3s",
+                display: "flex", alignItems: "center", gap: 8,
+                fontSize: 13, fontWeight: 600,
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(0,240,255,0.3)"; e.currentTarget.style.color = "#00f0ff"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "#94a3b8"; }}
+            >
+              <img src="/pravadrive-icon-obuna.svg" alt="" style={{ width: 18, height: 18 }} />
+              Obuna
+            </button>
+            <button
+              disabled={!!starting}
+              onClick={() => startFlow(4)}
+              className="dp-exam-btn"
+              style={{
+                fontFamily: "inherit",
+                cursor: starting ? "wait" : "pointer",
+                opacity: starting === "4" ? 0.7 : 1,
+              }}
+            >
+              ⚡ {starting === "4" ? "Yuklanmoqda..." : "Imtihon boshlash"}
+            </button>
+          </div>
         </div>
 
         {/* ── Stats cards ── */}
         <div className="dp-stats-grid" style={{ animation: mounted ? "dp-slideUp .6s ease .1s both" : "none" }}>
           {([
-            { label: "Imtihon ehtimoli", value: examPrediction, suffix: "%", color: "#00f0ff", icon: "🎯", sub: examPrediction >= 70 ? "Zo'r natija!" : "Ko'proq mashq" },
-            { label: "To'g'rilik darajasi", value: accuracy, suffix: "%", color: "#10b981", icon: "⭐", sub: `${totalAnswered} ta javob berildi` },
-            { label: "To'g'ri javoblar", value: totalCorrect, suffix: "", color: "#8b5cf6", icon: "📝", sub: `${totalAnswered} ta savoldan` },
+            { label: "Imtihon ehtimoli", value: examPrediction, suffix: "%", color: "#00f0ff", icon: "/pravadrive-icon-otish-ehtimoli.svg", sub: examPrediction >= 70 ? "Zo'r natija!" : "Ko'proq mashq" },
+            { label: "To'g'rilik darajasi", value: accuracy, suffix: "%", color: "#10b981", icon: "/pravadrive-icon-togrilik.svg", sub: `${totalAnswered} ta javob berildi` },
+            { label: "To'g'ri javoblar", value: totalCorrect, suffix: "", color: "#8b5cf6", icon: "/pravadrive-icon-natijalarim.svg", sub: `${totalAnswered} ta savoldan` },
             { label: "Ketma-ket kunlar", value: streak, suffix: "", color: "#f59e0b", icon: "🔥", sub: `Rekord: ${dashboard?.longestStreak ?? 0} kun` },
           ] as const).map((card, i) => (
             <div
@@ -267,7 +292,11 @@ export function DashboardPage() {
               <div style={{ position: "absolute", top: -20, right: -20, width: 80, height: 80, borderRadius: "50%", background: `radial-gradient(circle,${card.color}08,transparent)` }} />
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
                 <span style={{ fontSize: 11, color: "#64748b", fontWeight: 500 }}>{card.label}</span>
-                <span style={{ fontSize: 18 }}>{card.icon}</span>
+                {card.icon.startsWith("/") ? (
+                  <img src={card.icon} alt="" style={{ width: 22, height: 22 }} />
+                ) : (
+                  <span style={{ fontSize: 18 }}>{card.icon}</span>
+                )}
               </div>
               <div style={{ fontSize: 32, fontWeight: 800, color: card.color, marginBottom: 4, textShadow: `0 0 30px ${card.color}40`, fontFamily: "'JetBrains Mono', monospace" }}>
                 <AnimatedNumber value={card.value} suffix={card.suffix} />
@@ -549,9 +578,9 @@ export function DashboardPage() {
               </h3>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {([
-                  { label: "Imtihon rejimi", icon: "🏁", color: "#ef4444", desc: "20 ta savol · 25 daqiqa", flowKey: "4", flowType: 4, teacherLabel: "Imtihon" },
-                  { label: "Marafon", icon: "⚡", color: "#f59e0b", desc: "Barcha faol savollar", flowKey: "5", flowType: 5, teacherLabel: "Marafon" },
-                  { label: "Ixtiyoriy test", icon: "🔀", color: "#8b5cf6", desc: "Mavzularni tanlang", flowKey: "custom", flowType: 3 as const, teacherLabel: null },
+                  { label: "Imtihon rejimi", icon: "/pravadrive-icon-imtihon.svg", color: "#ef4444", desc: "20 ta savol · 25 daqiqa", flowKey: "4", flowType: 4, teacherLabel: "Imtihon" },
+                  { label: "Marafon", icon: "/pravadrive-icon-marafon.svg", color: "#f59e0b", desc: "Barcha faol savollar", flowKey: "5", flowType: 5, teacherLabel: "Marafon" },
+                  { label: "Ixtiyoriy test", icon: "/pravadrive-icon-ixtiyoriy.svg", color: "#8b5cf6", desc: "Mavzularni tanlang", flowKey: "custom", flowType: 3 as const, teacherLabel: null },
                 ] as const).map((action, i) => (
                   <div
                     key={i}
@@ -572,7 +601,7 @@ export function DashboardPage() {
                     onMouseEnter={(e) => { if (!starting) { e.currentTarget.style.borderColor = action.color + "35"; e.currentTarget.style.transform = "translateX(3px)"; e.currentTarget.style.boxShadow = `0 4px 20px ${action.color}15`; } }}
                     onMouseLeave={(e) => { e.currentTarget.style.borderColor = action.color + "18"; e.currentTarget.style.transform = "translateX(0)"; e.currentTarget.style.boxShadow = "none"; }}
                   >
-                    <span style={{ fontSize: 16 }}>{action.icon}</span>
+                    <img src={action.icon} alt="" style={{ width: 28, height: 28, flexShrink: 0 }} />
                     <div style={{ flex: 1 }}>
                       <div style={{ fontWeight: 600, fontSize: 12, color: "#e2e8f0" }}>
                         {starting === action.flowKey ? "Yuklanmoqda..." : action.label}
@@ -651,6 +680,46 @@ export function DashboardPage() {
       )}
       {linkTopic && (
         <CreateTestLinkDialog open onClose={() => setLinkTopic(null)} defaultTitle={linkTopic.topicName} flowType={2} topicIds={[linkTopic.topicId]} />
+      )}
+
+      {/* Subscription modal */}
+      {subModal && (
+        <div
+          style={{ position: "fixed", inset: 0, zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}
+          onClick={() => setSubModal(false)}
+        >
+          <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,.7)", backdropFilter: "blur(8px)" }} />
+          <div
+            style={{
+              position: "relative", zIndex: 1,
+              background: "#111117", border: "1px solid rgba(255,255,255,.1)",
+              borderRadius: 24, padding: 40, maxWidth: 380, width: "100%",
+              boxShadow: "0 24px 80px rgba(0,0,0,.6)",
+              textAlign: "center",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setSubModal(false)}
+              style={{ position: "absolute", top: 16, right: 16, width: 28, height: 28, borderRadius: 8, border: "1px solid rgba(255,255,255,.1)", background: "rgba(255,255,255,.04)", cursor: "pointer", color: "#64748b", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}
+            >×</button>
+            <img src="/pravadrive-icon-obuna.svg" alt="" style={{ width: 56, height: 56, margin: "0 auto 16px" }} />
+            <h3 style={{ fontSize: 20, fontWeight: 700, color: "#e2e8f0", marginBottom: 8 }}>Obuna kerak</h3>
+            <p style={{ fontSize: 14, color: "#64748b", marginBottom: 28, lineHeight: 1.6 }}>
+              Barcha test rejimlaridan foydalanish uchun faol obuna kerak
+            </p>
+            <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+              <button
+                onClick={() => setSubModal(false)}
+                style={{ padding: "10px 20px", borderRadius: 10, background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.1)", color: "#94a3b8", cursor: "pointer", fontSize: 14, fontFamily: "inherit" }}
+              >Yopish</button>
+              <button
+                onClick={() => { setSubModal(false); navigate("/subscription"); }}
+                style={{ padding: "10px 20px", borderRadius: 10, background: "linear-gradient(135deg,#00f0ff,#6366f1)", border: "none", color: "#0a0a0f", cursor: "pointer", fontSize: 14, fontWeight: 700, fontFamily: "inherit" }}
+              >Obuna olish →</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

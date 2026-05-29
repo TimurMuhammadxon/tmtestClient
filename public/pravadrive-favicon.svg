@@ -1,0 +1,16 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="neon" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#67E8F9"/>
+      <stop offset="1" stop-color="#3B82F6"/>
+    </linearGradient>
+  </defs>
+  <!-- simplified: thicker strokes, drop fine detail for legibility at 16px -->
+  <g fill="none" stroke="url(#neon)" stroke-width="8" stroke-linecap="round">
+    <circle cx="50" cy="50" r="34"/>
+    <line x1="50" y1="42" x2="50" y2="24"/>
+    <line x1="42" y1="55" x2="27" y2="65"/>
+    <line x1="58" y1="55" x2="73" y2="65"/>
+  </g>
+  <circle cx="50" cy="50" r="9" fill="#070B16" stroke="url(#neon)" stroke-width="4"/>
+</svg>

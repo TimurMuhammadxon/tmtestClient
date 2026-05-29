@@ -38,7 +38,7 @@ export function AppLayout() {
           <Button variant="ghost" size="icon" onClick={() => setMobileOpen(true)}>
             <Menu className="h-5 w-5" />
           </Button>
-          <span className="font-semibold text-sm">pravadrive</span>
+          <img src="/pravadrive-logo-horizontal.svg" alt="pravadrive" style={{ height: 30, width: "auto" }} />
         </header>
 
         {/* Page content */}
