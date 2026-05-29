@@ -45,6 +45,25 @@ const CSS = `
     transition:all .35s cubic-bezier(.4,0,.2,1);
   }
   .lp-mode-card:hover{transform:translateY(-4px)}
+  .lp-mode-card-inner{display:flex;flex-direction:column}
+  .lp-modes-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .lp-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,.07);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+  .lp-hero-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+  .lp-nav{display:flex;align-items:center;gap:8px}
+  .lp-header-inner{max-width:1280px;margin:0 auto;padding:0 28px;height:64px;display:flex;align-items:center;justify-content:space-between}
+  @media(max-width:640px){
+    .lp-modes-grid{grid-template-columns:1fr;gap:12px}
+    .lp-modes-grid>*{grid-column:auto!important}
+    .lp-mode-card{padding:16px 18px;border-radius:16px;height:auto}
+    .lp-mode-card:hover{transform:none}
+    .lp-mode-card-inner{flex-direction:row;align-items:center;gap:16px}
+    .lp-stats-grid{grid-template-columns:repeat(2,1fr)}
+    .lp-hero-btns{flex-direction:column;align-items:stretch;padding:0 4px}
+    .lp-btn-primary,.lp-btn-outline{width:100%;text-align:center}
+    .lp-nav .lp-username{display:none}
+    .lp-header-inner{padding:0 16px}
+    section,.lp-stats-wrap{padding-left:16px!important;padding-right:16px!important}
+  }
 `;
 
 // ─── Mode definitions ─────────────────────────────────────────────────────────
@@ -155,7 +174,7 @@ export function LandingPage() {
           backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)",
           background: "rgba(10,10,15,.7)",
         }}>
-          <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 28px", height: 64, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div className="lp-header-inner">
 
             {/* Logo */}
             <div style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }} onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
@@ -169,10 +188,10 @@ export function LandingPage() {
             </div>
 
             {/* Nav */}
-            <nav style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <nav className="lp-nav" style={{ gap: 8 }}>
               {isLoggedIn ? (
                 <>
-                  <span style={{ fontSize: 13, color: "#64748b", marginRight: 4 }}>
+                  <span className="lp-username" style={{ fontSize: 13, color: "#64748b", marginRight: 4 }}>
                     {user?.email?.split("@")[0]}
                   </span>
                   <button
@@ -239,7 +258,7 @@ export function LandingPage() {
               700+ savol, 100 ta rasmiy bilet, 5 ta test rejimi. Mavzular bo'yicha o'rganib, imtihon formatida mashq qiling.
             </p>
 
-            <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
+            <div className="lp-hero-btns">
               <button
                 className="lp-btn-primary"
                 style={{ fontSize: 15, padding: "14px 36px" }}
@@ -261,13 +280,8 @@ export function LandingPage() {
         </section>
 
         {/* ── Stats strip ── */}
-        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 28px 80px", animation: mounted ? "lp-fadeUp .8s ease .15s both" : "none" }}>
-          <div style={{
-            display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 2,
-            borderRadius: 20, overflow: "hidden",
-            border: "1px solid rgba(255,255,255,.07)",
-            backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
-          }}>
+        <div className="lp-stats-wrap" style={{ maxWidth: 1280, margin: "0 auto", padding: "0 28px 80px", animation: mounted ? "lp-fadeUp .8s ease .15s both" : "none" }}>
+          <div className="lp-stats-grid">
             {STATS.map((s, i) => (
               <div
                 key={i}
@@ -303,12 +317,7 @@ export function LandingPage() {
             </p>
           </div>
 
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: 16,
-            animation: mounted ? "lp-fadeUp .8s ease .25s both" : "none",
-          }}>
+          <div className="lp-modes-grid" style={{ animation: mounted ? "lp-fadeUp .8s ease .25s both" : "none" }}>
             {MODES.map((mode, i) => {
               const hovered = hoveredMode === mode.id;
               const locked = !isLoggedIn || !hasAccess;
@@ -328,57 +337,55 @@ export function LandingPage() {
                   {/* Glow bg */}
                   <div style={{ position: "absolute", top: -30, right: -30, width: 120, height: 120, borderRadius: "50%", background: `radial-gradient(circle,${mode.color}10,transparent)`, transition: "opacity .3s", opacity: hovered ? 1 : 0 }} />
 
-                  {/* Header row */}
-                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
-                    <div style={{
-                      width: 52, height: 52, borderRadius: 14,
-                      background: `linear-gradient(135deg, ${mode.color}20, ${mode.color}10)`,
-                      border: `1px solid ${mode.color}25`,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 24,
-                      boxShadow: hovered ? `0 0 20px ${mode.color}25` : "none",
-                      transition: "box-shadow .3s",
-                    }}>
-                      {mode.icon}
+                  <div className="lp-mode-card-inner">
+                    {/* Icon */}
+                    <div style={{ flexShrink: 0 }}>
+                      <div style={{
+                        width: 52, height: 52, borderRadius: 14,
+                        background: `linear-gradient(135deg, ${mode.color}20, ${mode.color}10)`,
+                        border: `1px solid ${mode.color}25`,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: 24,
+                        boxShadow: hovered ? `0 0 20px ${mode.color}25` : "none",
+                        transition: "box-shadow .3s",
+                      }}>
+                        {mode.icon}
+                      </div>
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 10px", borderRadius: 100, background: `${mode.color}15`, color: mode.color, letterSpacing: "0.04em", textTransform: "uppercase" }}>
-                        {mode.badge}
-                      </span>
-                      {locked && (
-                        <span style={{ fontSize: 14, opacity: 0.5 }}>🔒</span>
-                      )}
-                    </div>
-                  </div>
 
-                  {/* Title + desc */}
-                  <h3 style={{ fontSize: 18, fontWeight: 700, color: "#e2e8f0", marginBottom: 8, letterSpacing: "-0.01em" }}>
-                    {mode.title}
-                  </h3>
-                  <p style={{ fontSize: 13, color: "#64748b", lineHeight: 1.6, marginBottom: 20 }}>
-                    {mode.desc}
-                  </p>
-
-                  {/* CTA row */}
-                  <div style={{
-                    display: "flex", alignItems: "center", gap: 8,
-                    fontSize: 13, fontWeight: 600,
-                    color: locked ? "#475569" : mode.color,
-                    transition: "gap .2s",
-                  }}>
-                    {locked ? (
-                      <>
-                        <span style={{ fontSize: 12 }}>🔒</span>
-                        <span>{!isLoggedIn ? "Kirish kerak" : "Obuna kerak"}</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>▶</span>
-                        <span style={{ transition: "transform .2s", transform: hovered ? "translateX(4px)" : "translateX(0)" }}>
-                          Boshlash
+                    {/* Text content */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                        <h3 style={{ fontSize: 17, fontWeight: 700, color: "#e2e8f0", letterSpacing: "-0.01em", margin: 0 }}>
+                          {mode.title}
+                        </h3>
+                        <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 100, background: `${mode.color}15`, color: mode.color, letterSpacing: "0.04em", textTransform: "uppercase", flexShrink: 0 }}>
+                          {mode.badge}
                         </span>
-                      </>
-                    )}
+                      </div>
+                      <p style={{ fontSize: 12, color: "#64748b", lineHeight: 1.5, margin: "0 0 10px" }}>
+                        {mode.desc}
+                      </p>
+                      <div style={{
+                        display: "flex", alignItems: "center", gap: 6,
+                        fontSize: 12, fontWeight: 600,
+                        color: locked ? "#475569" : mode.color,
+                      }}>
+                        {locked ? (
+                          <>
+                            <span style={{ fontSize: 11 }}>🔒</span>
+                            <span>{!isLoggedIn ? "Kirish kerak" : "Obuna kerak"}</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>▶</span>
+                            <span style={{ transition: "transform .2s", transform: hovered ? "translateX(4px)" : "translateX(0)" }}>
+                              Boshlash
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               );

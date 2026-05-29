@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link, useNavigate } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuthStore } from "@/store/auth";
@@ -22,6 +23,7 @@ export function LoginPage() {
   const setTokens = useAuthStore((s) => s.setTokens);
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const {
     register,
@@ -147,6 +149,75 @@ export function LoginPage() {
           {isSubmitting ? "Yuklanmoqda..." : t.login}
         </button>
       </form>
+
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ flex: 1, height: "1px", background: "rgba(255,255,255,0.07)" }} />
+        <span style={{ fontSize: "12px", color: "rgba(148,163,184,0.4)" }}>yoki</span>
+        <div style={{ flex: 1, height: "1px", background: "rgba(255,255,255,0.07)" }} />
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <GoogleLogin
+            theme="filled_black"
+            size="large"
+            width="100%"
+            text="signin_with"
+            shape="rectangular"
+            onSuccess={async (credentialResponse) => {
+              if (!credentialResponse.credential) return;
+              setGoogleLoading(true);
+              setError(null);
+              try {
+                const res = await authApi.googleLogin(credentialResponse.credential);
+                setTokens(res.accessToken, res.refreshToken);
+                navigate("/dashboard");
+              } catch {
+                setError("Google orqali kirishda xatolik yuz berdi");
+              } finally {
+                setGoogleLoading(false);
+              }
+            }}
+            onError={() => setError("Google orqali kirishda xatolik yuz berdi")}
+          />
+        </div>
+
+        <a
+          href="https://t.me/HaydovchiTestUzBot"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "10px",
+            width: "100%",
+            padding: "10px 16px",
+            borderRadius: "8px",
+            background: "rgba(0,136,204,0.12)",
+            border: "1px solid rgba(0,136,204,0.25)",
+            color: "#40b3e0",
+            fontSize: "14px",
+            fontWeight: 600,
+            textDecoration: "none",
+            fontFamily: "'Outfit', sans-serif",
+            transition: "all 0.2s",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "rgba(0,136,204,0.2)";
+            e.currentTarget.style.borderColor = "rgba(0,136,204,0.4)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "rgba(0,136,204,0.12)";
+            e.currentTarget.style.borderColor = "rgba(0,136,204,0.25)";
+          }}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.19 13.65l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.958.909z"/>
+          </svg>
+          Telegram orqali kirish
+        </a>
+      </div>
 
       <p style={{ textAlign: "center", fontSize: "13px", color: "rgba(148, 163, 184, 0.5)" }}>
         {t.noAccount}{" "}

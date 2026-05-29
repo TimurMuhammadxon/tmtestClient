@@ -115,6 +115,18 @@ const CSS = `
   .dp-root *{box-sizing:border-box}
   .dp-root::-webkit-scrollbar{width:6px}
   .dp-root::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+  .dp-container{padding:28px}
+  .dp-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+  .dp-main-grid{display:grid;grid-template-columns:1fr 340px;gap:18px}
+  .dp-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px}
+  .dp-exam-btn{padding:10px 20px;border-radius:12px;background:linear-gradient(135deg,rgba(0,240,255,.12),rgba(99,102,241,.12));border:1px solid rgba(0,240,255,.2);font-size:13px;font-weight:600;color:#00f0ff;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .3s;white-space:nowrap}
+  @media(max-width:640px){
+    .dp-container{padding:16px}
+    .dp-stats-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+    .dp-main-grid{grid-template-columns:1fr}
+    .dp-header{flex-direction:column;align-items:flex-start;gap:14px;margin-bottom:20px}
+    .dp-exam-btn{width:100%;justify-content:center}
+  }
 `;
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
@@ -209,10 +221,10 @@ export function DashboardPage() {
         <div style={{ position: "absolute", top: "40%", right: "20%", width: "30vw", height: "30vw", borderRadius: "50%", background: "radial-gradient(circle,rgba(245,158,11,.03) 0%,transparent 70%)", filter: "blur(60px)", animation: "dp-pulse1 14s ease-in-out infinite reverse" }} />
       </div>
 
-      <div style={{ position: "relative", zIndex: 1, maxWidth: 1400, margin: "0 auto", padding: "28px 28px" }}>
+      <div className="dp-container" style={{ position: "relative", zIndex: 1, maxWidth: 1400, margin: "0 auto" }}>
 
         {/* ── Header ── */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32, animation: mounted ? "dp-fadeIn .6s ease" : "none" }}>
+        <div className="dp-header" style={{ animation: mounted ? "dp-fadeIn .6s ease" : "none" }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
               <div style={{ width: 42, height: 42, borderRadius: 11, background: "linear-gradient(135deg,#00f0ff,#6366f1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, boxShadow: "0 0 24px rgba(0,240,255,.3)" }}>🚗</div>
@@ -227,13 +239,10 @@ export function DashboardPage() {
           <button
             disabled={!!starting}
             onClick={() => startFlow(4)}
+            className="dp-exam-btn"
             style={{
-              padding: "10px 20px", borderRadius: 12,
-              background: "linear-gradient(135deg,rgba(0,240,255,.12),rgba(99,102,241,.12))",
-              border: "1px solid rgba(0,240,255,.2)", fontSize: 13, fontWeight: 600,
-              color: "#00f0ff", cursor: starting ? "wait" : "pointer",
-              fontFamily: "inherit", transition: "all .3s",
-              display: "flex", alignItems: "center", gap: 8,
+              fontFamily: "inherit",
+              cursor: starting ? "wait" : "pointer",
               opacity: starting === "4" ? 0.7 : 1,
             }}
           >
@@ -242,7 +251,7 @@ export function DashboardPage() {
         </div>
 
         {/* ── Stats cards ── */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 24, animation: mounted ? "dp-slideUp .6s ease .1s both" : "none" }}>
+        <div className="dp-stats-grid" style={{ animation: mounted ? "dp-slideUp .6s ease .1s both" : "none" }}>
           {([
             { label: "Imtihon ehtimoli", value: examPrediction, suffix: "%", color: "#00f0ff", icon: "🎯", sub: examPrediction >= 70 ? "Zo'r natija!" : "Ko'proq mashq" },
             { label: "To'g'rilik darajasi", value: accuracy, suffix: "%", color: "#10b981", icon: "⭐", sub: `${totalAnswered} ta javob berildi` },
@@ -269,7 +278,7 @@ export function DashboardPage() {
         </div>
 
         {/* ── Main grid ── */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 18, animation: mounted ? "dp-slideUp .6s ease .2s both" : "none" }}>
+        <div className="dp-main-grid" style={{ animation: mounted ? "dp-slideUp .6s ease .2s both" : "none" }}>
 
           {/* ── Left panel ── */}
           <div style={panel({ padding: 26 })}>

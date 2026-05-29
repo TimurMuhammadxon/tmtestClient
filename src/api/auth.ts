@@ -13,4 +13,10 @@ export const authApi = {
 
   refresh: (refreshToken: string) =>
     api.post<AuthResponse>("/auth/refresh", { refreshToken }).then((r) => r.data),
+
+  telegramLogin: (initData: string) =>
+    api.post<AuthResponse>("/auth/telegram", { initData }).then((r) => r.data),
+
+  googleLogin: (idToken: string) =>
+    api.post<AuthResponse>("/auth/google", { idToken }).then((r) => r.data),
 };
