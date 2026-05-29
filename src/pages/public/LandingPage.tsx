@@ -181,7 +181,7 @@ export function LandingPage() {
               <div style={{ width: 38, height: 38, borderRadius: 10, background: "linear-gradient(135deg,#00f0ff,#6366f1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, boxShadow: "0 0 20px rgba(0,240,255,.3)", animation: "lp-float 4s ease-in-out infinite" }}>🚗</div>
               <div>
                 <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: "-0.02em", background: "linear-gradient(135deg,#fff,#94a3b8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                  Haydovchi Test
+                  pravadrive
                 </div>
                 <div style={{ fontSize: 10, color: "#475569", marginTop: -2 }}>O'zbekiston · 2026</div>
               </div>
@@ -421,7 +421,7 @@ export function LandingPage() {
           <div style={{ maxWidth: 1280, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <div style={{ width: 28, height: 28, borderRadius: 7, background: "linear-gradient(135deg,#00f0ff,#6366f1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>🚗</div>
-              <span style={{ fontSize: 13, fontWeight: 600, color: "#475569" }}>Haydovchi Test · O'zbekiston 2026</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: "#475569" }}>pravadrive · O'zbekiston 2026</span>
             </div>
             <span style={{ fontSize: 12, color: "#334155" }}>Haydovchilik imtihoniga professional tayyorlanish</span>
           </div>

@@ -229,7 +229,7 @@ export function DashboardPage() {
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
               <div style={{ width: 42, height: 42, borderRadius: 11, background: "linear-gradient(135deg,#00f0ff,#6366f1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, boxShadow: "0 0 24px rgba(0,240,255,.3)" }}>🚗</div>
               <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: "-0.02em", background: "linear-gradient(135deg,#fff 0%,#94a3b8 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                Haydovchi Test
+                pravadrive
               </h1>
             </div>
             <p style={{ fontSize: 13, color: "#64748b", marginLeft: 54 }}>

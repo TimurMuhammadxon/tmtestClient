@@ -109,7 +109,7 @@ export function Sidebar({ collapsed, onToggle, mobile, onClose }: SidebarProps) 
                 style={{ color: "#e2e8f0", fontSize: "13px", fontWeight: 600, letterSpacing: "0.01em" }}
                 className="truncate block"
               >
-                Haydovchi Test
+                pravadrive
               </span>
             </div>
           </div>

@@ -38,7 +38,7 @@ export function AppLayout() {
           <Button variant="ghost" size="icon" onClick={() => setMobileOpen(true)}>
             <Menu className="h-5 w-5" />
           </Button>
-          <span className="font-semibold text-sm">Haydovchi Test</span>
+          <span className="font-semibold text-sm">pravadrive</span>
         </header>
 
         {/* Page content */}
