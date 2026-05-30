@@ -186,7 +186,7 @@ export function LandingPage() {
               {isLoggedIn ? (
                 <>
                   <span className="lp-username" style={{ fontSize: 13, color: "#64748b", marginRight: 4 }}>
-                    {user?.email?.split("@")[0]}
+                    {user?.firstName ?? user?.email?.split("@")[0]}
                   </span>
                   <button
                     className="lp-btn-outline"

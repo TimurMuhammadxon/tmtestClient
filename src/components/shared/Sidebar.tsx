@@ -1,4 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import {
   ChevronLeft,
   Menu,
@@ -15,6 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth";
 import { authApi } from "@/api/auth";
+import { profileApi } from "@/api/profile";
 import { t } from "@/lib/i18n";
 
 type IconType = React.ElementType | string;
@@ -68,11 +70,18 @@ export function Sidebar({ collapsed, onToggle, mobile, onClose }: SidebarProps) 
     }
   };
 
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const isTeacher = user && ["Teacher", "Admin", "SuperAdmin", "Owner"].includes(user.role);
   const isAdmin = user && ["Admin", "SuperAdmin", "Owner"].includes(user.role);
-  const initials = user?.email?.slice(0, 2).toUpperCase() ?? "U";
+  const displayName = user?.firstName
+    ? `${user.firstName}${user.lastName ? " " + user.lastName : ""}`
+    : user?.email?.split("@")[0] ?? "";
+  const initials = user?.firstName
+    ? user.firstName.slice(0, 1).toUpperCase() + (user.lastName?.slice(0, 1).toUpperCase() ?? "")
+    : user?.email?.slice(0, 2).toUpperCase() ?? "U";
 
   return (
+    <>
     <aside
       style={{
         background: "linear-gradient(180deg, #0d0d16 0%, #0a0a12 100%)",
@@ -186,10 +195,20 @@ export function Sidebar({ collapsed, onToggle, mobile, onClose }: SidebarProps) 
           {(!collapsed || mobile) && (
             <div className="flex-1 min-w-0">
               <p style={{ color: "#e2e8f0", fontSize: "12px", fontWeight: 500 }} className="truncate">
-                {user?.email}
+                {displayName}
               </p>
               <p style={{ color: "rgba(148, 163, 184, 0.5)", fontSize: "11px" }}>{user?.role}</p>
             </div>
+          )}
+          {(!collapsed || mobile) && (
+            <button
+              onClick={() => setSettingsOpen(true)}
+              title="Sozlash"
+              style={{ color: "rgba(148, 163, 184, 0.4)" }}
+              className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/5 hover:text-slate-300 transition-colors"
+            >
+              <Settings className="h-4 w-4" />
+            </button>
           )}
           <button
             onClick={handleLogout}
@@ -202,6 +221,121 @@ export function Sidebar({ collapsed, onToggle, mobile, onClose }: SidebarProps) 
         </div>
       </div>
     </aside>
+
+    {settingsOpen && (
+      <SettingsModal
+        user={user}
+        onClose={() => setSettingsOpen(false)}
+      />
+    )}
+    </>
+  );
+}
+
+function SettingsModal({ user, onClose }: { user: ReturnType<typeof useAuthStore>["user"]; onClose: () => void }) {
+  const setTokens = useAuthStore((s) => s.setTokens);
+  const accessToken = useAuthStore((s) => s.accessToken);
+  const refreshToken = useAuthStore((s) => s.refreshToken);
+  const [firstName, setFirstName] = useState(user?.firstName ?? "");
+  const [lastName, setLastName] = useState(user?.lastName ?? "");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSave = async () => {
+    setSaving(true);
+    setError(null);
+    try {
+      await profileApi.update(firstName || null, lastName || null);
+      // refresh токен чтобы JWT обновился с новым именем
+      if (refreshToken) {
+        const { data } = await import("axios").then(({ default: ax }) =>
+          ax.post<{ accessToken: string; refreshToken: string }>("/api/auth/refresh", { refreshToken })
+        );
+        setTokens(data.accessToken, data.refreshToken);
+      }
+      onClose();
+    } catch {
+      setError("Saqlashda xatolik yuz berdi");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    padding: "10px 12px",
+    borderRadius: 8,
+    background: "rgba(255,255,255,0.04)",
+    border: "1px solid rgba(0,240,255,0.15)",
+    color: "#e2e8f0",
+    fontSize: 14,
+    fontFamily: "'Outfit', sans-serif",
+    outline: "none",
+  };
+
+  return (
+    <div
+      style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}
+      onClick={onClose}
+    >
+      <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }} />
+      <div
+        style={{
+          position: "relative", zIndex: 1,
+          background: "#111117", border: "1px solid rgba(255,255,255,0.1)",
+          borderRadius: 20, padding: 32, width: "100%", maxWidth: 400,
+          boxShadow: "0 24px 80px rgba(0,0,0,0.6)",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          style={{ position: "absolute", top: 14, right: 14, width: 28, height: 28, borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", cursor: "pointer", color: "#64748b", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}
+        >×</button>
+
+        <h3 style={{ fontSize: 17, fontWeight: 700, color: "#e2e8f0", marginBottom: 6 }}>Sozlamalar</h3>
+        <p style={{ fontSize: 12, color: "#475569", marginBottom: 24 }}>{user?.email}</p>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <div>
+            <label style={{ fontSize: 12, color: "rgba(148,163,184,0.7)", display: "block", marginBottom: 6 }}>Ism</label>
+            <input
+              style={inputStyle}
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              placeholder="Ismingiz"
+              maxLength={100}
+            />
+          </div>
+          <div>
+            <label style={{ fontSize: 12, color: "rgba(148,163,184,0.7)", display: "block", marginBottom: 6 }}>Familiya</label>
+            <input
+              style={inputStyle}
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              placeholder="Familiyangiz"
+              maxLength={100}
+            />
+          </div>
+        </div>
+
+        {error && (
+          <p style={{ fontSize: 12, color: "#f87171", marginTop: 12 }}>{error}</p>
+        )}
+
+        <div style={{ display: "flex", gap: 10, marginTop: 24 }}>
+          <button
+            onClick={onClose}
+            style={{ flex: 1, padding: "10px", borderRadius: 10, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "#94a3b8", cursor: "pointer", fontSize: 14, fontFamily: "inherit" }}
+          >Bekor</button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            style={{ flex: 1, padding: "10px", borderRadius: 10, background: saving ? "rgba(0,240,255,0.2)" : "linear-gradient(135deg,#00f0ff,#6366f1)", border: "none", color: saving ? "#64748b" : "#0a0a0f", cursor: saving ? "not-allowed" : "pointer", fontSize: 14, fontWeight: 700, fontFamily: "inherit" }}
+          >{saving ? "Saqlanmoqda..." : "Saqlash"}</button>
+        </div>
+      </div>
+    </div>
   );
 }
 

@@ -3,6 +3,8 @@ export interface JwtPayload {
   email: string;
   jti: string;
   exp: number;
+  given_name?: string;
+  family_name?: string;
   "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": string;
 }
 

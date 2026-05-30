@@ -239,7 +239,7 @@ export function DashboardPage() {
               <img src="/pravadrive-logo-horizontal.svg" alt="pravadrive" style={{ height: 40, width: "auto" }} />
             </div>
             <p style={{ fontSize: 13, color: "#64748b", marginLeft: 54 }}>
-              Salom, <span style={{ color: "#94a3b8", fontWeight: 500 }}>{user?.email?.split("@")[0]}</span>! Bugun ham mashq qilamizmi?
+              Salom, <span style={{ color: "#94a3b8", fontWeight: 500 }}>{user?.firstName ?? user?.email?.split("@")[0]}</span>! Bugun ham mashq qilamizmi?
             </p>
           </div>
           <div className="dp-header-btns">

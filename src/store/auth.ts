@@ -20,6 +20,8 @@ function parseUser(token: string): AuthUser | null {
     id: payload.sub,
     email: payload.email,
     role: payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] as AuthUser["role"],
+    firstName: payload.given_name,
+    lastName: payload.family_name,
   };
 }
 
