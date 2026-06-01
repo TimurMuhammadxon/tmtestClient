@@ -260,3 +260,18 @@ export const adminPlansApi = {
   grantSubscription: (userId: string, planId: string) =>
     api.post(`/admin/users/${userId}/subscription`, { planId }),
 };
+
+// --- Admin Stats ---
+export interface AdminStatsDto {
+  totalUsers: number;
+  activeSubscriptions: number;
+  totalRevenueSom: number;
+  newUsersToday: number;
+  newUsersThisWeek: number;
+  totalAttempts: number;
+  paidOrders: number;
+}
+
+export const adminStatsApi = {
+  get: () => api.get<AdminStatsDto>("/admin/stats").then((r) => r.data),
+};

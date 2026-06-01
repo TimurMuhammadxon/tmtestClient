@@ -416,11 +416,11 @@ export function AttemptPage() {
       {/* Question card */}
       <Card>
         <CardHeader>
-          {currentQ.imageKey && (
+          {currentQ.imageUrl && (
             <img
-              src={`/api/storage/${currentQ.imageKey}`}
+              src={currentQ.imageUrl}
               alt="Savol rasmi"
-              className="w-full max-h-48 object-contain rounded-lg bg-muted mb-3"
+              className="w-full max-h-64 object-contain rounded-lg bg-muted mb-3"
             />
           )}
           <p className="text-base font-medium leading-relaxed">{currentQ.text}</p>

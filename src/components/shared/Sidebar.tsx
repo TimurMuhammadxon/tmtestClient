@@ -234,26 +234,41 @@ export function Sidebar({ collapsed, onToggle, mobile, onClose }: SidebarProps) 
 
 function SettingsModal({ user, onClose }: { user: ReturnType<typeof useAuthStore>["user"]; onClose: () => void }) {
   const setTokens = useAuthStore((s) => s.setTokens);
-  const accessToken = useAuthStore((s) => s.accessToken);
   const refreshToken = useAuthStore((s) => s.refreshToken);
+  const [tab, setTab] = useState<"profile" | "credentials">("profile");
+
+  // Profile tab
   const [firstName, setFirstName] = useState(user?.firstName ?? "");
   const [lastName, setLastName] = useState(user?.lastName ?? "");
+
+  // Credentials tab
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
-  const handleSave = async () => {
-    setSaving(true);
-    setError(null);
+  const isTelegramUser = user?.email?.includes("@telegram.local");
+
+  const inputStyle: React.CSSProperties = {
+    width: "100%", padding: "10px 12px", borderRadius: 8,
+    background: "rgba(255,255,255,0.04)", border: "1px solid rgba(0,240,255,0.15)",
+    color: "#e2e8f0", fontSize: 14, fontFamily: "'Outfit', sans-serif", outline: "none",
+  };
+
+  const handleSaveProfile = async () => {
+    setSaving(true); setError(null); setSuccess(null);
     try {
       await profileApi.update(firstName || null, lastName || null);
-      // refresh токен чтобы JWT обновился с новым именем
       if (refreshToken) {
         const { data } = await import("axios").then(({ default: ax }) =>
           ax.post<{ accessToken: string; refreshToken: string }>("/api/auth/refresh", { refreshToken })
         );
         setTokens(data.accessToken, data.refreshToken);
       }
-      onClose();
+      setSuccess("Saqlandi!");
     } catch {
       setError("Saqlashda xatolik yuz berdi");
     } finally {
@@ -261,16 +276,21 @@ function SettingsModal({ user, onClose }: { user: ReturnType<typeof useAuthStore
     }
   };
 
-  const inputStyle: React.CSSProperties = {
-    width: "100%",
-    padding: "10px 12px",
-    borderRadius: 8,
-    background: "rgba(255,255,255,0.04)",
-    border: "1px solid rgba(0,240,255,0.15)",
-    color: "#e2e8f0",
-    fontSize: 14,
-    fontFamily: "'Outfit', sans-serif",
-    outline: "none",
+  const handleSaveCredentials = async () => {
+    if (password !== confirmPassword) { setError("Parollar mos kelmadi"); return; }
+    if (password.length < 6) { setError("Parol kamida 6 ta belgidan iborat bo'lishi kerak"); return; }
+    setSaving(true); setError(null); setSuccess(null);
+    try {
+      const res = await profileApi.setCredentials(email, password);
+      setTokens(res.accessToken, res.refreshToken);
+      setSuccess("Email va parol muvaffaqiyatli ulandi!");
+      setPassword(""); setConfirmPassword("");
+    } catch (e: unknown) {
+      const msg = (e as any)?.response?.data?.detail ?? (e as any)?.response?.data?.title;
+      setError(msg ?? "Xatolik yuz berdi");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -280,12 +300,7 @@ function SettingsModal({ user, onClose }: { user: ReturnType<typeof useAuthStore
     >
       <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }} />
       <div
-        style={{
-          position: "relative", zIndex: 1,
-          background: "#111117", border: "1px solid rgba(255,255,255,0.1)",
-          borderRadius: 20, padding: 32, width: "100%", maxWidth: 400,
-          boxShadow: "0 24px 80px rgba(0,0,0,0.6)",
-        }}
+        style={{ position: "relative", zIndex: 1, background: "#111117", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 20, padding: 32, width: "100%", maxWidth: 400, boxShadow: "0 24px 80px rgba(0,0,0,0.6)" }}
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -293,47 +308,81 @@ function SettingsModal({ user, onClose }: { user: ReturnType<typeof useAuthStore
           style={{ position: "absolute", top: 14, right: 14, width: 28, height: 28, borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", cursor: "pointer", color: "#64748b", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}
         >×</button>
 
-        <h3 style={{ fontSize: 17, fontWeight: 700, color: "#e2e8f0", marginBottom: 6 }}>Sozlamalar</h3>
-        <p style={{ fontSize: 12, color: "#475569", marginBottom: 24 }}>{user?.email}</p>
+        <h3 style={{ fontSize: 17, fontWeight: 700, color: "#e2e8f0", marginBottom: 16 }}>Sozlamalar</h3>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          <div>
-            <label style={{ fontSize: 12, color: "rgba(148,163,184,0.7)", display: "block", marginBottom: 6 }}>Ism</label>
-            <input
-              style={inputStyle}
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              placeholder="Ismingiz"
-              maxLength={100}
-            />
-          </div>
-          <div>
-            <label style={{ fontSize: 12, color: "rgba(148,163,184,0.7)", display: "block", marginBottom: 6 }}>Familiya</label>
-            <input
-              style={inputStyle}
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              placeholder="Familiyangiz"
-              maxLength={100}
-            />
-          </div>
+        {/* Tabs */}
+        <div style={{ display: "flex", gap: 4, marginBottom: 24, padding: 4, borderRadius: 10, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+          {(["profile", "credentials"] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => { setTab(t); setError(null); setSuccess(null); }}
+              style={{
+                flex: 1, padding: "7px 12px", borderRadius: 7, border: "none", cursor: "pointer",
+                fontSize: 13, fontWeight: 500, fontFamily: "inherit", transition: "all .2s",
+                background: tab === t ? "rgba(0,240,255,0.12)" : "transparent",
+                color: tab === t ? "#00f0ff" : "#64748b",
+              }}
+            >
+              {t === "profile" ? "Profil" : "Kirish ma'lumotlari"}
+            </button>
+          ))}
         </div>
 
-        {error && (
-          <p style={{ fontSize: 12, color: "#f87171", marginTop: 12 }}>{error}</p>
+        {/* Profile tab */}
+        {tab === "profile" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            <p style={{ fontSize: 11, color: "#475569", marginBottom: 4 }}>{user?.email}</p>
+            <div>
+              <label style={{ fontSize: 12, color: "rgba(148,163,184,0.7)", display: "block", marginBottom: 6 }}>Ism</label>
+              <input style={inputStyle} value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Ismingiz" maxLength={100} />
+            </div>
+            <div>
+              <label style={{ fontSize: 12, color: "rgba(148,163,184,0.7)", display: "block", marginBottom: 6 }}>Familiya</label>
+              <input style={inputStyle} value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Familiyangiz" maxLength={100} />
+            </div>
+            {error && <p style={{ fontSize: 12, color: "#f87171" }}>{error}</p>}
+            {success && <p style={{ fontSize: 12, color: "#10b981" }}>{success}</p>}
+            <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
+              <button onClick={onClose} style={{ flex: 1, padding: "10px", borderRadius: 10, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "#94a3b8", cursor: "pointer", fontSize: 14, fontFamily: "inherit" }}>Bekor</button>
+              <button onClick={handleSaveProfile} disabled={saving} style={{ flex: 1, padding: "10px", borderRadius: 10, background: saving ? "rgba(0,240,255,0.2)" : "linear-gradient(135deg,#00f0ff,#6366f1)", border: "none", color: saving ? "#64748b" : "#0a0a0f", cursor: saving ? "not-allowed" : "pointer", fontSize: 14, fontWeight: 700, fontFamily: "inherit" }}>
+                {saving ? "Saqlanmoqda..." : "Saqlash"}
+              </button>
+            </div>
+          </div>
         )}
 
-        <div style={{ display: "flex", gap: 10, marginTop: 24 }}>
-          <button
-            onClick={onClose}
-            style={{ flex: 1, padding: "10px", borderRadius: 10, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "#94a3b8", cursor: "pointer", fontSize: 14, fontFamily: "inherit" }}
-          >Bekor</button>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            style={{ flex: 1, padding: "10px", borderRadius: 10, background: saving ? "rgba(0,240,255,0.2)" : "linear-gradient(135deg,#00f0ff,#6366f1)", border: "none", color: saving ? "#64748b" : "#0a0a0f", cursor: saving ? "not-allowed" : "pointer", fontSize: 14, fontWeight: 700, fontFamily: "inherit" }}
-          >{saving ? "Saqlanmoqda..." : "Saqlash"}</button>
-        </div>
+        {/* Credentials tab */}
+        {tab === "credentials" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {isTelegramUser && (
+              <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(0,240,255,0.06)", border: "1px solid rgba(0,240,255,0.15)", fontSize: 12, color: "#94a3b8", lineHeight: 1.6 }}>
+                Telegram orqali kirganmiz. Email va parol o'rnatib, web versiyadan ham kirishingiz mumkin.
+              </div>
+            )}
+            {isTelegramUser && (
+              <div>
+                <label style={{ fontSize: 12, color: "rgba(148,163,184,0.7)", display: "block", marginBottom: 6 }}>Email</label>
+                <input style={inputStyle} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@example.com" />
+              </div>
+            )}
+            <div>
+              <label style={{ fontSize: 12, color: "rgba(148,163,184,0.7)", display: "block", marginBottom: 6 }}>Yangi parol</label>
+              <input style={inputStyle} type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Kamida 6 ta belgi" />
+            </div>
+            <div>
+              <label style={{ fontSize: 12, color: "rgba(148,163,184,0.7)", display: "block", marginBottom: 6 }}>Parolni tasdiqlang</label>
+              <input style={inputStyle} type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Parolni qaytaring" />
+            </div>
+            {error && <p style={{ fontSize: 12, color: "#f87171" }}>{error}</p>}
+            {success && <p style={{ fontSize: 12, color: "#10b981" }}>{success}</p>}
+            <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
+              <button onClick={onClose} style={{ flex: 1, padding: "10px", borderRadius: 10, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "#94a3b8", cursor: "pointer", fontSize: 14, fontFamily: "inherit" }}>Bekor</button>
+              <button onClick={handleSaveCredentials} disabled={saving || !password || (isTelegramUser ? !email : false)} style={{ flex: 1, padding: "10px", borderRadius: 10, background: saving ? "rgba(0,240,255,0.2)" : "linear-gradient(135deg,#00f0ff,#6366f1)", border: "none", color: saving ? "#64748b" : "#0a0a0f", cursor: saving ? "not-allowed" : "pointer", fontSize: 14, fontWeight: 700, fontFamily: "inherit" }}>
+                {saving ? "Saqlanmoqda..." : "Saqlash"}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

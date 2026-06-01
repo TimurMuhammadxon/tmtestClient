@@ -89,7 +89,7 @@ export interface AttemptAnswerDto {
 export interface AttemptQuestionDto {
   orderIndex: number;
   questionId: string;
-  imageKey?: string;
+  imageUrl?: string;
   text: string;
   language: string;
   isFallback: boolean;

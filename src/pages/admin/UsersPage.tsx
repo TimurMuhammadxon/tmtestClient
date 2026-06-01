@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { adminUsersApi, adminPlansApi, type UserAdminDto } from "@/api/admin";
+import { adminUsersApi, adminPlansApi, adminStatsApi, type UserAdminDto } from "@/api/admin";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,6 +37,11 @@ export function UsersPage() {
     queryKey: ["admin-plans"],
     queryFn: adminPlansApi.list,
   });
+
+  const { data: stats } = useQuery({
+    queryKey: ["admin-stats"],
+    queryFn: adminStatsApi.get,
+  });
   const activePlans = plans?.filter((p) => p.isActive) ?? [];
 
   const grantMutation = useMutation({
@@ -56,8 +61,33 @@ export function UsersPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Foydalanuvchilar</h1>
-        <p className="text-muted-foreground mt-1">Jami: {data?.totalCount ?? 0} ta</p>
+        <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+        <p className="text-muted-foreground mt-1">Platforma statistikasi</p>
+      </div>
+
+      {/* Stats cards */}
+      {stats && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { label: "Jami foydalanuvchilar", value: stats.totalUsers, sub: `+${stats.newUsersToday} bugun`, color: "#00f0ff" },
+            { label: "Faol obunalar", value: stats.activeSubscriptions, sub: `${stats.paidOrders} to'lov`, color: "#10b981" },
+            { label: "Jami urinishlar", value: stats.totalAttempts, sub: "barcha testlar", color: "#8b5cf6" },
+            { label: "Daromad (so'm)", value: stats.totalRevenueSom.toLocaleString("uz-UZ"), sub: `${stats.newUsersThisWeek} ta yangi (hafta)`, color: "#f59e0b" },
+          ].map((card, i) => (
+            <Card key={i}>
+              <CardContent className="p-4">
+                <p className="text-xs text-muted-foreground mb-1">{card.label}</p>
+                <p className="text-2xl font-bold" style={{ color: card.color }}>{card.value}</p>
+                <p className="text-xs text-muted-foreground mt-1">{card.sub}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      <div>
+        <h2 className="text-lg font-semibold">Foydalanuvchilar</h2>
+        <p className="text-muted-foreground mt-1 text-sm">Jami: {data?.totalCount ?? 0} ta</p>
       </div>
 
       {/* Search */}

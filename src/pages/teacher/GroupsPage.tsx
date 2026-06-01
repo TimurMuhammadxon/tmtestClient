@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { groupsApi } from "@/api/groups";
+import { groupsApi, type GroupMemberStatsDto } from "@/api/groups";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,6 +33,7 @@ export function GroupsPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [groupName, setGroupName] = useState("");
   const [membersGroupId, setMembersGroupId] = useState<string | null>(null);
+  const [membersTab, setMembersTab] = useState<"list" | "stats">("list");
 
   const { data: groups, isLoading } = useQuery({
     queryKey: ["groups"],
@@ -43,6 +44,12 @@ export function GroupsPage() {
     queryKey: ["group-members", membersGroupId],
     queryFn: () => groupsApi.getMembers(membersGroupId!),
     enabled: !!membersGroupId,
+  });
+
+  const { data: memberStats, isLoading: loadingStats } = useQuery({
+    queryKey: ["group-stats", membersGroupId],
+    queryFn: () => groupsApi.getStats(membersGroupId!),
+    enabled: !!membersGroupId && membersTab === "stats",
   });
 
   const createMutation = useMutation({
@@ -186,52 +193,116 @@ export function GroupsPage() {
       </Dialog>
 
       {/* Members dialog */}
-      <Dialog open={!!membersGroupId} onOpenChange={(o) => !o && setMembersGroupId(null)}>
-        <DialogContent className="max-w-lg">
+      <Dialog open={!!membersGroupId} onOpenChange={(o) => { if (!o) { setMembersGroupId(null); setMembersTab("list"); } }}>
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>{selectedGroup?.name} — {t.members}</DialogTitle>
           </DialogHeader>
-          {loadingMembers ? (
-            <PageLoader />
-          ) : (
-            <div className="max-h-80 overflow-y-auto">
-              {members && members.length > 0 ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Qo'shilgan</TableHead>
-                      <TableHead className="w-10"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {members.map((m: GroupMemberDto) => (
-                      <TableRow key={m.userId}>
-                        <TableCell className="text-sm">{m.email}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {format(new Date(m.joinedAt), "dd.MM.yyyy")}
-                        </TableCell>
-                        <TableCell>
-                          <button
-                            onClick={() =>
-                              removeMemberMutation.mutate({
-                                groupId: membersGroupId!,
-                                userId: m.userId,
-                              })
-                            }
-                            className="text-muted-foreground hover:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </TableCell>
+
+          {/* Tabs */}
+          <div className="flex gap-1 p-1 rounded-lg bg-muted/50 w-fit">
+            {(["list", "stats"] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setMembersTab(tab)}
+                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+                  membersTab === tab ? "bg-background shadow text-foreground" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {tab === "list" ? "A'zolar" : "Statistika"}
+              </button>
+            ))}
+          </div>
+
+          {/* Members list */}
+          {membersTab === "list" && (
+            loadingMembers ? <PageLoader /> : (
+              <div className="max-h-80 overflow-y-auto">
+                {members && members.length > 0 ? (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Qo'shilgan</TableHead>
+                        <TableHead className="w-10"></TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              ) : (
-                <p className="text-center text-muted-foreground py-8">A'zolar yo'q</p>
-              )}
-            </div>
+                    </TableHeader>
+                    <TableBody>
+                      {members.map((m: GroupMemberDto) => (
+                        <TableRow key={m.userId}>
+                          <TableCell className="text-sm">{m.email}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {format(new Date(m.joinedAt), "dd.MM.yyyy")}
+                          </TableCell>
+                          <TableCell>
+                            <button
+                              onClick={() => removeMemberMutation.mutate({ groupId: membersGroupId!, userId: m.userId })}
+                              className="text-muted-foreground hover:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <p className="text-center text-muted-foreground py-8">A'zolar yo'q</p>
+                )}
+              </div>
+            )
+          )}
+
+          {/* Stats */}
+          {membersTab === "stats" && (
+            loadingStats ? <PageLoader /> : (
+              <div className="max-h-80 overflow-y-auto">
+                {memberStats && memberStats.length > 0 ? (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>A'zo</TableHead>
+                        <TableHead className="text-center">Urinishlar</TableHead>
+                        <TableHead className="text-center">O'tdi</TableHead>
+                        <TableHead className="text-center">Aniqlik</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {memberStats.map((m: GroupMemberStatsDto) => (
+                        <TableRow key={m.userId}>
+                          <TableCell>
+                            <div className="text-sm font-medium">{m.displayName ?? m.email.split("@")[0]}</div>
+                            <div className="text-xs text-muted-foreground">{m.email}</div>
+                          </TableCell>
+                          <TableCell className="text-center text-sm">{m.totalAttempts}</TableCell>
+                          <TableCell className="text-center">
+                            <Badge variant={m.passedAttempts > 0 ? "success" : "secondary"} className="text-xs">
+                              {m.passedAttempts}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {m.avgAccuracyPercent !== null ? (
+                              <span className={`text-sm font-medium ${
+                                m.avgAccuracyPercent >= 80 ? "text-emerald-500" :
+                                m.avgAccuracyPercent >= 60 ? "text-amber-500" : "text-red-500"
+                              }`}>
+                                {m.avgAccuracyPercent}%
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground text-xs">—</span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <p className="text-center text-muted-foreground py-8">
+                    Hali test natijalari yo'q. Test havolalarini guruh bilan bog'lang.
+                  </p>
+                )}
+              </div>
+            )
           )}
         </DialogContent>
       </Dialog>
