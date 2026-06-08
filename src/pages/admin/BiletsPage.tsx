@@ -70,7 +70,7 @@ export function BiletsPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-bilets", page],
-    queryFn: () => adminBiletsApi.list({ page, pageSize: 20 }),
+    queryFn: () => adminBiletsApi.list({ page, pageSize: 100 }),
   });
 
   const createMutation = useMutation({
@@ -466,11 +466,10 @@ function QuestionPicker({
             return (
               <label
                 key={q.id}
-                className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                  selected
+                className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${selected
                     ? "border-primary bg-primary/5"
                     : "border-border hover:bg-accent"
-                }`}
+                  }`}
               >
                 <Checkbox
                   checked={selected}
@@ -492,11 +491,10 @@ function QuestionPicker({
                       {q.answers.map((a, i) => (
                         <div
                           key={a.id}
-                          className={`flex items-center gap-1 rounded px-1.5 py-0.5 text-xs ${
-                            a.isCorrect
+                          className={`flex items-center gap-1 rounded px-1.5 py-0.5 text-xs ${a.isCorrect
                               ? "bg-emerald-950/30 text-emerald-400 border border-emerald-800/30"
                               : "text-muted-foreground"
-                          }`}
+                            }`}
                         >
                           <span className="font-semibold flex-shrink-0">{`F${i + 1}.`}</span>
                           <span className="line-clamp-1">{a.text}</span>

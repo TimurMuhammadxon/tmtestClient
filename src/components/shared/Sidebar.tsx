@@ -99,7 +99,7 @@ export function Sidebar({ collapsed, onToggle, mobile, onClose }: SidebarProps) 
         className="flex items-center justify-between p-4 h-16"
       >
         {(!collapsed || mobile) && (
-          <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex items-center gap-2.5 min-w-0 cursor-pointer" onClick={() => navigate("/")}>
             <img
               src="/pravadrive-logo-horizontal.svg"
               alt="pravadrive"
@@ -111,7 +111,8 @@ export function Sidebar({ collapsed, onToggle, mobile, onClose }: SidebarProps) 
           <img
             src="/pravadrive-symbol.svg"
             alt="pravadrive"
-            style={{ height: 28, width: 28, margin: "0 auto" }}
+            style={{ height: 28, width: 28, margin: "0 auto", cursor: "pointer" }}
+            onClick={() => navigate("/")}
           />
         )}
         {!mobile && (

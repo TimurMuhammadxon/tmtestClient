@@ -72,27 +72,27 @@ const MODES = [
   {
     id: "topics", icon: "/pravadrive-icon-mavzular.svg", title: "Mavzular",
     desc: "Mavzu bo'yicha savollar · rivojlanishni kuzating",
-    color: "#38bdf8", badge: "Tavsiya", to: "/topics",
+    color: "#38bdf8", badge: "Tavsiya", to: "/topics", freeAccess: true,
   },
   {
     id: "bilets", icon: "/pravadrive-icon-biletlar.svg", title: "Biletlar",
     desc: "Rasmiy 100 ta bilet · aniq tartibda",
-    color: "#10b981", badge: "100 ta", to: "/bilets",
+    color: "#10b981", badge: "100 ta", to: "/bilets", freeAccess: true,
   },
   {
     id: "exam", icon: "/pravadrive-icon-imtihon.svg", title: "Imtihon",
     desc: "20 ta savol · 25 daqiqa · 3 xato = rad etiladi",
-    color: "#ef4444", badge: "Rasmiy", to: "/dashboard", flowType: 4,
+    color: "#ef4444", badge: "Rasmiy", to: "/dashboard", flowType: 4, freeAccess: false,
   },
   {
     id: "marathon", icon: "/pravadrive-icon-marafon.svg", title: "Marafon",
     desc: "Barcha faol savollar · vaqt chegarasi yo'q",
-    color: "#f59e0b", badge: "Cheksiz", to: "/dashboard", flowType: 5,
+    color: "#f59e0b", badge: "Cheksiz", to: "/dashboard", flowType: 5, freeAccess: false,
   },
   {
     id: "custom", icon: "/pravadrive-icon-ixtiyoriy.svg", title: "Ixtiyoriy",
     desc: "Mavzularni tanlang · savol sonini belgilang",
-    color: "#8b5cf6", badge: "Sozlanadi", to: "/dashboard",
+    color: "#8b5cf6", badge: "Sozlanadi", to: "/dashboard", freeAccess: false,
   },
 ] as const;
 
@@ -139,7 +139,7 @@ export function LandingPage() {
 
   const handleModeClick = (mode: typeof MODES[number]) => {
     if (!isLoggedIn) { setAuthModal(true); return; }
-    if (!hasAccess) { setSubModal(true); return; }
+    if (!mode.freeAccess && !hasAccess) { setSubModal(true); return; }
     navigate(mode.to);
   };
 
@@ -314,15 +314,18 @@ export function LandingPage() {
               {isLoggedIn && hasAccess
                 ? "Rejimni tanlang va mashqni boshlang"
                 : isLoggedIn
-                  ? "Barcha rejimlardan foydalanish uchun obuna kerak"
-                  : "Barcha rejimlardan foydalanish uchun ro'yxatdan o'ting"}
+                  ? "Biletlar va mavzular bepul · Imtihon va marafon uchun obuna kerak"
+                  : "Biletlar va mavzular bepul · Barcha rejimlar uchun ro'yxatdan o'ting"}
             </p>
           </div>
 
           <div className="lp-modes-grid" style={{ animation: mounted ? "lp-fadeUp .8s ease .25s both" : "none" }}>
             {MODES.map((mode, i) => {
               const hovered = hoveredMode === mode.id;
-              const locked = !isLoggedIn || !hasAccess;
+              const needsAuth = !isLoggedIn;
+              const needsSub = isLoggedIn && !hasAccess && !mode.freeAccess;
+              const demoHint = isLoggedIn && !hasAccess && mode.freeAccess;
+              const locked = needsAuth || needsSub;
               return (
                 <div
                   key={mode.id}
@@ -370,20 +373,16 @@ export function LandingPage() {
                       <div style={{
                         display: "flex", alignItems: "center", gap: 6,
                         fontSize: 12, fontWeight: 600,
-                        color: locked ? "#475569" : mode.color,
+                        color: locked ? "#475569" : demoHint ? mode.color : mode.color,
                       }}>
-                        {locked ? (
-                          <>
-                            <span style={{ fontSize: 11 }}>🔒</span>
-                            <span>{!isLoggedIn ? "Kirish kerak" : "Obuna kerak"}</span>
-                          </>
+                        {needsAuth ? (
+                          <><span style={{ fontSize: 11 }}>🔒</span><span>Kirish kerak</span></>
+                        ) : needsSub ? (
+                          <><span style={{ fontSize: 11 }}>🔒</span><span>Obuna kerak</span></>
+                        ) : demoHint ? (
+                          <><span>▶</span><span style={{ transition: "transform .2s", transform: hovered ? "translateX(4px)" : "translateX(0)" }}>Demo bepul · Ko'rish</span></>
                         ) : (
-                          <>
-                            <span>▶</span>
-                            <span style={{ transition: "transform .2s", transform: hovered ? "translateX(4px)" : "translateX(0)" }}>
-                              Boshlash
-                            </span>
-                          </>
+                          <><span>▶</span><span style={{ transition: "transform .2s", transform: hovered ? "translateX(4px)" : "translateX(0)" }}>Boshlash</span></>
                         )}
                       </div>
                     </div>
