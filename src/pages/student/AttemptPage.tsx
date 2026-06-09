@@ -121,6 +121,7 @@ export function AttemptPage() {
   }, []);
 
   const isExam = attempt?.flowType === EXAM_FLOW;
+  const isMarathon = attempt?.flowType === "Marathon";
 
   const finishMutation = useMutation({
     mutationFn: () => attemptsApi.finish(id!),
@@ -391,27 +392,29 @@ export function AttemptPage() {
         </p>
       </div>
 
-      {/* Question navigation dots */}
-      <div className="flex flex-wrap gap-1">
-        {questions.map((q, i) => {
-          const state = answerStates[q.questionId];
-          return (
-            <button
-              key={q.questionId}
-              onClick={() => goTo(i)}
-              className={cn(
-                "w-7 h-7 rounded text-xs font-medium transition-colors",
-                i === currentIndex && "ring-2 ring-primary ring-offset-1 ring-offset-background",
-                state?.isCorrect === true && "bg-green-500 text-white",
-                state?.isCorrect === false && "bg-red-500 text-white",
-                !state && "bg-secondary text-secondary-foreground hover:bg-secondary/70"
-              )}
-            >
-              {i + 1}
-            </button>
-          );
-        })}
-      </div>
+      {/* Question navigation dots — hidden for Marathon (too many questions) */}
+      {!isMarathon && (
+        <div className="flex flex-wrap gap-1">
+          {questions.map((q, i) => {
+            const state = answerStates[q.questionId];
+            return (
+              <button
+                key={q.questionId}
+                onClick={() => goTo(i)}
+                className={cn(
+                  "w-7 h-7 rounded text-xs font-medium transition-colors",
+                  i === currentIndex && "ring-2 ring-primary ring-offset-1 ring-offset-background",
+                  state?.isCorrect === true && "bg-green-500 text-white",
+                  state?.isCorrect === false && "bg-red-500 text-white",
+                  !state && "bg-secondary text-secondary-foreground hover:bg-secondary/70"
+                )}
+              >
+                {i + 1}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Question card */}
       <Card>

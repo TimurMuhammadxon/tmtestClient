@@ -85,7 +85,7 @@ export function BiletsPage() {
       setMode(null);
       toast({ title: "Bilet yaratildi" });
     },
-    onError: () => toast({ variant: "destructive", title: "Xatolik yuz berdi" }),
+    onError: (e: any) => toast({ variant: "destructive", title: e?.response?.data?.detail ?? e?.response?.data?.title ?? "Xatolik yuz berdi" }),
   });
 
   const updateMutation = useMutation({
@@ -96,7 +96,7 @@ export function BiletsPage() {
       setMode(null);
       toast({ title: "Bilet yangilandi" });
     },
-    onError: () => toast({ variant: "destructive", title: "Xatolik yuz berdi" }),
+    onError: (e: any) => toast({ variant: "destructive", title: e?.response?.data?.detail ?? e?.response?.data?.title ?? "Xatolik yuz berdi" }),
   });
 
   const deleteMutation = useMutation({
