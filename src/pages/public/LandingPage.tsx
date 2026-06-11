@@ -118,6 +118,11 @@ export function LandingPage() {
   const [subModal, setSubModal] = useState(false);
   const [hoveredMode, setHoveredMode] = useState<string | null>(null);
   useEffect(() => {
+    const startParam = window.Telegram?.WebApp?.initDataUnsafe?.start_param;
+    if (startParam) {
+      navigate(`/t/${startParam}`, { replace: true });
+      return;
+    }
     setMounted(true);
     if (!document.getElementById("lp-fonts")) {
       const link = document.createElement("link");

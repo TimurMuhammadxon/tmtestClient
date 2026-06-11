@@ -68,12 +68,15 @@ function MiniBar({ value, max = 100, color }: { value: number; max?: number; col
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+// JS getDay(): 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
+const DAY_LABELS = ["Ya", "Du", "Se", "Ch", "Pa", "Ju", "Sh"];
+
 function deriveWeeklyData(recentAttempts?: RecentAttemptDto[]) {
-  const days = ["Du", "Se", "Ch", "Pa", "Ju", "Sh", "Ya"];
   const today = new Date();
-  return days.map((day, i) => {
+  return Array.from({ length: 7 }, (_, i) => {
     const target = new Date(today);
     target.setDate(today.getDate() - (6 - i));
+    const day = DAY_LABELS[target.getDay()];
     const dayAttempts = (recentAttempts ?? []).filter((a) => {
       const d = new Date(a.startedAt);
       return d.toDateString() === target.toDateString() && a.status !== "InProgress";

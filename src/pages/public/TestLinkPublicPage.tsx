@@ -1,5 +1,6 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useParams, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { testLinksApi } from "@/api/testLinks";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,7 @@ import { PageLoader } from "@/components/shared/LoadingSpinner";
 import { useAuthStore } from "@/store/auth";
 import { getFlowLabel } from "@/lib/i18n";
 import { format } from "date-fns";
-import { BookOpen, Clock, Target, AlertTriangle } from "lucide-react";
+import { BookOpen, Clock, Target, AlertTriangle, ArrowLeft } from "lucide-react";
 
 export function TestLinkPublicPage() {
   const { code } = useParams<{ code: string }>();
@@ -22,9 +23,19 @@ export function TestLinkPublicPage() {
     retry: false,
   });
 
+  const [startError, setStartError] = useState<string | null>(null);
+
   const startMutation = useMutation({
     mutationFn: () => testLinksApi.start(code!),
     onSuccess: ({ id }) => navigate(`/attempts/${id}`),
+    onError: (e: any) => {
+      const detail: string = e?.response?.data?.detail ?? e?.response?.data?.title ?? "";
+      if (detail.toLowerCase().includes("subscription")) {
+        setStartError("Xurmatli mijoz sizning obuna muddatingiz tugagan. Testni ishlash uchun to'lovni amalga oshiring!");
+      } else {
+        setStartError(detail || "Xatolik yuz berdi. Qayta urinib ko'ring.");
+      }
+    },
   });
 
   const handleStart = () => {
@@ -32,6 +43,7 @@ export function TestLinkPublicPage() {
       navigate(`/login?redirect=/t/${code}`);
       return;
     }
+    setStartError(null);
     startMutation.mutate();
   };
 
@@ -62,7 +74,16 @@ export function TestLinkPublicPage() {
   const canStart = link.isActive && !isExpired && attemptsLeft > 0;
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "#0a0a0f" }}>
+    <div className="min-h-screen flex flex-col items-center justify-center p-4" style={{ background: "#0a0a0f" }}>
+      <div className="w-full max-w-md mb-3">
+        <button
+          onClick={() => navigate(isAuthenticated() ? "/dashboard" : "/")}
+          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Orqaga
+        </button>
+      </div>
       <Card className="max-w-md w-full" style={{ background: "rgba(13,13,22,0.9)", border: "1px solid rgba(0,240,255,0.1)", boxShadow: "0 25px 50px rgba(0,0,0,0.5)" }}>
         <CardHeader className="text-center">
           <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
@@ -109,6 +130,13 @@ export function TestLinkPublicPage() {
             <div className="flex items-center gap-2 p-3 rounded-lg text-sm" style={{ background: "rgba(245,158,11,0.1)", color: "#fbbf24", border: "1px solid rgba(245,158,11,0.2)" }}>
               <AlertTriangle className="h-4 w-4" />
               Urinishlar soni tugagan
+            </div>
+          )}
+
+          {startError && (
+            <div className="flex items-start gap-2 p-3 rounded-lg text-sm" style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", color: "#f87171" }}>
+              <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+              <span>{startError}</span>
             </div>
           )}
 

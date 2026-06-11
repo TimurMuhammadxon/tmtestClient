@@ -10,9 +10,16 @@ const GOOGLE_CLIENT_ID = "1074843019354-g7erdamv4pr2r3mvcd1ko7v0m1cqh4b6.apps.go
 
 declare global {
   interface Window {
-    Telegram?: { WebApp: { initData: string; ready(): void } };
+    Telegram?: {
+      WebApp: {
+        initData: string;
+        ready(): void;
+        initDataUnsafe?: { start_param?: string };
+      };
+    };
   }
 }
+
 
 const queryClient = new QueryClient({
   defaultOptions: {

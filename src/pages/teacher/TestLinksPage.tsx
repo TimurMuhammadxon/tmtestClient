@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { testLinksApi, type CreateTestLinkRequest } from "@/api/testLinks";
 import { biletsApi } from "@/api/bilets";
+import { topicsApi } from "@/api/topics";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +20,7 @@ import {
 } from "@/components/ui/table";
 import { PageLoader } from "@/components/shared/LoadingSpinner";
 import { t, getFlowLabel } from "@/lib/i18n";
-import { Plus, Copy, XCircle, BarChart2 } from "lucide-react";
+import { Plus, Copy, XCircle, BarChart2, Send } from "lucide-react";
 import { useState } from "react";
 import { format, addDays } from "date-fns";
 import { toast } from "@/components/ui/use-toast";
@@ -42,6 +43,7 @@ export function TestLinksPage() {
     title: "",
     flowType: "4",
     biletId: "",
+    topicId: "",
     maxAttempts: "1",
     expiresAt: format(addDays(new Date(), 1), "yyyy-MM-dd'T'HH:mm"),
   });
@@ -54,6 +56,11 @@ export function TestLinksPage() {
   const { data: bilets } = useQuery({
     queryKey: ["bilets"],
     queryFn: biletsApi.list,
+  });
+
+  const { data: topics } = useQuery({
+    queryKey: ["topics"],
+    queryFn: topicsApi.list,
   });
 
   const { data: results } = useQuery({
@@ -87,6 +94,7 @@ export function TestLinksPage() {
       expiresAt: new Date(form.expiresAt).toISOString(),
     };
     if (form.flowType === "1" && form.biletId) req.biletId = form.biletId;
+    if (form.flowType === "2" && form.topicId) req.topicIds = [form.topicId];
     createMutation.mutate(req);
   };
 
@@ -94,6 +102,14 @@ export function TestLinksPage() {
     const url = `${window.location.origin}/t/${code}`;
     navigator.clipboard.writeText(url);
     toast({ title: t.copied });
+  };
+
+  const copyTelegramLink = (code: string) => {
+    const bot = import.meta.env.VITE_TELEGRAM_BOT_USERNAME ?? "pravadrive_bot";
+    const appName = import.meta.env.VITE_TELEGRAM_APP_NAME ?? "PravaDrive";
+    const url = `https://t.me/${bot}/${appName}?startapp=${code}`;
+    navigator.clipboard.writeText(url);
+    toast({ title: "Telegram havolasi nusxalandi" });
   };
 
   if (isLoading) return <PageLoader />;
@@ -135,8 +151,11 @@ export function TestLinksPage() {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <code className="text-xs bg-muted px-2 py-1 rounded">{link.code}</code>
-                        <button onClick={() => copyLink(link.code)} className="text-muted-foreground hover:text-foreground">
+                        <button onClick={() => copyLink(link.code)} className="text-muted-foreground hover:text-foreground" title="Veb havolani nusxalash">
                           <Copy className="h-3 w-3" />
+                        </button>
+                        <button onClick={() => copyTelegramLink(link.code)} className="text-muted-foreground hover:text-blue-400" title="Telegram havolasini nusxalash">
+                          <Send className="h-3 w-3" />
                         </button>
                       </div>
                     </TableCell>
@@ -201,7 +220,7 @@ export function TestLinksPage() {
             </div>
             <div className="space-y-2">
               <Label>Test turi</Label>
-              <Select value={form.flowType} onValueChange={(v) => setForm((f) => ({ ...f, flowType: v }))}>
+              <Select value={form.flowType} onValueChange={(v) => setForm((f) => ({ ...f, flowType: v, biletId: "", topicId: "" }))}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -222,6 +241,21 @@ export function TestLinksPage() {
                   <SelectContent>
                     {bilets?.map((b) => (
                       <SelectItem key={b.id} value={b.id}>Bilet #{b.number}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            {form.flowType === "2" && (
+              <div className="space-y-2">
+                <Label>Mavzu</Label>
+                <Select value={form.topicId} onValueChange={(v) => setForm((f) => ({ ...f, topicId: v }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Mavzu tanlang" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {topics?.map((topic) => (
+                      <SelectItem key={topic.id} value={topic.id}>{topic.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
