@@ -3,6 +3,8 @@ import {
   type TestLinkDto,
   type PublicTestLinkDto,
   type TestLinkResultItemDto,
+  type TestLinkResultsDto,
+  type PagedResult,
 } from "@/types";
 
 export interface CreateTestLinkRequest {
@@ -17,17 +19,26 @@ export interface CreateTestLinkRequest {
 }
 
 export const testLinksApi = {
-  list: () =>
-    api.get<TestLinkDto[]>("/teacher/test-links").then((r) => r.data),
+  list: (page = 1, pageSize = 20) =>
+    api.get<PagedResult<TestLinkDto>>("/teacher/test-links", { params: { page, pageSize } }).then((r) => r.data),
 
   create: (req: CreateTestLinkRequest) =>
     api.post<TestLinkDto>("/teacher/test-links", req).then((r) => r.data),
 
+  update: (id: string, req: { title: string; maxAttempts: number; expiresAt: string }) =>
+    api.patch(`/teacher/test-links/${id}`, req),
+
+  activate: (id: string) =>
+    api.patch(`/teacher/test-links/${id}/activate`),
+
   deactivate: (id: string) =>
     api.patch(`/teacher/test-links/${id}/deactivate`),
 
+  delete: (id: string) =>
+    api.delete(`/teacher/test-links/${id}`),
+
   results: (id: string) =>
-    api.get<TestLinkResultItemDto[]>(`/teacher/test-links/${id}/results`).then((r) => r.data),
+    api.get<TestLinkResultsDto>(`/teacher/test-links/${id}/results`).then((r) => r.data.results),
 
   getPublic: (code: string) =>
     api.get<PublicTestLinkDto>(`/test-links/${code}`).then((r) => r.data),

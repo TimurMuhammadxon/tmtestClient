@@ -5,6 +5,7 @@ import { progressApi } from "@/api/progress";
 import { attemptsApi } from "@/api/attempts";
 import { topicsApi, type TopicStudentDto } from "@/api/topics";
 import { biletsApi } from "@/api/bilets";
+import { subscriptionsApi } from "@/api/subscriptions";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import {
@@ -166,6 +167,11 @@ export function DashboardPage() {
   const { data: topicProgress } = useQuery({ queryKey: ["progress-topics"], queryFn: progressApi.topics });
   const { data: bilets } = useQuery({ queryKey: ["bilets"], queryFn: biletsApi.list });
   const { data: topics } = useQuery({ queryKey: ["topics-student"], queryFn: topicsApi.list });
+  const { data: mySubscription } = useQuery({ queryKey: ["my-subscription"], queryFn: subscriptionsApi.getMy });
+
+  const subDaysLeft = mySubscription?.expiresAt
+    ? Math.ceil((new Date(mySubscription.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    : null;
 
   const startFlow = async (
     flowType: number,
@@ -234,6 +240,40 @@ export function DashboardPage() {
       </div>
 
       <div className="dp-container" style={{ position: "relative", zIndex: 1, maxWidth: 1400, margin: "0 auto" }}>
+
+        {/* ── Subscription expiry banner ── */}
+        {subDaysLeft !== null && subDaysLeft <= 3 && (
+          <div
+            onClick={() => navigate("/subscription")}
+            style={{
+              cursor: "pointer",
+              marginBottom: 16,
+              padding: "12px 18px",
+              borderRadius: 12,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 12,
+              background: subDaysLeft <= 0
+                ? "rgba(239,68,68,0.12)"
+                : "rgba(245,158,11,0.10)",
+              border: `1px solid ${subDaysLeft <= 0 ? "rgba(239,68,68,0.3)" : "rgba(245,158,11,0.3)"}`,
+              animation: "dp-fadeIn .4s ease",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 20 }}>{subDaysLeft <= 0 ? "🔴" : "⚠️"}</span>
+              <span style={{ fontSize: 14, color: subDaysLeft <= 0 ? "#f87171" : "#fbbf24", fontWeight: 500 }}>
+                {subDaysLeft <= 0
+                  ? "Obuna muddati tugadi. Testlarni ishlash uchun to'lovni amalga oshiring."
+                  : subDaysLeft === 1
+                    ? "Obuna muddati bugun tugaydi! To'lovni amalga oshiring."
+                    : `Obuna muddati ${subDaysLeft} kundan so'ng tugaydi. To'lovni kechiktirmang.`}
+              </span>
+            </div>
+            <span style={{ fontSize: 13, color: "#94a3b8", whiteSpace: "nowrap" }}>To'lash →</span>
+          </div>
+        )}
 
         {/* ── Header ── */}
         <div className="dp-header" style={{ animation: mounted ? "dp-fadeIn .6s ease" : "none" }}>

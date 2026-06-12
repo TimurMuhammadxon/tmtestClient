@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/table";
 import { PageLoader } from "@/components/shared/LoadingSpinner";
 import { t, getFlowLabel } from "@/lib/i18n";
-import { Plus, Copy, XCircle, BarChart2, Send } from "lucide-react";
+import { Plus, Copy, XCircle, CheckCircle, BarChart2, Send, Trash2, ChevronLeft, ChevronRight, Pencil } from "lucide-react";
 import { useState } from "react";
 import { format, addDays } from "date-fns";
 import { toast } from "@/components/ui/use-toast";
@@ -37,7 +37,10 @@ const FLOW_OPTIONS = [
 export function TestLinksPage() {
   const qc = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
+  const [editingLink, setEditingLink] = useState<{ id: string; title: string; maxAttempts: string; expiresAt: string } | null>(null);
   const [resultsId, setResultsId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 20;
 
   const [form, setForm] = useState({
     title: "",
@@ -48,10 +51,12 @@ export function TestLinksPage() {
     expiresAt: format(addDays(new Date(), 1), "yyyy-MM-dd'T'HH:mm"),
   });
 
-  const { data: links, isLoading } = useQuery({
-    queryKey: ["test-links"],
-    queryFn: testLinksApi.list,
+  const { data: linksData, isLoading } = useQuery({
+    queryKey: ["test-links", page],
+    queryFn: () => testLinksApi.list(page, PAGE_SIZE),
   });
+  const links = linksData?.items ?? [];
+  const totalPages = linksData ? Math.ceil(linksData.totalCount / PAGE_SIZE) : 1;
 
   const { data: bilets } = useQuery({
     queryKey: ["bilets"],
@@ -78,11 +83,37 @@ export function TestLinksPage() {
     },
   });
 
+  const activateMutation = useMutation({
+    mutationFn: testLinksApi.activate,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["test-links"] });
+      toast({ title: "Havola faollashtirildi" });
+    },
+  });
+
   const deactivateMutation = useMutation({
     mutationFn: testLinksApi.deactivate,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["test-links"] });
+      toast({ title: "Havola nofaol qilindi" });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: testLinksApi.delete,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["test-links"] });
       toast({ title: "Havola o'chirildi" });
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, ...req }: { id: string; title: string; maxAttempts: number; expiresAt: string }) =>
+      testLinksApi.update(id, req),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["test-links"] });
+      setEditingLink(null);
+      toast({ title: "Havola yangilandi" });
     },
   });
 
@@ -102,6 +133,33 @@ export function TestLinksPage() {
     const url = `${window.location.origin}/t/${code}`;
     navigator.clipboard.writeText(url);
     toast({ title: t.copied });
+  };
+
+  const copyResults = () => {
+    if (!results || results.length === 0) return;
+    const linkTitle = links.find((l) => l.id === resultsId)?.title ?? "Test";
+    const statusLabel = (s: string) =>
+      s === "Passed" ? "A'lo ✅" : s === "Failed" ? "Qoniqarsiz ❌" : s === "Completed" ? "Yakunlangan ✔️" : "Jarayonda ⏳";
+    const pctEmoji = (pct: number | null) =>
+      pct == null ? "" : pct < 50 ? "🔴" : pct < 70 ? "🟠" : pct < 90 ? "🟡" : "🟢";
+
+    const lines = [
+      `📊 Test natijalari: "${linkTitle}"`,
+      "─────────────────────",
+      ...results.map((r, i) => {
+        const name = [r.firstName, r.lastName].filter(Boolean).join(" ") || "Noma'lum";
+        const score = r.correctCount != null ? `${r.correctCount}/${r.totalQuestions}` : "—";
+        const pct = r.totalQuestions > 0 && r.correctCount != null
+          ? Math.round((r.correctCount / r.totalQuestions) * 100)
+          : null;
+        const pctStr = pct != null ? `${pct}%` : "—";
+        return `${i + 1}. ${name}   ${score}   ${pctStr} ${pctEmoji(pct)}   ${statusLabel(r.status)}`;
+      }),
+      "─────────────────────",
+      `Jami: ${results.length} ta ishtirokchi`,
+    ];
+    navigator.clipboard.writeText(lines.join("\n"));
+    toast({ title: "Natijalar nusxalandi" });
   };
 
   const copyTelegramLink = (code: string) => {
@@ -130,7 +188,7 @@ export function TestLinksPage() {
       {/* Links table */}
       <Card>
         <CardContent className="p-0">
-          {links && links.length > 0 ? (
+          {links.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -179,16 +237,41 @@ export function TestLinksPage() {
                         >
                           <BarChart2 className="h-4 w-4" />
                         </Button>
-                        {link.isActive && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-muted-foreground hover:text-destructive"
-                            onClick={() => deactivateMutation.mutate(link.id)}
-                          >
-                            <XCircle className="h-4 w-4" />
-                          </Button>
-                        )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setEditingLink({
+                            id: link.id,
+                            title: link.title,
+                            maxAttempts: String(link.maxAttempts),
+                            expiresAt: format(new Date(link.expiresAt), "yyyy-MM-dd'T'HH:mm"),
+                          })}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className={link.isActive ? "text-muted-foreground hover:text-destructive" : "text-muted-foreground hover:text-emerald-500"}
+                          title={link.isActive ? "Nofaol qilish" : "Faollashtirish"}
+                          onClick={() => link.isActive
+                            ? deactivateMutation.mutate(link.id)
+                            : activateMutation.mutate(link.id)
+                          }
+                        >
+                          {link.isActive ? <XCircle className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-muted-foreground hover:text-destructive"
+                          onClick={() => {
+                            if (confirm("Bu havolani o'chirishni tasdiqlaysizmi?"))
+                              deleteMutation.mutate(link.id);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -202,6 +285,18 @@ export function TestLinksPage() {
           )}
         </CardContent>
       </Card>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-3">
+          <Button variant="outline" size="sm" onClick={() => setPage((p) => p - 1)} disabled={page === 1}>
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="text-sm text-muted-foreground">{page} / {totalPages}</span>
+          <Button variant="outline" size="sm" onClick={() => setPage((p) => p + 1)} disabled={page >= totalPages}>
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
 
       {/* Create dialog */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
@@ -293,43 +388,123 @@ export function TestLinksPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Edit dialog */}
+      <Dialog open={!!editingLink} onOpenChange={(o) => !o && setEditingLink(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Havolani tahrirlash</DialogTitle>
+          </DialogHeader>
+          {editingLink && (
+            <div className="space-y-4 py-2">
+              <div className="space-y-2">
+                <Label>{t.title}</Label>
+                <Input
+                  value={editingLink.title}
+                  onChange={(e) => setEditingLink((f) => f && ({ ...f, title: e.target.value }))}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>{t.maxAttempts}</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={editingLink.maxAttempts}
+                    onChange={(e) => setEditingLink((f) => f && ({ ...f, maxAttempts: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>{t.expiresAtLabel}</Label>
+                  <Input
+                    type="datetime-local"
+                    value={editingLink.expiresAt}
+                    onChange={(e) => setEditingLink((f) => f && ({ ...f, expiresAt: e.target.value }))}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingLink(null)}>{t.cancel}</Button>
+            <Button
+              disabled={!editingLink?.title.trim() || updateMutation.isPending}
+              onClick={() => {
+                if (!editingLink) return;
+                updateMutation.mutate({
+                  id: editingLink.id,
+                  title: editingLink.title,
+                  maxAttempts: parseInt(editingLink.maxAttempts),
+                  expiresAt: new Date(editingLink.expiresAt).toISOString(),
+                });
+              }}
+            >
+              {updateMutation.isPending ? t.loading : t.save}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Results dialog */}
       <Dialog open={!!resultsId} onOpenChange={(o) => !o && setResultsId(null)}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Natijalar</DialogTitle>
           </DialogHeader>
           {results && results.length > 0 ? (
-            <div className="max-h-80 overflow-y-auto">
+            <div className="max-h-[60vh] overflow-y-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Email</TableHead>
+                    <TableHead>#</TableHead>
+                    <TableHead>Ism</TableHead>
+                    <TableHead>Familiya</TableHead>
                     <TableHead>Natija</TableHead>
+                    <TableHead>Foiz</TableHead>
                     <TableHead>Holat</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {results.map((r: TestLinkResultItemDto) => (
-                    <TableRow key={r.attemptId}>
-                      <TableCell className="text-sm">{r.email}</TableCell>
-                      <TableCell className="text-sm">
-                        {r.correctCount !== null && r.correctCount !== undefined
-                          ? `${r.correctCount}/${r.totalQuestions}`
-                          : "—"}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={r.status === "Passed" ? "success" : r.status === "Failed" ? "destructive" : "secondary"}>
-                          {r.status === "Passed" ? "O'tdi" : r.status === "Failed" ? "O'tmadi" : r.status}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {results.map((r: TestLinkResultItemDto, i) => {
+                    const pct = r.totalQuestions > 0 && r.correctCount != null
+                      ? Math.round((r.correctCount / r.totalQuestions) * 100)
+                      : null;
+                    const pctColor = pct == null ? "text-muted-foreground"
+                      : pct < 50 ? "text-red-900 font-semibold"
+                        : pct < 70 ? "text-red-500 font-semibold"
+                          : pct < 90 ? "text-yellow-400 font-semibold"
+                            : "text-emerald-400 font-semibold";
+                    return (
+                      <TableRow key={r.attemptId}>
+                        <TableCell className="text-muted-foreground text-sm">{i + 1}</TableCell>
+                        <TableCell className="font-medium">{r.firstName ?? "—"}</TableCell>
+                        <TableCell className="font-medium">{r.lastName ?? "—"}</TableCell>
+                        <TableCell className="text-sm">
+                          {r.correctCount != null ? `${r.correctCount} / ${r.totalQuestions}` : "—"}
+                        </TableCell>
+                        <TableCell className={pctColor}>
+                          {pct != null ? `${pct}%` : "—"}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={r.status === "Passed" ? "success" : r.status === "Failed" ? "destructive" : "secondary"}>
+                            {r.status === "Passed" ? "O'tdi" : r.status === "Failed" ? "O'tmadi" : r.status === "Completed" ? "Yakunlangan" : "Jarayonda"}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>
           ) : (
             <p className="text-center text-muted-foreground py-8">Hali natijalar yo'q</p>
+          )}
+          {results && results.length > 0 && (
+            <DialogFooter>
+              <Button variant="outline" onClick={copyResults}>
+                <Copy className="h-4 w-4 mr-2" />
+                Telegram uchun nusxalash
+              </Button>
+            </DialogFooter>
           )}
         </DialogContent>
       </Dialog>

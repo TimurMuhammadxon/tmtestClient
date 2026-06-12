@@ -31,13 +31,14 @@ import { cn } from "@/lib/utils";
 interface AnswerDraft {
   orderIndex: number;
   textUz: string;
+  textCyrl: string;
   textRu: string;
   isCorrect: boolean;
 }
 
 const defaultAnswers = (): AnswerDraft[] => [
-  { orderIndex: 1, textUz: "", textRu: "", isCorrect: false },
-  { orderIndex: 2, textUz: "", textRu: "", isCorrect: false },
+  { orderIndex: 1, textUz: "", textCyrl: "", textRu: "", isCorrect: false },
+  { orderIndex: 2, textUz: "", textCyrl: "", textRu: "", isCorrect: false },
 ];
 
 function toAnswerInputs(drafts: AnswerDraft[]): AnswerInput[] {
@@ -46,6 +47,7 @@ function toAnswerInputs(drafts: AnswerDraft[]): AnswerInput[] {
     isCorrect: d.isCorrect,
     translations: [
       ...(d.textUz.trim() ? [{ languageCode: "uz-latn", text: d.textUz.trim() }] : []),
+      ...(d.textCyrl.trim() ? [{ languageCode: "uz-cyrl", text: d.textCyrl.trim() }] : []),
       ...(d.textRu.trim() ? [{ languageCode: "ru", text: d.textRu.trim() }] : []),
     ],
   }));
@@ -64,8 +66,11 @@ export function QuestionsPage() {
   // Form state
   const [selectedTopic, setSelectedTopic] = useState("");
   const [textUz, setTextUz] = useState("");
+  const [textCyrl, setTextCyrl] = useState("");
   const [textRu, setTextRu] = useState("");
   const [explanationUz, setExplanationUz] = useState("");
+  const [explanationCyrl, setExplanationCyrl] = useState("");
+  const [explanationRu, setExplanationRu] = useState("");
   const [answers, setAnswers] = useState<AnswerDraft[]>(defaultAnswers());
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -93,7 +98,8 @@ export function QuestionsPage() {
         topicId: selectedTopic,
         translations: [
           { languageCode: "uz-latn", text: textUz, explanation: explanationUz || undefined },
-          ...(textRu ? [{ languageCode: "ru", text: textRu }] : []),
+          ...(textCyrl ? [{ languageCode: "uz-cyrl", text: textCyrl, explanation: explanationCyrl || undefined }] : []),
+          ...(textRu ? [{ languageCode: "ru", text: textRu, explanation: explanationRu || undefined }] : []),
         ],
         answers: toAnswerInputs(answers),
       }),
@@ -111,7 +117,8 @@ export function QuestionsPage() {
   const updateMutation = useMutation({
     mutationFn: async (id: string) => {
       await adminQuestionsApi.upsertTranslation(id, "uz-latn", textUz, explanationUz || undefined);
-      if (textRu) await adminQuestionsApi.upsertTranslation(id, "ru", textRu);
+      if (textCyrl) await adminQuestionsApi.upsertTranslation(id, "uz-cyrl", textCyrl, explanationCyrl || undefined);
+      if (textRu) await adminQuestionsApi.upsertTranslation(id, "ru", textRu, explanationRu || undefined);
       await adminQuestionsApi.update(id, {
         topicId: selectedTopic,
         answers: toAnswerInputs(answers),
@@ -169,8 +176,11 @@ export function QuestionsPage() {
     setEditingId(null);
     setSelectedTopic(topics[0]?.id ?? "");
     setTextUz("");
+    setTextCyrl("");
     setTextRu("");
     setExplanationUz("");
+    setExplanationCyrl("");
+    setExplanationRu("");
     setAnswers(defaultAnswers());
     setDialogOpen(true);
   };
@@ -179,16 +189,21 @@ export function QuestionsPage() {
     setEditingId(q.id);
     const full: QuestionAdminDto = await adminQuestionsApi.getById(q.id);
     const uz = full.translations.find((t) => t.languageCode === "uz-latn");
+    const cyrl = full.translations.find((t) => t.languageCode === "uz-cyrl");
     const ru = full.translations.find((t) => t.languageCode === "ru");
     setSelectedTopic(full.topicId);
     setTextUz(uz?.text ?? "");
+    setTextCyrl(cyrl?.text ?? "");
     setTextRu(ru?.text ?? "");
     setExplanationUz(uz?.explanation ?? "");
+    setExplanationCyrl(cyrl?.explanation ?? "");
+    setExplanationRu(ru?.explanation ?? "");
     setAnswers(
       full.answers.map((a) => ({
         orderIndex: a.orderIndex,
         isCorrect: a.isCorrect,
         textUz: a.translations.find((t) => t.languageCode === "uz-latn")?.text ?? "",
+        textCyrl: a.translations.find((t) => t.languageCode === "uz-cyrl")?.text ?? "",
         textRu: a.translations.find((t) => t.languageCode === "ru")?.text ?? "",
       }))
     );
@@ -230,7 +245,7 @@ export function QuestionsPage() {
     if (answers.length >= 6) return;
     setAnswers((prev) => [
       ...prev,
-      { orderIndex: prev.length + 1, textUz: "", textRu: "", isCorrect: false },
+      { orderIndex: prev.length + 1, textUz: "", textCyrl: "", textRu: "", isCorrect: false },
     ]);
   };
 
@@ -399,6 +414,7 @@ export function QuestionsPage() {
           <Tabs defaultValue="uz">
             <TabsList className="mb-4">
               <TabsTrigger value="uz">O'zbek (uz-latn)</TabsTrigger>
+              <TabsTrigger value="cyrl">Ўзбек (uz-cyrl)</TabsTrigger>
               <TabsTrigger value="ru">Русский (ru)</TabsTrigger>
               <TabsTrigger value="answers">Javoblar</TabsTrigger>
               <TabsTrigger value="meta">Meta</TabsTrigger>
@@ -425,6 +441,27 @@ export function QuestionsPage() {
               </div>
             </TabsContent>
 
+            <TabsContent value="cyrl" className="space-y-4">
+              <div className="space-y-2">
+                <Label>Савол матни (uz-cyrl) — ихтиёрий</Label>
+                <Textarea
+                  rows={3}
+                  placeholder="Савол матнини киритинг..."
+                  value={textCyrl}
+                  onChange={(e) => setTextCyrl(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Тушунтириш (ихтиёрий)</Label>
+                <Textarea
+                  rows={2}
+                  placeholder="Тўғри жавоб учун тушунтириш..."
+                  value={explanationCyrl}
+                  onChange={(e) => setExplanationCyrl(e.target.value)}
+                />
+              </div>
+            </TabsContent>
+
             <TabsContent value="ru" className="space-y-4">
               <div className="space-y-2">
                 <Label>Текст вопроса (ru) — необязательно</Label>
@@ -433,6 +470,15 @@ export function QuestionsPage() {
                   placeholder="Введите текст вопроса..."
                   value={textRu}
                   onChange={(e) => setTextRu(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Объяснение (необязательно)</Label>
+                <Textarea
+                  rows={2}
+                  placeholder="Объяснение правильного ответа..."
+                  value={explanationRu}
+                  onChange={(e) => setExplanationRu(e.target.value)}
                 />
               </div>
             </TabsContent>
@@ -487,6 +533,11 @@ export function QuestionsPage() {
                     placeholder="Javob matni (uz-latn) *"
                     value={answer.textUz}
                     onChange={(e) => setAnswer(i, "textUz", e.target.value)}
+                  />
+                  <Input
+                    placeholder="Жавоб матни (uz-cyrl) — ихтиёрий"
+                    value={answer.textCyrl}
+                    onChange={(e) => setAnswer(i, "textCyrl", e.target.value)}
                   />
                   <Input
                     placeholder="Javob matni (ru) — ixtiyoriy"

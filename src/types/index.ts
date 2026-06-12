@@ -239,12 +239,19 @@ export interface PublicTestLinkDto {
 
 export interface TestLinkResultItemDto {
   userId: string;
-  email: string;
+  firstName?: string;
+  lastName?: string;
   attemptId: string;
   status: AttemptStatus;
   correctCount?: number;
   totalQuestions: number;
   finishedAt?: string;
+}
+
+export interface TestLinkResultsDto {
+  testLinkId: string;
+  title: string;
+  results: TestLinkResultItemDto[];
 }
 
 // Teacher Applications
