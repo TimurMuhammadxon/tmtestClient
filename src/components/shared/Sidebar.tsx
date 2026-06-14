@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth";
+import { type AuthUser } from "@/types";
 import { authApi } from "@/api/auth";
 import { profileApi } from "@/api/profile";
 import { t } from "@/lib/i18n";
@@ -233,7 +234,7 @@ export function Sidebar({ collapsed, onToggle, mobile, onClose }: SidebarProps) 
   );
 }
 
-function SettingsModal({ user, onClose }: { user: ReturnType<typeof useAuthStore>["user"]; onClose: () => void }) {
+function SettingsModal({ user, onClose }: { user: AuthUser | null; onClose: () => void }) {
   const setTokens = useAuthStore((s) => s.setTokens);
   const refreshToken = useAuthStore((s) => s.refreshToken);
   const [tab, setTab] = useState<"profile" | "credentials">("profile");

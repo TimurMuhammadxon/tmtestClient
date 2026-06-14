@@ -2,7 +2,6 @@ import { api } from "./axios";
 import {
   type TestLinkDto,
   type PublicTestLinkDto,
-  type TestLinkResultItemDto,
   type TestLinkResultsDto,
   type PagedResult,
 } from "@/types";
