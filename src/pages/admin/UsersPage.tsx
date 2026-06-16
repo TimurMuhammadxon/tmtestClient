@@ -109,6 +109,7 @@ export function UsersPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Ism Familiya</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead className="w-28">Rol</TableHead>
                 <TableHead className="w-44">Obuna tugashi</TableHead>
@@ -123,6 +124,7 @@ export function UsersPage() {
                   : true;
                 return (
                   <TableRow key={u.id}>
+                    <TableCell className="text-sm">{[u.firstName, u.lastName].filter(Boolean).join(" ") || "—"}</TableCell>
                     <TableCell className="font-mono text-sm">{u.email}</TableCell>
                     <TableCell>
                       <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${ROLE_COLORS[u.role] ?? "bg-slate-900/50 text-slate-400"}`}>
