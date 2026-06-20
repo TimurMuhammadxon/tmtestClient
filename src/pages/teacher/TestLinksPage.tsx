@@ -19,7 +19,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { PageLoader } from "@/components/shared/LoadingSpinner";
-import { t, getFlowLabel } from "@/lib/i18n";
+import { useTranslation, getFlowLabel } from "@/lib/i18n";
 import { Plus, Copy, XCircle, CheckCircle, BarChart2, Send, Trash2, ChevronLeft, ChevronRight, Pencil } from "lucide-react";
 import { useState } from "react";
 import { format, addDays } from "date-fns";
@@ -35,6 +35,7 @@ const FLOW_OPTIONS = [
 ];
 
 export function TestLinksPage() {
+  const t = useTranslation();
   const qc = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
   const [editingLink, setEditingLink] = useState<{ id: string; title: string; maxAttempts: string; expiresAt: string } | null>(null);

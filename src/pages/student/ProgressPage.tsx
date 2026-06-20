@@ -5,33 +5,42 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { PageLoader } from "@/components/shared/LoadingSpinner";
-import { t, getFlowLabel } from "@/lib/i18n";
+import { useTranslation, getFlowLabel } from "@/lib/i18n";
 import { format } from "date-fns";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-function getGradeBadge(grade: string) {
-  switch (grade) {
-    case "A'lo": return <Badge variant="success">A'lo</Badge>;
-    case "Yaxshi": return <Badge className="bg-blue-950/60 text-blue-400 border-blue-800/50">Yaxshi</Badge>;
-    case "Naqsh": return <Badge variant="warning">Takrorlash kerak</Badge>;
-    case "Kritik": return <Badge variant="destructive">Kritik</Badge>;
-    default: return <Badge variant="outline">{grade}</Badge>;
-  }
+function useGradeBadge() {
+  const t = useTranslation();
+  return (grade: string) => {
+    switch (grade) {
+      case "A'lo": return <Badge variant="success">{t.excellent}</Badge>;
+      case "Yaxshi": return <Badge className="bg-blue-950/60 text-blue-400 border-blue-800/50">{t.good}</Badge>;
+      case "Naqsh": return <Badge variant="warning">{t.needRepeat}</Badge>;
+      case "Kritik": return <Badge variant="destructive">{t.critical}</Badge>;
+      default: return <Badge variant="outline">{grade}</Badge>;
+    }
+  };
 }
 
-function getStatusBadge(status: string) {
-  switch (status) {
-    case "Passed": return <Badge variant="success">O'tdi</Badge>;
-    case "Failed": return <Badge variant="destructive">O'tmadi</Badge>;
-    case "Completed": return <Badge variant="secondary">Yakunlandi</Badge>;
-    default: return <Badge variant="outline">Davom etmoqda</Badge>;
-  }
+function useStatusBadge() {
+  const t = useTranslation();
+  return (status: string) => {
+    switch (status) {
+      case "Passed": return <Badge variant="success">{t.statusPassed}</Badge>;
+      case "Failed": return <Badge variant="destructive">{t.statusFailed}</Badge>;
+      case "Completed": return <Badge variant="secondary">{t.statusCompleted}</Badge>;
+      default: return <Badge variant="outline">{t.inProgress}</Badge>;
+    }
+  };
 }
 
 export function ProgressPage() {
+  const t = useTranslation();
+  const getGradeBadge = useGradeBadge();
+  const getStatusBadge = useStatusBadge();
   const [historyPage, setHistoryPage] = useState(1);
 
   const { data: topics, isLoading: loadingTopics } = useQuery({
@@ -53,7 +62,7 @@ export function ProgressPage() {
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
         <h1 className="text-2xl font-bold">{t.progress}</h1>
-        <p className="text-muted-foreground mt-1">Sizning o'quv natijalari</p>
+        <p className="text-muted-foreground mt-1">{t.yourResults}</p>
       </div>
 
       <Tabs defaultValue="topics">
@@ -79,7 +88,7 @@ export function ProgressPage() {
                           {getGradeBadge(topic.grade)}
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
-                          {topic.correctCount}/{topic.totalAnswered} to'g'ri
+                          {topic.correctCount}/{topic.totalAnswered} {t.correctShort}
                         </p>
                         <Progress
                           value={topic.accuracyPercent}

@@ -1,9 +1,10 @@
 import axios from "axios";
 import { useAuthStore } from "@/store/auth";
+import { useLanguageStore } from "@/store/language";
 
 export const api = axios.create({
   baseURL: "/api",
-  headers: { "Content-Type": "application/json", "Accept-Language": "uz-latn" },
+  headers: { "Content-Type": "application/json" },
 });
 
 api.interceptors.request.use((config) => {
@@ -11,6 +12,7 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  config.headers["Accept-Language"] = useLanguageStore.getState().lang;
   return config;
 });
 

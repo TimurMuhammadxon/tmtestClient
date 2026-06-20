@@ -1,9 +1,19 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuthStore } from "@/store/auth";
 import { GraduationCap } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
+import { useLanguageStore, type LangCode } from "@/store/language";
+
+const LANG_OPTIONS: { code: LangCode; label: string }[] = [
+  { code: "uz-latn", label: "UZ" },
+  { code: "ru",      label: "РУ" },
+  { code: "uz-cyrl", label: "ЎЗ" },
+];
 
 export function AuthLayout() {
   const { isAuthenticated } = useAuthStore();
+  const t = useTranslation();
+  const { lang, setLang } = useLanguageStore();
 
   if (isAuthenticated()) {
     return <Navigate to="/dashboard" replace />;
@@ -67,11 +77,27 @@ export function AuthLayout() {
             fontSize: "20px", fontWeight: 700, color: "#e2e8f0",
             letterSpacing: "0.05em", margin: "0",
           }}>
-            YO'L HARAKATI QOIDALARI
+            {t.authTitle}
           </h1>
           <p style={{ color: "rgba(148, 163, 184, 0.6)", fontSize: "13px", marginTop: "4px" }}>
-            Nazariy imtihonlarga tayyorgarlik tizimi
+            {t.authSubtitle}
           </p>
+
+          {/* Language switcher */}
+          <div style={{ display: "flex", gap: 4, justifyContent: "center", marginTop: "12px" }}>
+            {LANG_OPTIONS.map((o) => (
+              <button
+                key={o.code}
+                onClick={() => setLang(o.code)}
+                style={{
+                  padding: "4px 12px", borderRadius: 6, border: "none", cursor: "pointer",
+                  fontSize: 11, fontWeight: 600, fontFamily: "inherit", transition: "all .2s",
+                  background: lang === o.code ? "rgba(0,240,255,0.12)" : "rgba(255,255,255,0.04)",
+                  color: lang === o.code ? "#00f0ff" : "rgba(148,163,184,0.5)",
+                }}
+              >{o.label}</button>
+            ))}
+          </div>
         </div>
 
         {/* Card */}

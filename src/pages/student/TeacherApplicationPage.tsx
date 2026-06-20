@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { PageLoader } from "@/components/shared/LoadingSpinner";
 import { toast } from "@/components/ui/use-toast";
+import { useTranslation } from "@/lib/i18n";
 import { format } from "date-fns";
 import { CheckCircle, Clock, XCircle, GraduationCap } from "lucide-react";
 import { useState } from "react";
@@ -22,6 +23,7 @@ const emptyForm = (): SubmitApplicationInput => ({
 });
 
 export function TeacherApplicationPage() {
+  const t = useTranslation();
   const qc = useQueryClient();
   const [form, setForm] = useState<SubmitApplicationInput>(emptyForm());
   const [resubmitting, setResubmitting] = useState(false);
@@ -36,11 +38,11 @@ export function TeacherApplicationPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["my-teacher-application"] });
       setResubmitting(false);
-      toast({ title: "Ariza yuborildi! Ko'rib chiqamiz." });
+      toast({ title: t.submitApplication });
     },
     onError: (e: unknown) => {
       const msg = (e as { response?: { data?: { detail?: string; title?: string } } })?.response?.data?.detail ?? (e as any)?.response?.data?.title;
-      toast({ variant: "destructive", title: msg ?? "Xatolik yuz berdi" });
+      toast({ variant: "destructive", title: msg ?? t.error });
     },
   });
 
@@ -79,25 +81,20 @@ export function TeacherApplicationPage() {
         </div>
         <div>
           <h1 className="text-2xl font-bold">
-            {resubmitting ? "Arizani qayta yuborish" : "O'qituvchi bo'lish"}
+            {t.applyTeacherTitle}
           </h1>
-          <p className="text-muted-foreground text-sm mt-0.5">
-            {resubmitting
-              ? "Ma'lumotlarni yangilab arizani qayta yuboring"
-              : "Ariza qoldiring — ko'rib chiqqach siz bilan bog'lanamiz"}
-          </p>
         </div>
       </div>
 
       <Card>
         <CardContent className="p-6 space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="fullName">Ism va familiya *</Label>
+            <Label htmlFor="fullName">{t.fullName} *</Label>
             <Input id="fullName" placeholder="Abdullayev Abdulla" {...field("fullName")} />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="phoneNumber">Telefon raqami *</Label>
+            <Label htmlFor="phoneNumber">{t.phoneNumber} *</Label>
             <Input id="phoneNumber" placeholder="+998 90 123 45 67" {...field("phoneNumber")} />
           </div>
 
@@ -107,38 +104,19 @@ export function TeacherApplicationPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="organizationName">Tashkilot nomi</Label>
-            <Input
-              id="organizationName"
-              placeholder="Haydovchilik maktabi nomi"
-              {...field("organizationName")}
-            />
+            <Label htmlFor="organizationName">{t.organizationName}</Label>
+            <Input id="organizationName" {...field("organizationName")} />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="experienceText">Tajriba va malaka</Label>
-            <Textarea
-              id="experienceText"
-              placeholder="Haydovchilik tajribangiz, o'qituvchilik tajribangiz haqida yozing..."
-              rows={4}
-              {...field("experienceText")}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="additionalNotes">Qo'shimcha ma'lumot</Label>
-            <Textarea
-              id="additionalNotes"
-              placeholder="Boshqa aytmoqchi bo'lgan narsalaringiz..."
-              rows={3}
-              {...field("additionalNotes")}
-            />
+            <Label htmlFor="experienceText">{t.name}</Label>
+            <Textarea id="experienceText" rows={4} {...field("experienceText")} />
           </div>
 
           <div className="flex gap-2">
             {resubmitting && (
               <Button variant="outline" className="flex-1" onClick={() => setResubmitting(false)}>
-                Bekor qilish
+                {t.cancel}
               </Button>
             )}
             <Button
@@ -146,7 +124,7 @@ export function TeacherApplicationPage() {
               onClick={() => submitMutation.mutate(form)}
               disabled={!form.fullName.trim() || !form.phoneNumber.trim() || submitMutation.isPending}
             >
-              {submitMutation.isPending ? "Yuborilmoqda..." : resubmitting ? "Qayta yuborish" : "Ariza yuborish"}
+              {submitMutation.isPending ? t.loading : t.submitApplication}
             </Button>
           </div>
         </CardContent>
@@ -162,33 +140,32 @@ function ApplicationStatus({
   app: NonNullable<Awaited<ReturnType<typeof teacherApplicationApi.getMy>>>;
   onResubmit?: () => void;
 }) {
+  const t = useTranslation();
+
   const config = {
     Pending: {
       icon: Clock,
       color: "text-amber-400",
-      bg: "",
       bgStyle: { background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.15)" },
-      badge: <Badge variant="secondary">Ko'rib chiqilmoqda</Badge>,
-      title: "Arizangiz ko'rib chiqilmoqda",
-      desc: "Tez orada siz bilan bog'lanamiz.",
+      badge: <Badge variant="secondary">{t.pending}</Badge>,
+      title: t.applicationPending,
+      desc: "",
     },
     Approved: {
       icon: CheckCircle,
       color: "text-emerald-400",
-      bg: "",
       bgStyle: { background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.15)" },
-      badge: <Badge variant="success">Tasdiqlandi</Badge>,
-      title: "Tabriklaymiz! Arizangiz tasdiqlandi",
-      desc: "Endi o'qituvchi sifatida guruh va test havolalar yaratishingiz mumkin.",
+      badge: <Badge variant="success">{t.approved}</Badge>,
+      title: t.applicationApproved,
+      desc: "",
     },
     Rejected: {
       icon: XCircle,
       color: "text-red-400",
-      bg: "",
       bgStyle: { background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.15)" },
-      badge: <Badge variant="destructive">Rad etildi</Badge>,
-      title: "Ariza rad etildi",
-      desc: app.rejectionReason ?? "Batafsil ma'lumot uchun administrator bilan bog'laning.",
+      badge: <Badge variant="destructive">{t.rejected}</Badge>,
+      title: t.applicationRejected,
+      desc: app.rejectionReason ?? "",
     },
   }[app.status];
 
@@ -197,7 +174,7 @@ function ApplicationStatus({
   return (
     <div className="max-w-xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">O'qituvchi arizasi</h1>
+        <h1 className="text-2xl font-bold">{t.applyTeacher}</h1>
       </div>
 
       <Card>
@@ -206,33 +183,25 @@ function ApplicationStatus({
             <Icon className={`h-6 w-6 flex-shrink-0 mt-0.5 ${config.color}`} />
             <div>
               <p className="font-semibold">{config.title}</p>
-              <p className="text-sm text-muted-foreground mt-1">{config.desc}</p>
+              {config.desc && <p className="text-sm text-muted-foreground mt-1">{config.desc}</p>}
             </div>
           </div>
 
           <dl className="space-y-3 text-sm">
-            <Row label="Holat" value={config.badge} />
-            <Row label="Ism" value={app.fullName} />
-            <Row label="Telefon" value={app.phoneNumber} />
+            <Row label={t.status} value={config.badge} />
+            <Row label={t.fullName} value={app.fullName} />
+            <Row label={t.phoneNumber} value={app.phoneNumber} />
             {app.telegramUsername && <Row label="Telegram" value={app.telegramUsername} />}
-            {app.organizationName && <Row label="Tashkilot" value={app.organizationName} />}
-            <Row
-              label="Yuborilgan sana"
-              value={format(new Date(app.submittedAt), "dd.MM.yyyy HH:mm")}
-            />
+            {app.organizationName && <Row label={t.organizationName} value={app.organizationName} />}
+            <Row label={t.createdAt} value={format(new Date(app.submittedAt), "dd.MM.yyyy HH:mm")} />
             {app.reviewedAt && (
-              <Row
-                label="Ko'rib chiqilgan"
-                value={format(new Date(app.reviewedAt), "dd.MM.yyyy HH:mm")}
-              />
+              <Row label={t.approved} value={format(new Date(app.reviewedAt), "dd.MM.yyyy HH:mm")} />
             )}
           </dl>
 
           {app.status === "Rejected" && onResubmit && (
             <div className="mt-5 pt-4 border-t">
-              <Button className="w-full" onClick={onResubmit}>
-                Qayta ariza yuborish
-              </Button>
+              <Button className="w-full" onClick={onResubmit}>{t.submitApplication}</Button>
             </div>
           )}
         </CardContent>

@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { CreateTestLinkDialog } from "@/components/shared/CreateTestLinkDialog";
 import { useAuthStore } from "@/store/auth";
 import { toast } from "@/components/ui/use-toast";
+import { useTranslation } from "@/lib/i18n";
 import type { RecentAttemptDto, TopicProgressDto, PublicBiletListItemDto } from "@/types";
 
 // ─── Micro-components ─────────────────────────────────────────────────────────
@@ -70,14 +71,14 @@ function MiniBar({ value, max = 100, color }: { value: number; max?: number; col
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 // JS getDay(): 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
-const DAY_LABELS = ["Ya", "Du", "Se", "Ch", "Pa", "Ju", "Sh"];
+const DAY_LABELS_KEY = ["daySun", "dayMon", "dayTue", "dayWed", "dayThu", "dayFri", "daySat"] as const;
 
-function deriveWeeklyData(recentAttempts?: RecentAttemptDto[]) {
+function deriveWeeklyData(recentAttempts: RecentAttemptDto[] | undefined, dayLabels: string[]) {
   const today = new Date();
   return Array.from({ length: 7 }, (_, i) => {
     const target = new Date(today);
     target.setDate(today.getDate() - (6 - i));
-    const day = DAY_LABELS[target.getDay()];
+    const day = dayLabels[target.getDay()];
     const dayAttempts = (recentAttempts ?? []).filter((a) => {
       const d = new Date(a.startedAt);
       return d.toDateString() === target.toDateString() && a.status !== "InProgress";
@@ -100,11 +101,14 @@ function attemptStatusColor(status: string) {
   return "#6366f1";
 }
 
-function attemptStatusLabel(status: string) {
-  if (status === "Passed") return "O'tdi";
-  if (status === "Failed") return "O'tmadi";
-  if (status === "Completed") return "Yakunlandi";
-  return "Jarayonda";
+function useAttemptStatusLabel() {
+  const t = useTranslation();
+  return (status: string) => {
+    if (status === "Passed") return t.statusPassed;
+    if (status === "Failed") return t.statusFailed;
+    if (status === "Completed") return t.statusCompleted;
+    return t.statusInProgress;
+  };
 }
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
@@ -140,6 +144,8 @@ const CSS = `
 export function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  const t = useTranslation();
+  const attemptStatusLabel = useAttemptStatusLabel();
   const isTeacher = !!(user && ["Teacher", "Admin", "SuperAdmin", "Owner"].includes(user.role));
 
   const [activeTab, setActiveTab] = useState<"overview" | "bilets" | "topics">("overview");
@@ -190,14 +196,15 @@ export function DashboardPage() {
         setSubModal(true);
       } else {
         const msg = (e as any)?.response?.data?.title ?? detail;
-        toast({ variant: "destructive", title: msg ?? "Test boshlanmadi. Qayta urinib ko'ring." });
+        toast({ variant: "destructive", title: msg ?? t.testFailed });
       }
     } finally {
       setStarting(null);
     }
   };
 
-  const weeklyData = deriveWeeklyData(dashboard?.recentAttempts);
+  const dayLabels = DAY_LABELS_KEY.map((k) => t[k]);
+  const weeklyData = deriveWeeklyData(dashboard?.recentAttempts, dayLabels);
   const activeTopics = (topics ?? []).filter((t) => !t.isDemo);
   const allBilets = bilets ?? [];
   const sortedTopics = [...(topicProgress ?? [])].sort((a, b) => a.orderIndex - b.orderIndex);
@@ -265,13 +272,13 @@ export function DashboardPage() {
               <span style={{ fontSize: 20 }}>{subDaysLeft <= 0 ? "🔴" : "⚠️"}</span>
               <span style={{ fontSize: 14, color: subDaysLeft <= 0 ? "#f87171" : "#fbbf24", fontWeight: 500 }}>
                 {subDaysLeft <= 0
-                  ? "Obuna muddati tugadi. Testlarni ishlash uchun to'lovni amalga oshiring."
+                  ? t.subExpired
                   : subDaysLeft === 1
-                    ? "Obuna muddati bugun tugaydi! To'lovni amalga oshiring."
-                    : `Obuna muddati ${subDaysLeft} kundan so'ng tugaydi. To'lovni kechiktirmang.`}
+                    ? t.subExpirestoday
+                    : t.subExpiresSoon.replace("{days}", String(subDaysLeft))}
               </span>
             </div>
-            <span style={{ fontSize: 13, color: "#94a3b8", whiteSpace: "nowrap" }}>To'lash →</span>
+            <span style={{ fontSize: 13, color: "#94a3b8", whiteSpace: "nowrap" }}>{t.pay} →</span>
           </div>
         )}
 
@@ -282,7 +289,7 @@ export function DashboardPage() {
               <img src="/pravadrive-logo-horizontal.svg" alt="pravadrive" style={{ height: 40, width: "auto" }} />
             </div>
             <p style={{ fontSize: 13, color: "#64748b", marginLeft: 54 }}>
-              Salom, <span style={{ color: "#94a3b8", fontWeight: 500 }}>{user?.firstName ?? user?.email?.split("@")[0]}</span>! Bugun ham mashq qilamizmi?
+              {t.hello}, <span style={{ color: "#94a3b8", fontWeight: 500 }}>{user?.firstName ?? user?.email?.split("@")[0]}</span>! {t.practiceToday}
             </p>
           </div>
           <div className="dp-header-btns">
@@ -301,7 +308,7 @@ export function DashboardPage() {
               onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "#94a3b8"; }}
             >
               <img src="/pravadrive-icon-obuna.svg" alt="" style={{ width: 18, height: 18 }} />
-              Obuna
+              {t.subscription}
             </button>
             <button
               disabled={!!starting}
@@ -313,7 +320,7 @@ export function DashboardPage() {
                 opacity: starting === "4" ? 0.7 : 1,
               }}
             >
-              ⚡ {starting === "4" ? "Yuklanmoqda..." : "Imtihon boshlash"}
+              ⚡ {starting === "4" ? t.loading : t.startExam}
             </button>
           </div>
         </div>
@@ -321,10 +328,10 @@ export function DashboardPage() {
         {/* ── Stats cards ── */}
         <div className="dp-stats-grid" style={{ animation: mounted ? "dp-slideUp .6s ease .1s both" : "none" }}>
           {([
-            { label: "Imtihon ehtimoli", value: examPrediction, suffix: "%", color: "#00f0ff", icon: "/pravadrive-icon-otish-ehtimoli.svg", sub: examPrediction >= 70 ? "Zo'r natija!" : "Ko'proq mashq" },
-            { label: "To'g'rilik darajasi", value: accuracy, suffix: "%", color: "#10b981", icon: "/pravadrive-icon-togrilik.svg", sub: `${totalAnswered} ta javob berildi` },
-            { label: "To'g'ri javoblar", value: totalCorrect, suffix: "", color: "#8b5cf6", icon: "/pravadrive-icon-natijalarim.svg", sub: `${totalAnswered} ta savoldan` },
-            { label: "Ketma-ket kunlar", value: streak, suffix: "", color: "#f59e0b", icon: "🔥", sub: `Rekord: ${dashboard?.longestStreak ?? 0} kun` },
+            { label: t.examProbability, value: examPrediction, suffix: "%", color: "#00f0ff", icon: "/pravadrive-icon-otish-ehtimoli.svg", sub: examPrediction >= 70 ? t.greatResult : t.morePractice },
+            { label: t.accuracyRate, value: accuracy, suffix: "%", color: "#10b981", icon: "/pravadrive-icon-togrilik.svg", sub: `${totalAnswered} ${t.answersGiven}` },
+            { label: t.correctAnswers, value: totalCorrect, suffix: "", color: "#8b5cf6", icon: "/pravadrive-icon-natijalarim.svg", sub: `${totalAnswered} ${t.outOfQuestions}` },
+            { label: t.consecutiveDays, value: streak, suffix: "", color: "#f59e0b", icon: "🔥", sub: `${t.record}: ${dashboard?.longestStreak ?? 0} ${t.days}` },
           ] as const).map((card, i) => (
             <div
               key={i}
@@ -358,7 +365,7 @@ export function DashboardPage() {
             {/* Tabs */}
             <div style={{ display: "flex", gap: 3, marginBottom: 26, padding: 4, borderRadius: 12, background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.06)", width: "fit-content" }}>
               {(["overview", "bilets", "topics"] as const).map((tab) => {
-                const labels = { overview: "📊 Umumiy", bilets: "📋 Biletlar", topics: "📚 Mavzular" };
+                const labels = { overview: `📊 ${t.overview}`, bilets: `📋 ${t.bilets}`, topics: `📚 ${t.topics}` };
                 const active = activeTab === tab;
                 return (
                   <button
@@ -379,8 +386,8 @@ export function DashboardPage() {
             {activeTab === "overview" && (
               <>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-                  <h2 style={{ fontSize: 15, fontWeight: 700, color: "#e2e8f0" }}>Haftalik faollik</h2>
-                  <span style={{ fontSize: 11, color: "#64748b", padding: "4px 12px", borderRadius: 8, background: "rgba(255,255,255,.04)" }}>So'nggi 7 kun</span>
+                  <h2 style={{ fontSize: 15, fontWeight: 700, color: "#e2e8f0" }}>{t.weeklyActivity}</h2>
+                  <span style={{ fontSize: 11, color: "#64748b", padding: "4px 12px", borderRadius: 8, background: "rgba(255,255,255,.04)" }}>{t.last7Days}</span>
                 </div>
 
                 {/* Bar chart */}
@@ -427,7 +434,7 @@ export function DashboardPage() {
                 {/* Weak topics */}
                 {(dashboard?.weakTopics ?? []).length > 0 && (
                   <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px solid rgba(255,255,255,.06)" }}>
-                    <h3 style={{ fontSize: 11, fontWeight: 600, color: "#64748b", marginBottom: 14, textTransform: "uppercase", letterSpacing: "0.08em" }}>Zaif mavzular</h3>
+                    <h3 style={{ fontSize: 11, fontWeight: 600, color: "#64748b", marginBottom: 14, textTransform: "uppercase", letterSpacing: "0.08em" }}>{t.weakTopicsLabel}</h3>
                     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                       {(dashboard?.weakTopics ?? []).slice(0, 4).map((topic, i) => (
                         <div key={i}>
@@ -445,7 +452,7 @@ export function DashboardPage() {
                 {!dashboard && (
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 200, color: "#475569" }}>
                     <span style={{ fontSize: 40, marginBottom: 12 }}>📊</span>
-                    <p style={{ fontSize: 13 }}>Hali statistika yo'q. Test boshlang!</p>
+                    <p style={{ fontSize: 13 }}>{t.noStatsYet}</p>
                   </div>
                 )}
               </>
@@ -455,13 +462,13 @@ export function DashboardPage() {
             {activeTab === "bilets" && (
               <>
                 <h2 style={{ fontSize: 15, fontWeight: 700, color: "#e2e8f0", marginBottom: 18 }}>
-                  Barcha biletlar
-                  <span style={{ fontSize: 12, color: "#64748b", fontWeight: 400, marginLeft: 10 }}>{allBilets.length} ta</span>
+                  {t.allBilets}
+                  <span style={{ fontSize: 12, color: "#64748b", fontWeight: 400, marginLeft: 10 }}>{allBilets.length}</span>
                 </h2>
                 {allBilets.length === 0 ? (
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 240, color: "#475569" }}>
                     <span style={{ fontSize: 40, marginBottom: 12 }}>📋</span>
-                    <p style={{ fontSize: 13 }}>Hozircha faol biletlar yo'q</p>
+                    <p style={{ fontSize: 13 }}>{t.noActiveBilets}</p>
                   </div>
                 ) : (
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 10, maxHeight: 460, overflowY: "auto", paddingRight: 2 }}>
@@ -493,8 +500,8 @@ export function DashboardPage() {
                                 <span style={{ fontSize: 12, fontWeight: 700, color, fontFamily: "'JetBrains Mono', monospace" }}>{bilet.number}</span>
                               </div>
                               <div>
-                                <div style={{ fontWeight: 600, fontSize: 13, color: "#e2e8f0" }}>Bilet #{bilet.number}</div>
-                                <div style={{ fontSize: 11, color: "#475569" }}>{bilet.questionCount} ta savol</div>
+                                <div style={{ fontWeight: 600, fontSize: 13, color: "#e2e8f0" }}>{t.bilet} #{bilet.number}</div>
+                                <div style={{ fontSize: 11, color: "#475569" }}>{bilet.questionCount} {t.questionsCount}</div>
                               </div>
                             </div>
                             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -513,7 +520,7 @@ export function DashboardPage() {
                             </div>
                           </div>
                           <div style={{ fontSize: 11, fontWeight: 600, color, display: "flex", alignItems: "center", gap: 5 }}>
-                            {isStarting ? "⏳ Yuklanmoqda..." : "▶ Boshlash"}
+                            {isStarting ? `⏳ ${t.loading}` : `▶ ${t.start}`}
                           </div>
                         </div>
                       );
@@ -527,13 +534,13 @@ export function DashboardPage() {
             {activeTab === "topics" && (
               <>
                 <h2 style={{ fontSize: 15, fontWeight: 700, color: "#e2e8f0", marginBottom: 18 }}>
-                  Mavzular bo'yicha progress
-                  <span style={{ fontSize: 12, color: "#64748b", fontWeight: 400, marginLeft: 10 }}>{sortedTopics.length} ta</span>
+                  {t.topicsProgressLabel}
+                  <span style={{ fontSize: 12, color: "#64748b", fontWeight: 400, marginLeft: 10 }}>{sortedTopics.length}</span>
                 </h2>
                 {sortedTopics.length === 0 ? (
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 240, color: "#475569" }}>
                     <span style={{ fontSize: 40, marginBottom: 12 }}>📚</span>
-                    <p style={{ fontSize: 13 }}>Hali mavzular bo'yicha statistika yo'q</p>
+                    <p style={{ fontSize: 13 }}>{t.noTopicStatsYet}</p>
                   </div>
                 ) : (
                   <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: 480, overflowY: "auto", paddingRight: 2 }}>
@@ -562,7 +569,7 @@ export function DashboardPage() {
                               </div>
                               <div>
                                 <div style={{ fontWeight: 600, fontSize: 13, color: "#e2e8f0", lineHeight: 1.3 }}>{topic.topicName}</div>
-                                <div style={{ fontSize: 10, color: "#475569" }}>{topic.totalAnswered} ta javob berildi</div>
+                                <div style={{ fontSize: 10, color: "#475569" }}>{topic.totalAnswered} {t.answersGiven}</div>
                               </div>
                             </div>
                             <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
@@ -599,7 +606,7 @@ export function DashboardPage() {
             {/* Readiness ring */}
             <div style={{ ...panel(), display: "flex", flexDirection: "column", alignItems: "center", animation: "dp-glow 4s ease-in-out infinite" }}>
               <h3 style={{ fontSize: 11, fontWeight: 600, color: "#64748b", marginBottom: 18, textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                Imtihon tayyorligi
+                {t.examReadiness}
               </h3>
               <div style={{ position: "relative", marginBottom: 14 }}>
                 <CircularProgress value={examPrediction} size={140} stroke={10} />
@@ -610,20 +617,20 @@ export function DashboardPage() {
                 </div>
               </div>
               <p style={{ fontSize: 12, color: "#64748b", textAlign: "center", lineHeight: 1.6 }}>
-                {examPrediction >= 80 ? "🎉 Ajoyib! Imtihonga tayyorsiz." : examPrediction >= 60 ? "💪 Yaxshi natija, davom eting!" : "📖 Ko'proq mashq qilish kerak"}
+                {examPrediction >= 80 ? `🎉 ${t.readinessGreat}` : examPrediction >= 60 ? `💪 ${t.readinessGood}` : `📖 ${t.readinessNeedMore}`}
               </p>
             </div>
 
             {/* Quick actions */}
             <div style={panel()}>
               <h3 style={{ fontSize: 11, fontWeight: 600, color: "#64748b", marginBottom: 14, textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                Tezkor harakatlar
+                {t.quickActions}
               </h3>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {([
-                  { label: "Imtihon rejimi", icon: "/pravadrive-icon-imtihon.svg", color: "#ef4444", desc: "20 ta savol · 25 daqiqa", flowKey: "4", flowType: 4, teacherLabel: "Imtihon" },
-                  { label: "Marafon", icon: "/pravadrive-icon-marafon.svg", color: "#f59e0b", desc: "Barcha faol savollar", flowKey: "5", flowType: 5, teacherLabel: "Marafon" },
-                  { label: "Ixtiyoriy test", icon: "/pravadrive-icon-ixtiyoriy.svg", color: "#8b5cf6", desc: "Mavzularni tanlang", flowKey: "custom", flowType: 3 as const, teacherLabel: null },
+                  { label: t.examMode, icon: "/pravadrive-icon-imtihon.svg", color: "#ef4444", desc: t.examModeDesc, flowKey: "4", flowType: 4, teacherLabel: t.examMode },
+                  { label: t.marathon, icon: "/pravadrive-icon-marafon.svg", color: "#f59e0b", desc: t.marathonDesc, flowKey: "5", flowType: 5, teacherLabel: t.marathon },
+                  { label: t.customTest, icon: "/pravadrive-icon-ixtiyoriy.svg", color: "#8b5cf6", desc: t.customTestDesc, flowKey: "custom", flowType: 3 as const, teacherLabel: null },
                 ] as const).map((action, i) => (
                   <div
                     key={i}
@@ -647,7 +654,7 @@ export function DashboardPage() {
                     <img src={action.icon} alt="" style={{ width: 28, height: 28, flexShrink: 0 }} />
                     <div style={{ flex: 1 }}>
                       <div style={{ fontWeight: 600, fontSize: 12, color: "#e2e8f0" }}>
-                        {starting === action.flowKey ? "Yuklanmoqda..." : action.label}
+                        {starting === action.flowKey ? t.loading : action.label}
                       </div>
                       <div style={{ fontSize: 10, color: "#475569", marginTop: 1 }}>{action.desc}</div>
                     </div>
@@ -669,8 +676,8 @@ export function DashboardPage() {
             {(dashboard?.recentAttempts ?? []).length > 0 && (
               <div style={panel()}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-                  <h3 style={{ fontSize: 11, fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.08em" }}>So'nggi urinishlar</h3>
-                  <button onClick={() => navigate("/progress")} style={{ fontSize: 11, color: "#6366f1", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>Barchasi →</button>
+                  <h3 style={{ fontSize: 11, fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.08em" }}>{t.recentAttempts}</h3>
+                  <button onClick={() => navigate("/progress")} style={{ fontSize: 11, color: "#6366f1", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>{t.allAttempts} →</button>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
                   {(dashboard?.recentAttempts ?? []).slice(0, 4).map((attempt) => {
@@ -747,19 +754,19 @@ export function DashboardPage() {
               style={{ position: "absolute", top: 16, right: 16, width: 28, height: 28, borderRadius: 8, border: "1px solid rgba(255,255,255,.1)", background: "rgba(255,255,255,.04)", cursor: "pointer", color: "#64748b", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}
             >×</button>
             <img src="/pravadrive-icon-obuna.svg" alt="" style={{ width: 56, height: 56, margin: "0 auto 16px" }} />
-            <h3 style={{ fontSize: 20, fontWeight: 700, color: "#e2e8f0", marginBottom: 8 }}>Obuna kerak</h3>
+            <h3 style={{ fontSize: 20, fontWeight: 700, color: "#e2e8f0", marginBottom: 8 }}>{t.subscriptionRequired}</h3>
             <p style={{ fontSize: 14, color: "#64748b", marginBottom: 28, lineHeight: 1.6 }}>
-              Barcha test rejimlaridan foydalanish uchun faol obuna kerak
+              {t.subscriptionRequiredDesc}
             </p>
             <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
               <button
                 onClick={() => setSubModal(false)}
                 style={{ padding: "10px 20px", borderRadius: 10, background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.1)", color: "#94a3b8", cursor: "pointer", fontSize: 14, fontFamily: "inherit" }}
-              >Yopish</button>
+              >{t.close}</button>
               <button
                 onClick={() => { setSubModal(false); navigate("/subscription"); }}
                 style={{ padding: "10px 20px", borderRadius: 10, background: "linear-gradient(135deg,#00f0ff,#6366f1)", border: "none", color: "#0a0a0f", cursor: "pointer", fontSize: 14, fontWeight: 700, fontFamily: "inherit" }}
-              >Obuna olish →</button>
+              >{t.getSubscription} →</button>
             </div>
           </div>
         </div>
@@ -777,6 +784,7 @@ function CustomTestDialog({ open, onClose, topics, onStart, isStarting }: {
   onStart: (topicIds: string[], count: number) => void;
   isStarting: boolean;
 }) {
+  const t = useTranslation();
   const [selected, setSelected] = useState<string[]>([]);
   const [count, setCount] = useState(20);
 
@@ -788,18 +796,18 @@ function CustomTestDialog({ open, onClose, topics, onStart, isStarting }: {
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-lg max-h-[85vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>Ixtiyoriy test sozlamalari</DialogTitle>
+          <DialogTitle>{t.customTestSettings}</DialogTitle>
         </DialogHeader>
         <div className="flex-1 overflow-y-auto space-y-5 py-2 pr-1">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium">Mavzular</p>
+              <p className="text-sm font-medium">{t.topics}</p>
               <button className="text-xs text-primary hover:underline" onClick={toggleAll}>
-                {selected.length === topics.length ? "Barchasini olib tashlash" : "Barchasini tanlash"}
+                {selected.length === topics.length ? t.deselectAll : t.selectAll}
               </button>
             </div>
             <p className="text-xs text-muted-foreground">
-              {selected.length === 0 ? "Hech biri tanlanmagan — barcha mavzulardan olinadi" : `${selected.length} ta mavzu tanlangan`}
+              {selected.length === 0 ? t.noneSelected : `${selected.length} ${t.selectedCount}`}
             </p>
             <div className="border rounded-lg divide-y max-h-52 overflow-y-auto">
               {topics.map((t) => (
@@ -812,20 +820,20 @@ function CustomTestDialog({ open, onClose, topics, onStart, isStarting }: {
           </div>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium">Savol soni</p>
+              <p className="text-sm font-medium">{t.questionCount}</p>
               <span className="text-2xl font-bold text-primary">{count}</span>
             </div>
             <Slider min={5} max={100} step={5} value={[count]} onValueChange={([v]) => setCount(v)} />
             <div className="flex justify-between text-xs text-muted-foreground"><span>5</span><span>100</span></div>
           </div>
           <div className="rounded-lg bg-muted/50 p-3 space-y-1 text-sm">
-            <div>{effectiveTopics.length === topics.length ? "Barcha mavzular" : `${effectiveTopics.length} ta mavzu`} · {count} ta savol · Vaqt chegarasi yo'q</div>
+            <div>{effectiveTopics.length === topics.length ? t.allTopics : `${effectiveTopics.length} ${t.selectedCount}`} · {count} {t.questionsCount} · {t.noTimeLimit}</div>
           </div>
         </div>
         <DialogFooter className="pt-2">
-          <Button variant="outline" onClick={onClose}>Bekor</Button>
+          <Button variant="outline" onClick={onClose}>{t.cancel}</Button>
           <Button onClick={() => onStart(effectiveTopics, count)} disabled={isStarting}>
-            {isStarting ? "Yuklanmoqda..." : "Boshlash"}
+            {isStarting ? t.loading : t.start}
           </Button>
         </DialogFooter>
       </DialogContent>

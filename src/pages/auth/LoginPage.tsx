@@ -7,13 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuthStore } from "@/store/auth";
 import { authApi } from "@/api/auth";
-import { t } from "@/lib/i18n";
+import { useTranslation } from "@/lib/i18n";
 import { useState } from "react";
 import { Eye, EyeOff, LogIn } from "lucide-react";
 
 const schema = z.object({
-  email: z.string().min(1, "Elektron pochta kiritilishi kerak"),
-  password: z.string().min(1, "Parol kiritilishi kerak"),
+  email: z.string().min(1),
+  password: z.string().min(1),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -23,6 +23,7 @@ export function LoginPage() {
   const setTokens = useAuthStore((s) => s.setTokens);
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const t = useTranslation();
 
   const {
     register,
@@ -38,7 +39,7 @@ export function LoginPage() {
       navigate("/dashboard");
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { title?: string } } })?.response?.data?.title;
-      setError(msg ?? "Login yoki parol noto'g'ri");
+      setError(msg ?? t.loginOrPasswordWrong);
     }
   };
 
@@ -49,7 +50,7 @@ export function LoginPage() {
           {t.login}
         </h2>
         <p style={{ color: "rgba(148, 163, 184, 0.6)", fontSize: "13px", marginTop: "4px" }}>
-          Hisobingizga kiring
+          {t.enterAccount}
         </p>
       </div>
 
@@ -71,7 +72,7 @@ export function LoginPage() {
             {...register("email")}
           />
           {errors.email && (
-            <p style={{ color: "#f87171", fontSize: "12px" }}>{errors.email.message}</p>
+            <p style={{ color: "#f87171", fontSize: "12px" }}>{t.email}</p>
           )}
         </div>
 
@@ -103,7 +104,7 @@ export function LoginPage() {
             </button>
           </div>
           {errors.password && (
-            <p style={{ color: "#f87171", fontSize: "12px" }}>{errors.password.message}</p>
+            <p style={{ color: "#f87171", fontSize: "12px" }}>{t.password}</p>
           )}
         </div>
 
@@ -145,13 +146,13 @@ export function LoginPage() {
           }}
         >
           {!isSubmitting && <LogIn style={{ width: "16px", height: "16px" }} />}
-          {isSubmitting ? "Yuklanmoqda..." : t.login}
+          {isSubmitting ? t.loadingText : t.login}
         </button>
       </form>
 
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <div style={{ flex: 1, height: "1px", background: "rgba(255,255,255,0.07)" }} />
-        <span style={{ fontSize: "12px", color: "rgba(148,163,184,0.4)" }}>yoki</span>
+        <span style={{ fontSize: "12px", color: "rgba(148,163,184,0.4)" }}>{t.or}</span>
         <div style={{ flex: 1, height: "1px", background: "rgba(255,255,255,0.07)" }} />
       </div>
 
@@ -171,10 +172,10 @@ export function LoginPage() {
                 setTokens(res.accessToken, res.refreshToken);
                 navigate("/dashboard");
               } catch {
-                setError("Google orqali kirishda xatolik yuz berdi");
+                setError(t.googleError);
               }
             }}
-            onError={() => setError("Google orqali kirishda xatolik yuz berdi")}
+            onError={() => setError(t.googleError)}
           />
         </div>
 
@@ -211,7 +212,7 @@ export function LoginPage() {
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.19 13.65l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.958.909z"/>
           </svg>
-          Telegram orqali kirish
+          {t.telegramLogin}
         </a>
       </div>
 

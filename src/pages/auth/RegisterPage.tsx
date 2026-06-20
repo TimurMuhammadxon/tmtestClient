@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuthStore } from "@/store/auth";
 import { authApi } from "@/api/auth";
-import { t } from "@/lib/i18n";
+import { useTranslation } from "@/lib/i18n";
 import { useState } from "react";
 import { Eye, EyeOff, UserPlus } from "lucide-react";
 
@@ -28,6 +28,7 @@ export function RegisterPage() {
   const setTokens = useAuthStore((s) => s.setTokens);
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const t = useTranslation();
 
   const {
     register,
@@ -44,7 +45,7 @@ export function RegisterPage() {
       navigate("/dashboard");
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { title?: string } } })?.response?.data?.title;
-      setError(msg ?? "Ro'yxatdan o'tishda xatolik yuz berdi");
+      setError(msg ?? t.error);
     }
   };
 
@@ -63,7 +64,7 @@ export function RegisterPage() {
           {t.register}
         </h2>
         <p style={{ color: "rgba(148, 163, 184, 0.6)", fontSize: "13px", marginTop: "4px" }}>
-          Yangi hisob yarating
+          {t.enterAccount}
         </p>
       </div>
 
@@ -161,7 +162,7 @@ export function RegisterPage() {
           }}
         >
           {!isSubmitting && <UserPlus style={{ width: "16px", height: "16px" }} />}
-          {isSubmitting ? "Yuklanmoqda..." : t.register}
+          {isSubmitting ? t.loadingText : t.register}
         </button>
       </form>
 

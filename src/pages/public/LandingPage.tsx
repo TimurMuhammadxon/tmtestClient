@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/auth";
 import { subscriptionsApi } from "@/api/subscriptions";
-
-// ─── CSS ──────────────────────────────────────────────────────────────────────
+import { useTranslation } from "@/lib/i18n";
+import { useLanguageStore, type LangCode } from "@/store/language";
 
 const CSS = `
   @keyframes lp-pulse1{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.2);opacity:.9}}
@@ -66,50 +66,17 @@ const CSS = `
   }
 `;
 
-// ─── Mode definitions ─────────────────────────────────────────────────────────
-
-const MODES = [
-  {
-    id: "topics", icon: "/pravadrive-icon-mavzular.svg", title: "Mavzular",
-    desc: "Mavzu bo'yicha savollar · rivojlanishni kuzating",
-    color: "#38bdf8", badge: "Tavsiya", to: "/topics", freeAccess: true,
-  },
-  {
-    id: "bilets", icon: "/pravadrive-icon-biletlar.svg", title: "Biletlar",
-    desc: "Rasmiy 100 ta bilet · aniq tartibda",
-    color: "#10b981", badge: "100 ta", to: "/bilets", freeAccess: true,
-  },
-  {
-    id: "exam", icon: "/pravadrive-icon-imtihon.svg", title: "Imtihon",
-    desc: "20 ta savol · 25 daqiqa · 3 xato = rad etiladi",
-    color: "#ef4444", badge: "Rasmiy", to: "/dashboard", flowType: 4, freeAccess: false,
-  },
-  {
-    id: "marathon", icon: "/pravadrive-icon-marafon.svg", title: "Marafon",
-    desc: "Barcha faol savollar · vaqt chegarasi yo'q",
-    color: "#f59e0b", badge: "Cheksiz", to: "/dashboard", flowType: 5, freeAccess: false,
-  },
-  {
-    id: "custom", icon: "/pravadrive-icon-ixtiyoriy.svg", title: "Ixtiyoriy",
-    desc: "Mavzularni tanlang · savol sonini belgilang",
-    color: "#8b5cf6", badge: "Sozlanadi", to: "/dashboard", freeAccess: false,
-  },
-] as const;
-
-// ─── Platform stats ───────────────────────────────────────────────────────────
-
-const STATS = [
-  { value: "1200+", label: "Savol", icon: "📝" },
-  { value: "60+", label: "Biletlar", icon: "📋" },
-  { value: "42", label: "Mavzular", icon: "📚" },
-  { value: "∞", label: "Imtihon", icon: "🎮" },
+const LANG_OPTIONS: { code: LangCode; label: string }[] = [
+  { code: "uz-latn", label: "UZ" },
+  { code: "ru",      label: "РУ" },
+  { code: "uz-cyrl", label: "ЎЗ" },
 ];
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 export function LandingPage() {
   const navigate = useNavigate();
   const { user, accessToken } = useAuthStore();
+  const t = useTranslation();
+  const { lang, setLang } = useLanguageStore();
   const isLoggedIn = !!accessToken;
   const isPrivileged = !!(user && ["Teacher", "Admin", "SuperAdmin", "Owner"].includes(user.role));
 
@@ -142,13 +109,26 @@ export function LandingPage() {
 
   const hasAccess = isPrivileged || (isLoggedIn && subscription?.isActive === true);
 
+  const MODES = [
+    { id: "topics", icon: "/pravadrive-icon-mavzular.svg", title: t.modeTopics, desc: t.modeTopicsDesc, color: "#38bdf8", badge: t.badgeRecommend, to: "/topics", freeAccess: true },
+    { id: "bilets", icon: "/pravadrive-icon-biletlar.svg", title: t.modeBilets, desc: t.modeBiletsDesc, color: "#10b981", badge: t.badgeCount, to: "/bilets", freeAccess: true },
+    { id: "exam", icon: "/pravadrive-icon-imtihon.svg", title: t.modeExam, desc: t.modeExamDesc, color: "#ef4444", badge: t.badgeOfficial, to: "/dashboard", freeAccess: false },
+    { id: "marathon", icon: "/pravadrive-icon-marafon.svg", title: t.modeMarathon, desc: t.modeMarathonDesc, color: "#f59e0b", badge: t.badgeUnlimited, to: "/dashboard", freeAccess: false },
+    { id: "custom", icon: "/pravadrive-icon-ixtiyoriy.svg", title: t.modeCustom, desc: t.modeCustomDesc, color: "#8b5cf6", badge: t.badgeCustomizable, to: "/dashboard", freeAccess: false },
+  ];
+
+  const STATS = [
+    { value: "1200+", label: t.statQuestions, icon: "📝" },
+    { value: "60+", label: t.statBilets, icon: "📋" },
+    { value: "42", label: t.statTopics, icon: "📚" },
+    { value: "∞", label: t.statExam, icon: "🎮" },
+  ];
+
   const handleModeClick = (mode: typeof MODES[number]) => {
     if (!isLoggedIn) { setAuthModal(true); return; }
     if (!mode.freeAccess && !hasAccess) { setSubModal(true); return; }
     navigate(mode.to);
   };
-
-  // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
     <div
@@ -163,7 +143,6 @@ export function LandingPage() {
     >
       <style>{CSS}</style>
 
-      {/* ── Ambient blobs ── */}
       <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0 }}>
         <div style={{ position: "absolute", top: "-15%", left: "-10%", width: "55vw", height: "55vw", borderRadius: "50%", background: "radial-gradient(circle,rgba(0,240,255,.07) 0%,transparent 70%)", filter: "blur(90px)", animation: "lp-pulse1 9s ease-in-out infinite" }} />
         <div style={{ position: "absolute", bottom: "-20%", right: "-10%", width: "60vw", height: "60vw", borderRadius: "50%", background: "radial-gradient(circle,rgba(139,92,246,.07) 0%,transparent 70%)", filter: "blur(110px)", animation: "lp-pulse2 12s ease-in-out infinite" }} />
@@ -172,7 +151,6 @@ export function LandingPage() {
 
       <div style={{ position: "relative", zIndex: 1 }}>
 
-        {/* ── Header ── */}
         <header style={{
           position: "sticky", top: 0, zIndex: 50,
           borderBottom: "1px solid rgba(255,255,255,.06)",
@@ -180,58 +158,51 @@ export function LandingPage() {
           background: "rgba(10,10,15,.7)",
         }}>
           <div className="lp-header-inner">
-
-            {/* Logo */}
             <div style={{ display: "flex", alignItems: "center", cursor: "pointer" }} onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
               <img src="/pravadrive-logo-horizontal.svg" alt="pravadrive" style={{ height: 42, width: "auto" }} />
             </div>
 
-            {/* Nav */}
             <nav className="lp-nav" style={{ gap: 8 }}>
+              {/* Language switcher */}
+              <div style={{ display: "flex", gap: 2, padding: 2, borderRadius: 8, background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.08)", marginRight: 4 }}>
+                {LANG_OPTIONS.map((o) => (
+                  <button
+                    key={o.code}
+                    onClick={() => setLang(o.code)}
+                    style={{
+                      padding: "4px 8px", borderRadius: 6, border: "none", cursor: "pointer",
+                      fontSize: 10, fontWeight: 700, fontFamily: "inherit",
+                      background: lang === o.code ? "rgba(0,240,255,.15)" : "transparent",
+                      color: lang === o.code ? "#00f0ff" : "rgba(148,163,184,.5)",
+                      transition: "all .2s",
+                    }}
+                  >{o.label}</button>
+                ))}
+              </div>
+
               {isLoggedIn ? (
                 <>
                   <span className="lp-username" style={{ fontSize: 13, color: "#64748b", marginRight: 4 }}>
                     {user?.firstName ?? user?.email?.split("@")[0]}
                   </span>
-                  <button
-                    className="lp-btn-outline"
-                    style={{ padding: "9px 16px", fontSize: 13, display: "flex", alignItems: "center", gap: 7 }}
-                    onClick={() => navigate("/subscription")}
-                  >
+                  <button className="lp-btn-outline" style={{ padding: "9px 16px", fontSize: 13, display: "flex", alignItems: "center", gap: 7 }} onClick={() => navigate("/subscription")}>
                     <img src="/pravadrive-icon-obuna.svg" alt="" style={{ width: 16, height: 16 }} />
-                    Obuna
+                    {t.subscription}
                   </button>
-                  <button
-                    className="lp-btn-primary"
-                    style={{ padding: "9px 22px", fontSize: 13 }}
-                    onClick={() => navigate("/dashboard")}
-                  >
-                    Dashboard →
+                  <button className="lp-btn-primary" style={{ padding: "9px 22px", fontSize: 13 }} onClick={() => navigate("/dashboard")}>
+                    {t.dashboard} →
                   </button>
                 </>
               ) : (
                 <>
-                  <button
-                    className="lp-btn-outline"
-                    style={{ padding: "9px 22px", fontSize: 13 }}
-                    onClick={() => navigate("/login")}
-                  >
-                    Kirish
-                  </button>
-                  <button
-                    className="lp-btn-primary"
-                    style={{ padding: "9px 22px", fontSize: 13 }}
-                    onClick={() => navigate("/register")}
-                  >
-                    Ro'yxatdan o'tish
-                  </button>
+                  <button className="lp-btn-outline" style={{ padding: "9px 22px", fontSize: 13 }} onClick={() => navigate("/login")}>{t.login}</button>
+                  <button className="lp-btn-primary" style={{ padding: "9px 22px", fontSize: 13 }} onClick={() => navigate("/register")}>{t.register}</button>
                 </>
               )}
             </nav>
           </div>
         </header>
 
-        {/* ── Hero ── */}
         <section style={{ maxWidth: 1280, margin: "0 auto", padding: "100px 28px 80px", textAlign: "center" }}>
           <div style={{ animation: mounted ? "lp-fadeUp .8s ease both" : "none" }}>
             <div style={{
@@ -241,86 +212,49 @@ export function LandingPage() {
               marginBottom: 28,
             }}>
               <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#00f0ff", boxShadow: "0 0 8px #00f0ff", display: "inline-block", animation: "lp-pulse1 2s ease-in-out infinite" }} />
-              <span style={{ fontSize: 12, fontWeight: 600, color: "#00f0ff", letterSpacing: "0.04em" }}>
-                Haydovchilik imtihoniga tayyorlanish platformasi
-              </span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "#00f0ff", letterSpacing: "0.04em" }}>{t.platformSubtitle}</span>
             </div>
 
             <h1 style={{
-              fontSize: "clamp(36px, 6vw, 72px)",
-              fontWeight: 900,
-              letterSpacing: "-0.03em",
-              lineHeight: 1.1,
-              marginBottom: 24,
-              background: "linear-gradient(135deg, #ffffff 20%, #94a3b8 60%, #6366f1 100%)",
-              backgroundSize: "200% auto",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              animation: "lp-shimmer 6s linear infinite",
+              fontSize: "clamp(36px, 6vw, 72px)", fontWeight: 900, letterSpacing: "-0.03em", lineHeight: 1.1, marginBottom: 24,
+              background: "linear-gradient(135deg, #ffffff 20%, #94a3b8 60%, #6366f1 100%)", backgroundSize: "200% auto",
+              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", animation: "lp-shimmer 6s linear infinite",
             }}>
-              Birinchi urinishdayoq<br />Imtihondan o'ting!
+              {t.heroTitle1}<br />{t.heroTitle2}
             </h1>
 
-            <p style={{ fontSize: "clamp(15px, 2vw, 18px)", color: "#64748b", maxWidth: 560, margin: "0 auto 40px", lineHeight: 1.7 }}>
-              1200+ savol, 60+ ta rasmiy bilet, Cheksiz test rejimi. Mavzular bo'yicha o'rganib, imtihon formatida mashq qiling.
-            </p>
+            <p style={{ fontSize: "clamp(15px, 2vw, 18px)", color: "#64748b", maxWidth: 560, margin: "0 auto 40px", lineHeight: 1.7 }}>{t.heroDesc}</p>
 
             <div className="lp-hero-btns">
-              <button
-                className="lp-btn-primary"
-                style={{ fontSize: 15, padding: "14px 36px" }}
-                onClick={() => isLoggedIn ? navigate("/dashboard") : navigate("/register")}
-              >
-                {isLoggedIn ? "Dashboardga o'tish →" : "Bepul boshlash →"}
+              <button className="lp-btn-primary" style={{ fontSize: 15, padding: "14px 36px" }} onClick={() => isLoggedIn ? navigate("/dashboard") : navigate("/register")}>
+                {isLoggedIn ? `${t.goToDashboard} →` : `${t.startFree} →`}
               </button>
               {!isLoggedIn && (
-                <button
-                  className="lp-btn-outline"
-                  style={{ fontSize: 15, padding: "14px 36px" }}
-                  onClick={() => navigate("/login")}
-                >
-                  Kirish
-                </button>
+                <button className="lp-btn-outline" style={{ fontSize: 15, padding: "14px 36px" }} onClick={() => navigate("/login")}>{t.login}</button>
               )}
             </div>
           </div>
         </section>
 
-        {/* ── Stats strip ── */}
         <div className="lp-stats-wrap" style={{ maxWidth: 1280, margin: "0 auto", padding: "0 28px 80px", animation: mounted ? "lp-fadeUp .8s ease .15s both" : "none" }}>
           <div className="lp-stats-grid">
             {STATS.map((s, i) => (
-              <div
-                key={i}
-                style={{
-                  padding: "28px 24px", textAlign: "center",
-                  background: "rgba(255,255,255,.02)",
-                  borderRight: i < STATS.length - 1 ? "1px solid rgba(255,255,255,.06)" : "none",
-                }}
-              >
+              <div key={i} style={{ padding: "28px 24px", textAlign: "center", background: "rgba(255,255,255,.02)", borderRight: i < STATS.length - 1 ? "1px solid rgba(255,255,255,.06)" : "none" }}>
                 <div style={{ fontSize: 28, marginBottom: 8 }}>{s.icon}</div>
-                <div style={{ fontSize: 28, fontWeight: 800, color: "#00f0ff", fontFamily: "'JetBrains Mono', monospace", textShadow: "0 0 20px rgba(0,240,255,.3)", marginBottom: 4 }}>
-                  {s.value}
-                </div>
+                <div style={{ fontSize: 28, fontWeight: 800, color: "#00f0ff", fontFamily: "'JetBrains Mono', monospace", textShadow: "0 0 20px rgba(0,240,255,.3)", marginBottom: 4 }}>{s.value}</div>
                 <div style={{ fontSize: 13, color: "#64748b" }}>{s.label}</div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* ── Modes section ── */}
         <section style={{ maxWidth: 1280, margin: "0 auto", padding: "0 28px 100px" }}>
-
           <div style={{ textAlign: "center", marginBottom: 56, animation: mounted ? "lp-fadeUp .8s ease .2s both" : "none" }}>
             <h2 style={{ fontSize: "clamp(24px, 4vw, 40px)", fontWeight: 800, letterSpacing: "-0.02em", marginBottom: 14, background: "linear-gradient(135deg,#fff,#94a3b8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-              Test rejimlari
+              {t.testModes}
             </h2>
             <p style={{ fontSize: 15, color: "#64748b", maxWidth: 480, margin: "0 auto" }}>
-              {isLoggedIn && hasAccess
-                ? "Rejimni tanlang va mashqni boshlang"
-                : isLoggedIn
-                  ? "Biletlar va mavzular bepul · Imtihon va marafon uchun obuna kerak"
-                  : "Biletlar va mavzular bepul · Barcha rejimlar uchun ro'yxatdan o'ting"}
+              {isLoggedIn && hasAccess ? t.selectModeAndStart : isLoggedIn ? t.freeModesHint : t.registerHint}
             </p>
           </div>
 
@@ -344,11 +278,8 @@ export function LandingPage() {
                     gridColumn: i === 3 ? "1 / 2" : i === 4 ? "2 / 3" : "auto",
                   }}
                 >
-                  {/* Glow bg */}
                   <div style={{ position: "absolute", top: -30, right: -30, width: 120, height: 120, borderRadius: "50%", background: `radial-gradient(circle,${mode.color}10,transparent)`, transition: "opacity .3s", opacity: hovered ? 1 : 0 }} />
-
                   <div className="lp-mode-card-inner">
-                    {/* Icon */}
                     <div style={{ flexShrink: 0 }}>
                       <div style={{
                         width: 52, height: 52, borderRadius: 14,
@@ -361,34 +292,17 @@ export function LandingPage() {
                         <img src={mode.icon} alt={mode.title} style={{ width: 28, height: 28 }} />
                       </div>
                     </div>
-
-                    {/* Text content */}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                        <h3 style={{ fontSize: 17, fontWeight: 700, color: "#e2e8f0", letterSpacing: "-0.01em", margin: 0 }}>
-                          {mode.title}
-                        </h3>
-                        <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 100, background: `${mode.color}15`, color: mode.color, letterSpacing: "0.04em", textTransform: "uppercase", flexShrink: 0 }}>
-                          {mode.badge}
-                        </span>
+                        <h3 style={{ fontSize: 17, fontWeight: 700, color: "#e2e8f0", letterSpacing: "-0.01em", margin: 0 }}>{mode.title}</h3>
+                        <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 100, background: `${mode.color}15`, color: mode.color, letterSpacing: "0.04em", textTransform: "uppercase", flexShrink: 0 }}>{mode.badge}</span>
                       </div>
-                      <p style={{ fontSize: 12, color: "#64748b", lineHeight: 1.5, margin: "0 0 10px" }}>
-                        {mode.desc}
-                      </p>
-                      <div style={{
-                        display: "flex", alignItems: "center", gap: 6,
-                        fontSize: 12, fontWeight: 600,
-                        color: locked ? "#475569" : demoHint ? mode.color : mode.color,
-                      }}>
-                        {needsAuth ? (
-                          <><span style={{ fontSize: 11 }}>🔒</span><span>Kirish kerak</span></>
-                        ) : needsSub ? (
-                          <><span style={{ fontSize: 11 }}>🔒</span><span>Obuna kerak</span></>
-                        ) : demoHint ? (
-                          <><span>▶</span><span style={{ transition: "transform .2s", transform: hovered ? "translateX(4px)" : "translateX(0)" }}>Demo bepul · Ko'rish</span></>
-                        ) : (
-                          <><span>▶</span><span style={{ transition: "transform .2s", transform: hovered ? "translateX(4px)" : "translateX(0)" }}>Boshlash</span></>
-                        )}
+                      <p style={{ fontSize: 12, color: "#64748b", lineHeight: 1.5, margin: "0 0 10px" }}>{mode.desc}</p>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: locked ? "#475569" : mode.color }}>
+                        {needsAuth ? (<><span style={{ fontSize: 11 }}>🔒</span><span>{t.loginRequired}</span></>) :
+                         needsSub ? (<><span style={{ fontSize: 11 }}>🔒</span><span>{t.subscriptionRequired}</span></>) :
+                         demoHint ? (<><span>▶</span><span style={{ transition: "transform .2s", transform: hovered ? "translateX(4px)" : "translateX(0)" }}>{t.demoFreeView}</span></>) :
+                         (<><span>▶</span><span style={{ transition: "transform .2s", transform: hovered ? "translateX(4px)" : "translateX(0)" }}>{t.start}</span></>)}
                       </div>
                     </div>
                   </div>
@@ -397,7 +311,6 @@ export function LandingPage() {
             })}
           </div>
 
-          {/* Access hint */}
           {!isLoggedIn && (
             <div style={{
               marginTop: 32, padding: "18px 24px", borderRadius: 14,
@@ -409,71 +322,52 @@ export function LandingPage() {
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <span style={{ fontSize: 20 }}>💡</span>
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: "#e2e8f0" }}>Demo bilet bepul!</div>
-                  <div style={{ fontSize: 12, color: "#64748b" }}>Ro'yxatdan o'tmasdan ham 1 ta demo biletni sinab ko'ring</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: "#e2e8f0" }}>{t.demoBiletFree}</div>
+                  <div style={{ fontSize: 12, color: "#64748b" }}>{t.demoBiletFreeDesc}</div>
                 </div>
               </div>
               <div style={{ display: "flex", gap: 10 }}>
-                <button className="lp-btn-outline" style={{ fontSize: 13, padding: "9px 20px" }} onClick={() => navigate("/login")}>Kirish</button>
-                <button className="lp-btn-primary" style={{ fontSize: 13, padding: "9px 20px" }} onClick={() => navigate("/register")}>Ro'yxatdan o'tish</button>
+                <button className="lp-btn-outline" style={{ fontSize: 13, padding: "9px 20px" }} onClick={() => navigate("/login")}>{t.login}</button>
+                <button className="lp-btn-primary" style={{ fontSize: 13, padding: "9px 20px" }} onClick={() => navigate("/register")}>{t.register}</button>
               </div>
             </div>
           )}
         </section>
 
-        {/* ── Footer ── */}
         <footer style={{ borderTop: "1px solid rgba(255,255,255,.06)", padding: "32px 28px" }}>
           <div style={{ maxWidth: 1280, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <img src="/pravadrive-symbol.svg" alt="pravadrive" style={{ height: 24, width: 24 }} />
               <span style={{ fontSize: 13, fontWeight: 600, color: "#475569" }}>pravadrive · O'zbekiston 2026</span>
             </div>
-            <span style={{ fontSize: 12, color: "#334155" }}>Haydovchilik imtihoniga professional tayyorlanish</span>
+            <span style={{ fontSize: 12, color: "#334155" }}>{t.footerTag}</span>
           </div>
         </footer>
       </div>
 
-      {/* ── Auth required modal ── */}
       {authModal && (
         <Modal onClose={() => setAuthModal(false)}>
           <div style={{ textAlign: "center" }}>
             <div style={{ fontSize: 48, marginBottom: 16 }}>🔐</div>
-            <h3 style={{ fontSize: 20, fontWeight: 700, color: "#e2e8f0", marginBottom: 8 }}>
-              Kirish kerak
-            </h3>
-            <p style={{ fontSize: 14, color: "#64748b", marginBottom: 28, lineHeight: 1.6 }}>
-              Testlarni boshlash uchun tizimga kiring yoki ro'yxatdan o'ting
-            </p>
+            <h3 style={{ fontSize: 20, fontWeight: 700, color: "#e2e8f0", marginBottom: 8 }}>{t.loginRequired}</h3>
+            <p style={{ fontSize: 14, color: "#64748b", marginBottom: 28, lineHeight: 1.6 }}>{t.loginRequiredDesc}</p>
             <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
-              <button className="lp-btn-outline" style={{ fontSize: 14 }} onClick={() => { setAuthModal(false); navigate("/login"); }}>
-                Kirish
-              </button>
-              <button className="lp-btn-primary" style={{ fontSize: 14 }} onClick={() => { setAuthModal(false); navigate("/register"); }}>
-                Ro'yxatdan o'tish
-              </button>
+              <button className="lp-btn-outline" style={{ fontSize: 14 }} onClick={() => { setAuthModal(false); navigate("/login"); }}>{t.login}</button>
+              <button className="lp-btn-primary" style={{ fontSize: 14 }} onClick={() => { setAuthModal(false); navigate("/register"); }}>{t.register}</button>
             </div>
           </div>
         </Modal>
       )}
 
-      {/* ── Subscription required modal ── */}
       {subModal && (
         <Modal onClose={() => setSubModal(false)}>
           <div style={{ textAlign: "center" }}>
             <div style={{ fontSize: 48, marginBottom: 16 }}>⭐</div>
-            <h3 style={{ fontSize: 20, fontWeight: 700, color: "#e2e8f0", marginBottom: 8 }}>
-              Obuna kerak
-            </h3>
-            <p style={{ fontSize: 14, color: "#64748b", marginBottom: 28, lineHeight: 1.6 }}>
-              Barcha test rejimlaridan foydalanish uchun faol obuna kerak
-            </p>
+            <h3 style={{ fontSize: 20, fontWeight: 700, color: "#e2e8f0", marginBottom: 8 }}>{t.subscriptionRequired}</h3>
+            <p style={{ fontSize: 14, color: "#64748b", marginBottom: 28, lineHeight: 1.6 }}>{t.subscriptionRequiredDesc}</p>
             <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
-              <button className="lp-btn-outline" style={{ fontSize: 14 }} onClick={() => setSubModal(false)}>
-                Yopish
-              </button>
-              <button className="lp-btn-primary" style={{ fontSize: 14 }} onClick={() => { setSubModal(false); navigate("/subscription"); }}>
-                Obuna olish →
-              </button>
+              <button className="lp-btn-outline" style={{ fontSize: 14 }} onClick={() => setSubModal(false)}>{t.close}</button>
+              <button className="lp-btn-primary" style={{ fontSize: 14 }} onClick={() => { setSubModal(false); navigate("/subscription"); }}>{t.getSubscription} →</button>
             </div>
           </div>
         </Modal>
@@ -481,8 +375,6 @@ export function LandingPage() {
     </div>
   );
 }
-
-// ─── Simple modal wrapper ─────────────────────────────────────────────────────
 
 function Modal({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
   return (

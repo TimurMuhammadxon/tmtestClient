@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { PageLoader } from "@/components/shared/LoadingSpinner";
-import { t, getFlowLabel } from "@/lib/i18n";
+import { useTranslation, getFlowLabel } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { useEffect, useState, useRef } from "react";
 import {
@@ -39,6 +39,7 @@ interface FinishResultState {
 }
 
 export function AttemptPage() {
+  const t = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -279,27 +280,27 @@ export function AttemptPage() {
         <div className="text-center space-y-2">
           <h2 className="text-2xl font-bold">
             {passed
-              ? "Tabriklaymiz! O'tdingiz 🎉"
+              ? `${t.congratsPassed} 🎉`
               : completed
-              ? "Test yakunlandi"
+              ? t.testCompleted
               : examFail3Mistakes
-              ? "Imtihon rad etildi 😔"
-              : "Muvaffaqiyatsiz 😔"}
+              ? `${t.examFailTitle} 😔`
+              : `${t.failedResult} 😔`}
           </h2>
 
           {examFail3Mistakes && (
             <p className="text-sm font-medium text-red-400">
-              3 ta xato qilindingiz — imtihon tugadi
+              {t.exam3Mistakes}
             </p>
           )}
           {failed && !examFail3Mistakes && (
             <p className="text-sm text-muted-foreground">
-              O'tish uchun kamida 18/20 to'g'ri javob kerak edi
+              {t.examPassMin}
             </p>
           )}
 
           <p className="text-muted-foreground">
-            {finishResult.correct} / {finishResult.total} to'g'ri javob
+            {finishResult.correct} / {finishResult.total} {t.correctAnswerCount}
           </p>
           {finishResult.total > 0 && (
             <p className="text-3xl font-bold text-primary">
@@ -351,7 +352,7 @@ export function AttemptPage() {
               )}
             >
               <AlertTriangle className="h-3.5 w-3.5" />
-              {wrongCount} / 3 xato
+              {wrongCount} / 3 {t.mistakes}
             </div>
           )}
 
@@ -379,7 +380,7 @@ export function AttemptPage() {
             className="text-muted-foreground hover:text-destructive hover:border-destructive/50"
           >
             <Flag className="h-4 w-4 mr-1.5" />
-            {finishMutation.isPending ? t.loading : "Yakunlash"}
+            {finishMutation.isPending ? t.loading : t.finish}
           </Button>
         </div>
       </div>
@@ -388,7 +389,7 @@ export function AttemptPage() {
       <div className="space-y-1">
         <Progress value={progress} className="h-2" />
         <p className="text-xs text-muted-foreground text-right">
-          {answeredCount}/{questions.length} javoblandi
+          {answeredCount}/{questions.length} {t.answered}
         </p>
       </div>
 

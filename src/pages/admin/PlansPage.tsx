@@ -10,13 +10,14 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import { PageLoader } from "@/components/shared/LoadingSpinner";
-import { getDurationLabel, t } from "@/lib/i18n";
+import { getDurationLabel, useTranslation } from "@/lib/i18n";
 import { Pencil } from "lucide-react";
 import { useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import type { SubscriptionPlanDto } from "@/types";
 
 export function PlansPage() {
+  const t = useTranslation();
   const qc = useQueryClient();
   const [editPlan, setEditPlan] = useState<SubscriptionPlanDto | null>(null);
   const [priceInput, setPriceInput] = useState("");

@@ -3,7 +3,7 @@ import { subscriptionsApi } from "@/api/subscriptions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageLoader } from "@/components/shared/LoadingSpinner";
-import { getDurationLabel } from "@/lib/i18n";
+import { getDurationLabel, useTranslation } from "@/lib/i18n";
 import { format } from "date-fns";
 import {
   CheckCircle,
@@ -22,23 +22,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import type { SubscriptionPlanDto } from "@/types";
 
-const STUDENT_FEATURES = [
-  { icon: BookOpen, label: "Barcha biletlarga kirish" },
-  { icon: Zap, label: "Cheksiz test topshirish" },
-  { icon: CalendarCheck, label: "Imtihon rejimi (25 daqiqa)" },
-  { icon: BarChart3, label: "Xatolar tahlili va statistika" },
-];
-
-const TEACHER_FEATURES = [
-  { icon: BookOpen, label: "Barcha biletlarga kirish" },
-  { icon: Zap, label: "Cheksiz test topshirish" },
-  { icon: CalendarCheck, label: "Imtihon rejimi (25 daqiqa)" },
-  { icon: BarChart3, label: "Xatolar tahlili va statistika" },
-  { icon: Users, label: "Guruhlar boshqaruvi" },
-  { icon: Link2, label: "Test havolalari yaratish" },
-  { icon: BarChart3, label: "O'quvchilar natijalari" },
-];
-
 function PricingCard({
   plan,
   isPopular,
@@ -50,7 +33,23 @@ function PricingCard({
   onPayme: () => void;
   onClickPay: () => void;
 }) {
+  const t = useTranslation();
   const [paying, setPaying] = useState<"payme" | "click" | null>(null);
+
+  const STUDENT_FEATURES = [
+    { icon: BookOpen, label: t.allBiletsAccess },
+    { icon: Zap, label: t.unlimitedTests },
+    { icon: CalendarCheck, label: t.examModeFeature },
+    { icon: BarChart3, label: t.errorAnalytics },
+  ];
+
+  const TEACHER_FEATURES = [
+    ...STUDENT_FEATURES,
+    { icon: Users, label: t.groupManagement },
+    { icon: Link2, label: t.createTestLinksFeature },
+    { icon: BarChart3, label: t.studentResults },
+  ];
+
   const features = plan.type === "Teacher" ? TEACHER_FEATURES : STUDENT_FEATURES;
 
   const handlePayme = async () => {
@@ -75,7 +74,7 @@ function PricingCard({
         <div className="absolute -top-3.5 left-0 right-0 flex justify-center">
           <span className="inline-flex items-center gap-1 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full shadow-sm">
             <Star className="h-3 w-3 fill-current" />
-            Eng mashhur
+            {t.mostPopular}
           </span>
         </div>
       )}
@@ -88,7 +87,7 @@ function PricingCard({
           <span className="text-4xl font-bold tracking-tight leading-none">
             {plan.price.toLocaleString()}
           </span>
-          <span className="text-muted-foreground text-sm mb-0.5">so'm</span>
+          <span className="text-muted-foreground text-sm mb-0.5">{t.uzs}</span>
         </div>
       </div>
 
@@ -112,14 +111,14 @@ function PricingCard({
           onClick={handlePayme}
           disabled={paying !== null}
         >
-          {paying === "payme" ? "Yo'naltirilmoqda..." : "Payme"}
+          {paying === "payme" ? t.redirecting : "Payme"}
         </Button>
         <Button
           className="w-full font-semibold bg-[#57A826] hover:bg-[#4a9020] text-white border-0"
           onClick={handleClick}
           disabled={paying !== null}
         >
-          {paying === "click" ? "Yo'naltirilmoqda..." : "Click"}
+          {paying === "click" ? t.redirecting : "Click"}
         </Button>
       </div>
     </div>
@@ -135,10 +134,11 @@ function PlansGrid({
   onPayme: (id: string) => void;
   onClickPay: (id: string) => void;
 }) {
+  const t = useTranslation();
   if (plans.length === 0)
     return (
       <div className="text-center py-16 text-muted-foreground">
-        Hozircha faol tariflar yo'q
+        {t.noActivePlans}
       </div>
     );
 
@@ -158,6 +158,8 @@ function PlansGrid({
 }
 
 export function SubscriptionPage() {
+  const t = useTranslation();
+
   const { data: plans, isLoading: loadingPlans } = useQuery({
     queryKey: ["plans"],
     queryFn: subscriptionsApi.getPlans,
@@ -173,7 +175,7 @@ export function SubscriptionPage() {
       const { checkoutUrl } = await subscriptionsApi.initiatePayme(planId);
       window.open(checkoutUrl, "_blank");
     } catch {
-      alert("To'lov sahifasini ochishda xatolik");
+      alert(t.paymentError);
     }
   };
 
@@ -182,7 +184,7 @@ export function SubscriptionPage() {
       const { checkoutUrl } = await subscriptionsApi.initiateClick(planId);
       window.open(checkoutUrl, "_blank");
     } catch {
-      alert("To'lov sahifasini ochishda xatolik");
+      alert(t.paymentError);
     }
   };
 
@@ -194,15 +196,11 @@ export function SubscriptionPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
-      {/* Header */}
       <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold">Obuna tariflari</h1>
-        <p className="text-muted-foreground">
-          O'zingizga mos tarifni tanlang va darhol boshlang
-        </p>
+        <h1 className="text-3xl font-bold">{t.subscriptionPlans}</h1>
+        <p className="text-muted-foreground">{t.choosePlan}</p>
       </div>
 
-      {/* Current subscription */}
       {mySub ? (
         <div className={cn(
           "rounded-2xl border p-5 flex items-center gap-4",
@@ -218,18 +216,18 @@ export function SubscriptionPage() {
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-semibold">Mening obunám</span>
+              <span className="font-semibold">{t.mySubscriptionLabel}</span>
               <Badge variant={mySub.isActive ? "success" : "destructive"}>
-                {mySub.isActive ? "Faol" : "Muddati o'tgan"}
+                {mySub.isActive ? t.active : t.expiredLabel}
               </Badge>
             </div>
             <p className="text-sm text-muted-foreground mt-0.5">
-              {mySub.planType === "Teacher" ? "O'qituvchi" : "Talaba"} tarifi ·{" "}
+              {mySub.planType === "Teacher" ? t.teacherPlanLabel : t.studentPlanLabel} ·{" "}
               {getDurationLabel(mySub.planDuration)}
             </p>
           </div>
           <div className="text-right flex-shrink-0">
-            <p className="text-xs text-muted-foreground">Tugash sanasi</p>
+            <p className="text-xs text-muted-foreground">{t.expiryDate}</p>
             <p className="font-semibold">{format(new Date(mySub.expiresAt), "dd.MM.yyyy")}</p>
           </div>
         </div>
@@ -239,15 +237,12 @@ export function SubscriptionPage() {
             <Shield className="h-6 w-6 text-muted-foreground" />
           </div>
           <div>
-            <p className="font-semibold">Faol obuna yo'q</p>
-            <p className="text-sm text-muted-foreground">
-              Barcha biletlarga kirish uchun quyidagi tariflardan birini tanlang
-            </p>
+            <p className="font-semibold">{t.noActiveSubscription}</p>
+            <p className="text-sm text-muted-foreground">{t.selectPlanBelow}</p>
           </div>
         </div>
       )}
 
-      {/* Tabs */}
       <Tabs defaultValue="student">
         <TabsList className="h-12 p-1 bg-muted rounded-xl w-full sm:w-auto">
           <TabsTrigger
@@ -255,7 +250,7 @@ export function SubscriptionPage() {
             className="flex-1 sm:flex-none gap-2 rounded-lg data-[state=active]:shadow-sm h-10 px-6"
           >
             <GraduationCap className="h-4 w-4" />
-            <span className="font-medium">Talabalar</span>
+            <span className="font-medium">{t.students}</span>
             {studentPlans.length > 0 && (
               <Badge variant="secondary" className="ml-1 text-xs px-1.5">
                 {studentPlans.length}
@@ -267,7 +262,7 @@ export function SubscriptionPage() {
             className="flex-1 sm:flex-none gap-2 rounded-lg data-[state=active]:shadow-sm h-10 px-6"
           >
             <Users className="h-4 w-4" />
-            <span className="font-medium">O'qituvchilar</span>
+            <span className="font-medium">{t.teachers}</span>
             {teacherPlans.length > 0 && (
               <Badge variant="secondary" className="ml-1 text-xs px-1.5">
                 {teacherPlans.length}
@@ -281,17 +276,11 @@ export function SubscriptionPage() {
             <div className="flex items-start gap-3 p-4 rounded-xl bg-muted/40 border">
               <GraduationCap className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-medium text-sm">Talaba tarifi</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Haydovchilik imtihoniga tayyorlanish uchun barcha kerakli vositalar
-                </p>
+                <p className="font-medium text-sm">{t.studentPlanLabel}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{t.studentPlanDesc}</p>
               </div>
             </div>
-            <PlansGrid
-              plans={studentPlans}
-              onPayme={handlePayme}
-              onClickPay={handleClick}
-            />
+            <PlansGrid plans={studentPlans} onPayme={handlePayme} onClickPay={handleClick} />
           </div>
         </TabsContent>
 
@@ -300,25 +289,17 @@ export function SubscriptionPage() {
             <div className="flex items-start gap-3 p-4 rounded-xl bg-primary/5 border border-primary/20">
               <Users className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-medium text-sm">O'qituvchi tarifi</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Talaba tarifi imkoniyatlari + guruh boshqaruvi va test havolalari
-                </p>
+                <p className="font-medium text-sm">{t.teacherPlanLabel}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{t.teacherPlanDesc}</p>
               </div>
             </div>
-            <PlansGrid
-              plans={teacherPlans}
-              onPayme={handlePayme}
-              onClickPay={handleClick}
-            />
+            <PlansGrid plans={teacherPlans} onPayme={handlePayme} onClickPay={handleClick} />
           </div>
         </TabsContent>
       </Tabs>
 
-      {/* Footer note */}
       <p className="text-center text-xs text-muted-foreground pb-4">
-        Barcha to'lovlar xavfsiz. Savollar uchun{" "}
-        <span className="text-primary font-medium">support@tmtest.uz</span> ga murojaat qiling.
+        {t.paymentSecure}
       </p>
     </div>
   );

@@ -21,7 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { PageLoader } from "@/components/shared/LoadingSpinner";
-import { t } from "@/lib/i18n";
+import { useTranslation } from "@/lib/i18n";
 import { Plus, Users, Copy, Trash2, Eye } from "lucide-react";
 import { useState } from "react";
 import { format } from "date-fns";
@@ -29,6 +29,7 @@ import { toast } from "@/components/ui/use-toast";
 import type { GroupDto, GroupMemberDto } from "@/types";
 
 export function GroupsPage() {
+  const t = useTranslation();
   const qc = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
   const [groupName, setGroupName] = useState("");

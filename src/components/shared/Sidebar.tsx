@@ -12,13 +12,15 @@ import {
   Settings,
   Banknote,
   UserCog,
+  Globe,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth";
 import { type AuthUser } from "@/types";
 import { authApi } from "@/api/auth";
 import { profileApi } from "@/api/profile";
-import { t } from "@/lib/i18n";
+import { useTranslation } from "@/lib/i18n";
+import { useLanguageStore, type LangCode } from "@/store/language";
 
 type IconType = React.ElementType | string;
 
@@ -29,27 +31,29 @@ interface NavItem {
   roles?: string[];
 }
 
-const navItems: NavItem[] = [
-  { to: "/dashboard",           icon: "/pravadrive-icon-umumiy.svg",      label: t.dashboard },
-  { to: "/progress",            icon: "/pravadrive-icon-natijalarim.svg", label: t.progress },
-  { to: "/subscription",        icon: "/pravadrive-icon-obuna.svg",       label: t.subscription },
-  { to: "/teacher-application", icon: ClipboardList,                      label: "O'qituvchi bo'lish" },
-];
-
-const teacherItems: NavItem[] = [
-  { to: "/teacher/groups",      icon: "/pravadrive-icon-guruhlar.svg",  label: t.groups },
-  { to: "/teacher/test-links",  icon: "/pravadrive-icon-havolalar.svg", label: t.testLinks },
-];
-
-const adminItems: NavItem[] = [
-  { to: "/admin/topics",       icon: FileText,      label: t.topics },
-  { to: "/admin/questions",    icon: MessageSquare, label: "Savollar" },
-  { to: "/admin/bilets",       icon: BookOpen,      label: "Biletlar" },
-  { to: "/admin/applications", icon: HelpCircle,    label: t.applications },
-  { to: "/admin/plans",        icon: Settings,      label: t.plans },
-  { to: "/admin/users",        icon: UserCog,       label: "Foydalanuvchilar", roles: ["Owner"] },
-  { to: "/admin/payments",     icon: Banknote,      label: "To'lovlar",        roles: ["Owner"] },
-];
+function useNavItems() {
+  const t = useTranslation();
+  const navItems: NavItem[] = [
+    { to: "/dashboard",           icon: "/pravadrive-icon-umumiy.svg",      label: t.dashboard },
+    { to: "/progress",            icon: "/pravadrive-icon-natijalarim.svg", label: t.progress },
+    { to: "/subscription",        icon: "/pravadrive-icon-obuna.svg",       label: t.subscription },
+    { to: "/teacher-application", icon: ClipboardList,                      label: t.applyTeacher },
+  ];
+  const teacherItems: NavItem[] = [
+    { to: "/teacher/groups",      icon: "/pravadrive-icon-guruhlar.svg",  label: t.groups },
+    { to: "/teacher/test-links",  icon: "/pravadrive-icon-havolalar.svg", label: t.testLinks },
+  ];
+  const adminItems: NavItem[] = [
+    { to: "/admin/topics",       icon: FileText,      label: t.topics },
+    { to: "/admin/questions",    icon: MessageSquare, label: t.questions },
+    { to: "/admin/bilets",       icon: BookOpen,      label: t.bilets },
+    { to: "/admin/applications", icon: HelpCircle,    label: t.applications },
+    { to: "/admin/plans",        icon: Settings,      label: t.plans },
+    { to: "/admin/users",        icon: UserCog,       label: t.users, roles: ["Owner"] },
+    { to: "/admin/payments",     icon: Banknote,      label: t.payments,    roles: ["Owner"] },
+  ];
+  return { navItems, teacherItems, adminItems };
+}
 
 interface SidebarProps {
   collapsed: boolean;
@@ -58,9 +62,18 @@ interface SidebarProps {
   onClose?: () => void;
 }
 
+const LANG_OPTIONS: { code: LangCode; label: string }[] = [
+  { code: "uz-latn", label: "UZ" },
+  { code: "ru",      label: "РУ" },
+  { code: "uz-cyrl", label: "ЎЗ" },
+];
+
 export function Sidebar({ collapsed, onToggle, mobile, onClose }: SidebarProps) {
   const { user, clearAuth, refreshToken } = useAuthStore();
   const navigate = useNavigate();
+  const { navItems, teacherItems, adminItems } = useNavItems();
+  const t = useTranslation();
+  const { lang, setLang } = useLanguageStore();
 
   const handleLogout = async () => {
     try {
@@ -150,7 +163,7 @@ export function Sidebar({ collapsed, onToggle, mobile, onClose }: SidebarProps) 
                 style={{ color: "rgba(0, 240, 255, 0.4)", fontSize: "10px", fontWeight: 600, letterSpacing: "0.1em" }}
                 className="px-3 py-1 uppercase"
               >
-                O'qituvchi
+                {t.teacher}
               </p>
             )}
             {teacherItems.map((item) => (
@@ -178,6 +191,40 @@ export function Sidebar({ collapsed, onToggle, mobile, onClose }: SidebarProps) 
           </>
         )}
       </nav>
+
+      {/* Language switcher */}
+      <div style={{ borderTop: "1px solid rgba(0, 240, 255, 0.08)" }} className="px-3 pt-2 pb-1">
+        {collapsed && !mobile ? (
+          <button
+            onClick={() => {
+              const idx = LANG_OPTIONS.findIndex((o) => o.code === lang);
+              setLang(LANG_OPTIONS[(idx + 1) % LANG_OPTIONS.length].code);
+            }}
+            title={t.language}
+            style={{ color: "#00f0ff", fontSize: 10, fontWeight: 700, letterSpacing: "0.05em" }}
+            className="w-full h-8 rounded-lg flex items-center justify-center hover:bg-white/5 transition-colors"
+          >
+            {LANG_OPTIONS.find((o) => o.code === lang)?.label}
+          </button>
+        ) : (
+          <div style={{ display: "flex", gap: 4, padding: 3, borderRadius: 8, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+            {LANG_OPTIONS.map((o) => (
+              <button
+                key={o.code}
+                onClick={() => setLang(o.code)}
+                style={{
+                  flex: 1, padding: "5px 0", borderRadius: 6, border: "none", cursor: "pointer",
+                  fontSize: 11, fontWeight: 600, fontFamily: "inherit", transition: "all .2s",
+                  background: lang === o.code ? "rgba(0,240,255,0.12)" : "transparent",
+                  color: lang === o.code ? "#00f0ff" : "rgba(148,163,184,0.5)",
+                }}
+              >
+                {o.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Footer */}
       <div style={{ borderTop: "1px solid rgba(0, 240, 255, 0.08)" }} className="p-3">
@@ -235,6 +282,7 @@ export function Sidebar({ collapsed, onToggle, mobile, onClose }: SidebarProps) 
 }
 
 function SettingsModal({ user, onClose }: { user: AuthUser | null; onClose: () => void }) {
+  const t = useTranslation();
   const setTokens = useAuthStore((s) => s.setTokens);
   const refreshToken = useAuthStore((s) => s.refreshToken);
   const [tab, setTab] = useState<"profile" | "credentials">("profile");
@@ -270,22 +318,22 @@ function SettingsModal({ user, onClose }: { user: AuthUser | null; onClose: () =
         );
         setTokens(data.accessToken, data.refreshToken);
       }
-      setSuccess("Saqlandi!");
+      setSuccess(t.saved);
     } catch {
-      setError("Saqlashda xatolik yuz berdi");
+      setError(t.saveError);
     } finally {
       setSaving(false);
     }
   };
 
   const handleSaveCredentials = async () => {
-    if (password !== confirmPassword) { setError("Parollar mos kelmadi"); return; }
-    if (password.length < 6) { setError("Parol kamida 6 ta belgidan iborat bo'lishi kerak"); return; }
+    if (password !== confirmPassword) { setError(t.passwordMismatch); return; }
+    if (password.length < 6) { setError(t.passwordMinLength); return; }
     setSaving(true); setError(null); setSuccess(null);
     try {
       const res = await profileApi.setCredentials(email, password);
       setTokens(res.accessToken, res.refreshToken);
-      setSuccess("Email va parol muvaffaqiyatli ulandi!");
+      setSuccess(t.credentialsSaved);
       setPassword(""); setConfirmPassword("");
     } catch (e: unknown) {
       const msg = (e as any)?.response?.data?.detail ?? (e as any)?.response?.data?.title;
@@ -310,22 +358,22 @@ function SettingsModal({ user, onClose }: { user: AuthUser | null; onClose: () =
           style={{ position: "absolute", top: 14, right: 14, width: 28, height: 28, borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", cursor: "pointer", color: "#64748b", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}
         >×</button>
 
-        <h3 style={{ fontSize: 17, fontWeight: 700, color: "#e2e8f0", marginBottom: 16 }}>Sozlamalar</h3>
+        <h3 style={{ fontSize: 17, fontWeight: 700, color: "#e2e8f0", marginBottom: 16 }}>{t.settings}</h3>
 
         {/* Tabs */}
         <div style={{ display: "flex", gap: 4, marginBottom: 24, padding: 4, borderRadius: 10, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-          {(["profile", "credentials"] as const).map((t) => (
+          {(["profile", "credentials"] as const).map((tabKey) => (
             <button
-              key={t}
-              onClick={() => { setTab(t); setError(null); setSuccess(null); }}
+              key={tabKey}
+              onClick={() => { setTab(tabKey); setError(null); setSuccess(null); }}
               style={{
                 flex: 1, padding: "7px 12px", borderRadius: 7, border: "none", cursor: "pointer",
                 fontSize: 13, fontWeight: 500, fontFamily: "inherit", transition: "all .2s",
-                background: tab === t ? "rgba(0,240,255,0.12)" : "transparent",
-                color: tab === t ? "#00f0ff" : "#64748b",
+                background: tab === tabKey ? "rgba(0,240,255,0.12)" : "transparent",
+                color: tab === tabKey ? "#00f0ff" : "#64748b",
               }}
             >
-              {t === "profile" ? "Profil" : "Kirish ma'lumotlari"}
+              {tabKey === "profile" ? t.profile : t.credentials}
             </button>
           ))}
         </div>
@@ -335,19 +383,19 @@ function SettingsModal({ user, onClose }: { user: AuthUser | null; onClose: () =
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <p style={{ fontSize: 11, color: "#475569", marginBottom: 4 }}>{user?.email}</p>
             <div>
-              <label style={{ fontSize: 12, color: "rgba(148,163,184,0.7)", display: "block", marginBottom: 6 }}>Ism</label>
-              <input style={inputStyle} value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Ismingiz" maxLength={100} />
+              <label style={{ fontSize: 12, color: "rgba(148,163,184,0.7)", display: "block", marginBottom: 6 }}>{t.firstName}</label>
+              <input style={inputStyle} value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder={t.firstName} maxLength={100} />
             </div>
             <div>
-              <label style={{ fontSize: 12, color: "rgba(148,163,184,0.7)", display: "block", marginBottom: 6 }}>Familiya</label>
-              <input style={inputStyle} value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Familiyangiz" maxLength={100} />
+              <label style={{ fontSize: 12, color: "rgba(148,163,184,0.7)", display: "block", marginBottom: 6 }}>{t.lastName}</label>
+              <input style={inputStyle} value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder={t.lastName} maxLength={100} />
             </div>
             {error && <p style={{ fontSize: 12, color: "#f87171" }}>{error}</p>}
             {success && <p style={{ fontSize: 12, color: "#10b981" }}>{success}</p>}
             <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
-              <button onClick={onClose} style={{ flex: 1, padding: "10px", borderRadius: 10, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "#94a3b8", cursor: "pointer", fontSize: 14, fontFamily: "inherit" }}>Bekor</button>
+              <button onClick={onClose} style={{ flex: 1, padding: "10px", borderRadius: 10, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "#94a3b8", cursor: "pointer", fontSize: 14, fontFamily: "inherit" }}>{t.cancel}</button>
               <button onClick={handleSaveProfile} disabled={saving} style={{ flex: 1, padding: "10px", borderRadius: 10, background: saving ? "rgba(0,240,255,0.2)" : "linear-gradient(135deg,#00f0ff,#6366f1)", border: "none", color: saving ? "#64748b" : "#0a0a0f", cursor: saving ? "not-allowed" : "pointer", fontSize: 14, fontWeight: 700, fontFamily: "inherit" }}>
-                {saving ? "Saqlanmoqda..." : "Saqlash"}
+                {saving ? t.saving : t.save}
               </button>
             </div>
           </div>
@@ -358,7 +406,7 @@ function SettingsModal({ user, onClose }: { user: AuthUser | null; onClose: () =
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {isTelegramUser && (
               <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(0,240,255,0.06)", border: "1px solid rgba(0,240,255,0.15)", fontSize: 12, color: "#94a3b8", lineHeight: 1.6 }}>
-                Telegram orqali kirganmiz. Email va parol o'rnatib, web versiyadan ham kirishingiz mumkin.
+                {t.telegramNote}
               </div>
             )}
             {isTelegramUser && (
@@ -368,19 +416,19 @@ function SettingsModal({ user, onClose }: { user: AuthUser | null; onClose: () =
               </div>
             )}
             <div>
-              <label style={{ fontSize: 12, color: "rgba(148,163,184,0.7)", display: "block", marginBottom: 6 }}>Yangi parol</label>
-              <input style={inputStyle} type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Kamida 6 ta belgi" />
+              <label style={{ fontSize: 12, color: "rgba(148,163,184,0.7)", display: "block", marginBottom: 6 }}>{t.newPassword}</label>
+              <input style={inputStyle} type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t.minChars} />
             </div>
             <div>
-              <label style={{ fontSize: 12, color: "rgba(148,163,184,0.7)", display: "block", marginBottom: 6 }}>Parolni tasdiqlang</label>
-              <input style={inputStyle} type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Parolni qaytaring" />
+              <label style={{ fontSize: 12, color: "rgba(148,163,184,0.7)", display: "block", marginBottom: 6 }}>{t.confirmPassword}</label>
+              <input style={inputStyle} type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder={t.confirmPasswordAgain} />
             </div>
             {error && <p style={{ fontSize: 12, color: "#f87171" }}>{error}</p>}
             {success && <p style={{ fontSize: 12, color: "#10b981" }}>{success}</p>}
             <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
-              <button onClick={onClose} style={{ flex: 1, padding: "10px", borderRadius: 10, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "#94a3b8", cursor: "pointer", fontSize: 14, fontFamily: "inherit" }}>Bekor</button>
+              <button onClick={onClose} style={{ flex: 1, padding: "10px", borderRadius: 10, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "#94a3b8", cursor: "pointer", fontSize: 14, fontFamily: "inherit" }}>{t.cancel}</button>
               <button onClick={handleSaveCredentials} disabled={saving || !password || (isTelegramUser ? !email : false)} style={{ flex: 1, padding: "10px", borderRadius: 10, background: saving ? "rgba(0,240,255,0.2)" : "linear-gradient(135deg,#00f0ff,#6366f1)", border: "none", color: saving ? "#64748b" : "#0a0a0f", cursor: saving ? "not-allowed" : "pointer", fontSize: 14, fontWeight: 700, fontFamily: "inherit" }}>
-                {saving ? "Saqlanmoqda..." : "Saqlash"}
+                {saving ? t.saving : t.save}
               </button>
             </div>
           </div>
