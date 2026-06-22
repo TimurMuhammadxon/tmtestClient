@@ -91,7 +91,8 @@ export function LandingPage() {
   const [hoveredMode, setHoveredMode] = useState<string | null>(null);
   useEffect(() => {
     const startParam = window.Telegram?.WebApp?.initDataUnsafe?.start_param;
-    if (startParam) {
+    if (startParam && !sessionStorage.getItem("tg_start_handled")) {
+      sessionStorage.setItem("tg_start_handled", "1");
       navigate(`/t/${startParam}`, { replace: true });
       return;
     }
