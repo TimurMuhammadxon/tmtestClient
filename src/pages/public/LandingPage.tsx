@@ -5,6 +5,7 @@ import { useAuthStore } from "@/store/auth";
 import { subscriptionsApi } from "@/api/subscriptions";
 import { useTranslation } from "@/lib/i18n";
 import { useLanguageStore, type LangCode } from "@/store/language";
+import { Users, Link2, BarChart3, Zap } from "lucide-react";
 
 const CSS = `
   @keyframes lp-pulse1{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.2);opacity:.9}}
@@ -355,10 +356,10 @@ export function LandingPage() {
 
           <div className="lp-teacher-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, animation: mounted ? "lp-fadeUp .8s ease .45s both" : "none" }}>
             {([
-              { icon: "👥", title: t.teacherFeature1Title, desc: t.teacherFeature1Desc, color: "#8b5cf6" },
-              { icon: "🔗", title: t.teacherFeature2Title, desc: t.teacherFeature2Desc, color: "#06b6d4" },
-              { icon: "📊", title: t.teacherFeature3Title, desc: t.teacherFeature3Desc, color: "#10b981" },
-              { icon: "⚡", title: t.teacherFeature4Title, desc: t.teacherFeature4Desc, color: "#f59e0b" },
+              { Icon: Users, title: t.teacherFeature1Title, desc: t.teacherFeature1Desc, color: "#8b5cf6" },
+              { Icon: Link2, title: t.teacherFeature2Title, desc: t.teacherFeature2Desc, color: "#06b6d4" },
+              { Icon: BarChart3, title: t.teacherFeature3Title, desc: t.teacherFeature3Desc, color: "#10b981" },
+              { Icon: Zap, title: t.teacherFeature4Title, desc: t.teacherFeature4Desc, color: "#f59e0b" },
             ] as const).map((f, i) => (
               <div key={i} style={{
                 padding: "28px 24px", borderRadius: 20,
@@ -371,7 +372,9 @@ export function LandingPage() {
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,.07)"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translateY(0)"; }}
               >
                 <div style={{ position: "absolute", top: -20, right: -20, width: 100, height: 100, borderRadius: "50%", background: `radial-gradient(circle,${f.color}10,transparent)` }} />
-                <div style={{ fontSize: 32, marginBottom: 16 }}>{f.icon}</div>
+                <div style={{ width: 48, height: 48, borderRadius: 14, background: `linear-gradient(135deg, ${f.color}20, ${f.color}10)`, border: `1px solid ${f.color}25`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
+                  <f.Icon style={{ width: 24, height: 24, color: f.color }} />
+                </div>
                 <h3 style={{ fontSize: 16, fontWeight: 700, color: "#e2e8f0", marginBottom: 8 }}>{f.title}</h3>
                 <p style={{ fontSize: 13, color: "#64748b", lineHeight: 1.6, margin: 0 }}>{f.desc}</p>
               </div>
