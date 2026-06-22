@@ -176,6 +176,22 @@ export interface ErrorAnalysisItemDto {
   errorRatePercent: number;
 }
 
+export interface ErrorQuestionDetailDto {
+  questionId: string;
+  questionText: string;
+  imageUrl?: string;
+  explanation?: string;
+  topicName: string;
+  answers: ErrorAnswerDto[];
+  lastChosenAnswerId?: string;
+}
+
+export interface ErrorAnswerDto {
+  id: string;
+  text: string;
+  isCorrect: boolean;
+}
+
 export interface AttemptHistoryItemDto {
   id: string;
   flow: string;

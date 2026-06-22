@@ -63,6 +63,10 @@ const CSS = `
     .lp-nav .lp-username{display:none}
     .lp-header-inner{padding:0 16px}
     section,.lp-stats-wrap{padding-left:16px!important;padding-right:16px!important}
+    .lp-teacher-grid{grid-template-columns:1fr!important;gap:12px!important}
+  }
+  @media(min-width:641px) and (max-width:900px){
+    .lp-teacher-grid{grid-template-columns:repeat(2,1fr)!important}
   }
 `;
 
@@ -330,6 +334,55 @@ export function LandingPage() {
                 <button className="lp-btn-outline" style={{ fontSize: 13, padding: "9px 20px" }} onClick={() => navigate("/login")}>{t.login}</button>
                 <button className="lp-btn-primary" style={{ fontSize: 13, padding: "9px 20px" }} onClick={() => navigate("/register")}>{t.register}</button>
               </div>
+            </div>
+          )}
+        </section>
+
+        {/* Teacher / Driving school section */}
+        <section style={{ maxWidth: 1280, margin: "0 auto", padding: "0 28px 100px" }}>
+          <div style={{ textAlign: "center", marginBottom: 48, animation: mounted ? "lp-fadeUp .8s ease .4s both" : "none" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 16px", borderRadius: 100, background: "rgba(139,92,246,.08)", border: "1px solid rgba(139,92,246,.2)", marginBottom: 20 }}>
+              <span style={{ fontSize: 14 }}>🎓</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "#a78bfa", letterSpacing: "0.04em" }}>{t.teacher}</span>
+            </div>
+            <h2 style={{ fontSize: "clamp(24px, 4vw, 40px)", fontWeight: 800, letterSpacing: "-0.02em", marginBottom: 14, background: "linear-gradient(135deg,#a78bfa,#fff)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+              {t.teacherSectionTitle}
+            </h2>
+            <p style={{ fontSize: 15, color: "#64748b", maxWidth: 520, margin: "0 auto" }}>
+              {t.teacherSectionDesc}
+            </p>
+          </div>
+
+          <div className="lp-teacher-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, animation: mounted ? "lp-fadeUp .8s ease .45s both" : "none" }}>
+            {([
+              { icon: "👥", title: t.teacherFeature1Title, desc: t.teacherFeature1Desc, color: "#8b5cf6" },
+              { icon: "🔗", title: t.teacherFeature2Title, desc: t.teacherFeature2Desc, color: "#06b6d4" },
+              { icon: "📊", title: t.teacherFeature3Title, desc: t.teacherFeature3Desc, color: "#10b981" },
+              { icon: "⚡", title: t.teacherFeature4Title, desc: t.teacherFeature4Desc, color: "#f59e0b" },
+            ] as const).map((f, i) => (
+              <div key={i} style={{
+                padding: "28px 24px", borderRadius: 20,
+                background: "rgba(255,255,255,.025)", border: "1px solid rgba(255,255,255,.07)",
+                backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
+                transition: "all .35s cubic-bezier(.4,0,.2,1)",
+                position: "relative", overflow: "hidden",
+              }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = f.color + "30"; e.currentTarget.style.boxShadow = `0 12px 40px ${f.color}15`; e.currentTarget.style.transform = "translateY(-4px)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,.07)"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translateY(0)"; }}
+              >
+                <div style={{ position: "absolute", top: -20, right: -20, width: 100, height: 100, borderRadius: "50%", background: `radial-gradient(circle,${f.color}10,transparent)` }} />
+                <div style={{ fontSize: 32, marginBottom: 16 }}>{f.icon}</div>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: "#e2e8f0", marginBottom: 8 }}>{f.title}</h3>
+                <p style={{ fontSize: 13, color: "#64748b", lineHeight: 1.6, margin: 0 }}>{f.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          {!isLoggedIn && (
+            <div style={{ textAlign: "center", marginTop: 40, animation: mounted ? "lp-fadeUp .8s ease .5s both" : "none" }}>
+              <button className="lp-btn-primary" style={{ fontSize: 15, padding: "14px 36px" }} onClick={() => navigate("/register")}>
+                {t.teacherCta} →
+              </button>
             </div>
           )}
         </section>

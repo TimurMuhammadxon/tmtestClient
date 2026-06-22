@@ -12,7 +12,7 @@ import {
   Settings,
   Banknote,
   UserCog,
-  Globe,
+
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth";
