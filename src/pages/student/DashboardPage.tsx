@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { CreateTestLinkDialog } from "@/components/shared/CreateTestLinkDialog";
+import { CompleteProfileModal } from "@/components/shared/CompleteProfileModal";
 import { useAuthStore } from "@/store/auth";
 import { toast } from "@/components/ui/use-toast";
 import { useTranslation } from "@/lib/i18n";
@@ -111,6 +112,8 @@ export function DashboardPage() {
   const t = useTranslation();
   const isTeacher = !!(user && ["Teacher", "Admin", "SuperAdmin", "Owner"].includes(user.role));
 
+  const needsProfile = !user?.firstName;
+  const [profileDismissed, setProfileDismissed] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [starting, setStarting] = useState<string | null>(null);
   const [subModal, setSubModal] = useState(false);
@@ -373,6 +376,11 @@ export function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Complete profile modal */}
+      {needsProfile && !profileDismissed && (
+        <CompleteProfileModal onClose={() => setProfileDismissed(true)} />
+      )}
 
       {/* Teacher link dialog */}
       {linkMode && (
