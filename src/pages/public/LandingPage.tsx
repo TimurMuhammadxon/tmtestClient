@@ -286,24 +286,22 @@ export function LandingPage() {
                 >
                   <div style={{ position: "absolute", top: -30, right: -30, width: 120, height: 120, borderRadius: "50%", background: `radial-gradient(circle,${mode.color}10,transparent)`, transition: "opacity .3s", opacity: hovered ? 1 : 0 }} />
                   <div className="lp-mode-card-inner">
-                    <div style={{ flexShrink: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
                       <div style={{
-                        width: 52, height: 52, borderRadius: 14,
+                        width: 44, height: 44, borderRadius: 12, flexShrink: 0,
                         background: `linear-gradient(135deg, ${mode.color}20, ${mode.color}10)`,
                         border: `1px solid ${mode.color}25`,
                         display: "flex", alignItems: "center", justifyContent: "center",
                         boxShadow: hovered ? `0 0 20px ${mode.color}25` : "none",
                         transition: "box-shadow .3s",
                       }}>
-                        <img src={mode.icon} alt={mode.title} style={{ width: 28, height: 28 }} />
+                        <img src={mode.icon} alt={mode.title} style={{ width: 24, height: 24 }} />
                       </div>
+                      <h3 style={{ fontSize: 22, fontWeight: 800, color: "#e2e8f0", letterSpacing: "-0.02em", margin: 0 }}>{mode.title}</h3>
+                      <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 100, background: `${mode.color}15`, color: mode.color, letterSpacing: "0.04em", textTransform: "uppercase", flexShrink: 0 }}>{mode.badge}</span>
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                        <h3 style={{ fontSize: 17, fontWeight: 700, color: "#e2e8f0", letterSpacing: "-0.01em", margin: 0 }}>{mode.title}</h3>
-                        <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 100, background: `${mode.color}15`, color: mode.color, letterSpacing: "0.04em", textTransform: "uppercase", flexShrink: 0 }}>{mode.badge}</span>
-                      </div>
-                      <p style={{ fontSize: 12, color: "#64748b", lineHeight: 1.5, margin: "0 0 10px" }}>{mode.desc}</p>
+                      <p style={{ fontSize: 13, color: "#64748b", lineHeight: 1.5, margin: "0 0 12px" }}>{mode.desc}</p>
                       <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: locked ? "#475569" : mode.color }}>
                         {needsAuth ? (<><span style={{ fontSize: 11 }}>🔒</span><span>{t.loginRequired}</span></>) :
                          needsSub ? (<><span style={{ fontSize: 11 }}>🔒</span><span>{t.subscriptionRequired}</span></>) :
@@ -373,10 +371,12 @@ export function LandingPage() {
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,.07)"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translateY(0)"; }}
               >
                 <div style={{ position: "absolute", top: -20, right: -20, width: 100, height: 100, borderRadius: "50%", background: `radial-gradient(circle,${f.color}10,transparent)` }} />
-                <div style={{ width: 48, height: 48, borderRadius: 14, background: `linear-gradient(135deg, ${f.color}20, ${f.color}10)`, border: `1px solid ${f.color}25`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
-                  <f.Icon style={{ width: 24, height: 24, color: f.color }} />
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 12, flexShrink: 0, background: `linear-gradient(135deg, ${f.color}20, ${f.color}10)`, border: `1px solid ${f.color}25`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <f.Icon style={{ width: 22, height: 22, color: f.color }} />
+                  </div>
+                  <h3 style={{ fontSize: 20, fontWeight: 800, color: "#e2e8f0", margin: 0 }}>{f.title}</h3>
                 </div>
-                <h3 style={{ fontSize: 16, fontWeight: 700, color: "#e2e8f0", marginBottom: 8 }}>{f.title}</h3>
                 <p style={{ fontSize: 13, color: "#64748b", lineHeight: 1.6, margin: 0 }}>{f.desc}</p>
               </div>
             ))}
