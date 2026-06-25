@@ -10,18 +10,7 @@ import { useTranslation } from "@/lib/i18n";
 import { useState } from "react";
 import { Eye, EyeOff, UserPlus } from "lucide-react";
 
-const schema = z
-  .object({
-    email: z.string().email("To'g'ri elektron pochta kiriting"),
-    password: z.string().min(6, "Parol kamida 6 ta belgi bo'lishi kerak"),
-    confirmPassword: z.string(),
-  })
-  .refine((d) => d.password === d.confirmPassword, {
-    message: "Parollar mos kelmadi",
-    path: ["confirmPassword"],
-  });
-
-type FormData = z.infer<typeof schema>;
+type FormData = { email: string; password: string; confirmPassword: string };
 
 export function RegisterPage() {
   const navigate = useNavigate();
@@ -29,6 +18,17 @@ export function RegisterPage() {
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const t = useTranslation();
+
+  const schema = z
+    .object({
+      email: z.string().email(t.email),
+      password: z.string().min(6, t.passwordMinLength),
+      confirmPassword: z.string(),
+    })
+    .refine((d) => d.password === d.confirmPassword, {
+      message: t.passwordMismatch,
+      path: ["confirmPassword"],
+    });
 
   const {
     register,

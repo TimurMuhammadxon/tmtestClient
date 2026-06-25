@@ -331,13 +331,13 @@ function SettingsModal({ user, onClose }: { user: AuthUser | null; onClose: () =
     if (password.length < 6) { setError(t.passwordMinLength); return; }
     setSaving(true); setError(null); setSuccess(null);
     try {
-      const res = await profileApi.setCredentials(email, password);
+      const res = await profileApi.setCredentials(isTelegramUser ? email : user!.email, password);
       setTokens(res.accessToken, res.refreshToken);
       setSuccess(t.credentialsSaved);
       setPassword(""); setConfirmPassword("");
     } catch (e: unknown) {
       const msg = (e as any)?.response?.data?.detail ?? (e as any)?.response?.data?.title;
-      setError(msg ?? "Xatolik yuz berdi");
+      setError(msg ?? t.error);
     } finally {
       setSaving(false);
     }
