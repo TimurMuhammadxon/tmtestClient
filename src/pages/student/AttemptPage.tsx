@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useNavigate } from "react-router-dom";
 import { attemptsApi } from "@/api/attempts";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { PageLoader } from "@/components/shared/LoadingSpinner";
@@ -275,22 +275,20 @@ export function AttemptPage() {
             background: passed
               ? "rgba(16,185,129,0.15)"
               : completed
-              ? "rgba(59,130,246,0.15)"
-              : "rgba(239,68,68,0.15)",
-            border: `2px solid ${
-              passed
+                ? "rgba(59,130,246,0.15)"
+                : "rgba(239,68,68,0.15)",
+            border: `2px solid ${passed
                 ? "rgba(16,185,129,0.3)"
                 : completed
-                ? "rgba(59,130,246,0.3)"
-                : "rgba(239,68,68,0.3)"
-            }`,
-            boxShadow: `0 0 30px ${
-              passed
+                  ? "rgba(59,130,246,0.3)"
+                  : "rgba(239,68,68,0.3)"
+              }`,
+            boxShadow: `0 0 30px ${passed
                 ? "rgba(16,185,129,0.2)"
                 : completed
-                ? "rgba(59,130,246,0.2)"
-                : "rgba(239,68,68,0.2)"
-            }`,
+                  ? "rgba(59,130,246,0.2)"
+                  : "rgba(239,68,68,0.2)"
+              }`,
           }}
         >
           {passed ? (
@@ -305,10 +303,10 @@ export function AttemptPage() {
             {passed
               ? `${t.congratsPassed} 🎉`
               : completed
-              ? t.testCompleted
-              : examFail3Mistakes
-              ? `${t.examFailTitle} 😔`
-              : `${t.failedResult} 😔`}
+                ? t.testCompleted
+                : examFail3Mistakes
+                  ? `${t.examFailTitle} 😔`
+                  : `${t.failedResult} 😔`}
           </h2>
 
           {examFail3Mistakes && (
@@ -351,7 +349,7 @@ export function AttemptPage() {
 
   // ─── Active test ───────────────────────────────────────────────────────────
   return (
-    <div className="max-w-2xl mx-auto space-y-4" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+    <div className="max-w-4xl mx-auto space-y-4" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
       {/* Header row */}
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
@@ -370,8 +368,8 @@ export function AttemptPage() {
                 wrongCount >= 2
                   ? "bg-red-500/15 text-red-400 border-red-500/30"
                   : wrongCount === 1
-                  ? "bg-amber-500/15 text-amber-400 border-amber-500/30"
-                  : "bg-muted text-muted-foreground border-border"
+                    ? "bg-amber-500/15 text-amber-400 border-amber-500/30"
+                    : "bg-muted text-muted-foreground border-border"
               )}
             >
               <AlertTriangle className="h-3.5 w-3.5" />
@@ -416,99 +414,110 @@ export function AttemptPage() {
         </p>
       </div>
 
-      {/* Question navigation dots — hidden for Marathon (too many questions) */}
-      {!isMarathon && (
-        <div className="flex flex-wrap gap-1">
-          {questions.map((q, i) => {
-            const state = answerStates[q.questionId];
-            return (
-              <button
-                key={q.questionId}
-                onClick={() => goTo(i)}
-                className={cn(
-                  "w-7 h-7 rounded text-xs font-medium transition-colors",
-                  i === currentIndex && "ring-2 ring-primary ring-offset-1 ring-offset-background",
-                  state?.isCorrect === true && "bg-green-500 text-white",
-                  state?.isCorrect === false && "bg-red-500 text-white",
-                  !state && "bg-secondary text-secondary-foreground hover:bg-secondary/70"
-                )}
-              >
-                {i + 1}
-              </button>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Question card */}
-      <Card>
-        <CardHeader>
-          {currentQ.imageUrl && (
-            <img
-              src={currentQ.imageUrl}
-              alt="Savol rasmi"
-              className="w-full max-h-64 object-contain rounded-lg bg-muted mb-3"
-            />
-          )}
+      {/* Question: two-column when image exists, single column otherwise */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Left: Question text + Answers */}
+        <div className="space-y-3 order-2 md:order-1">
           <p className="text-base font-medium leading-relaxed">{currentQ.text}</p>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {currentQ.answers.map((answer) => {
-            const chosen = currentAnswerState?.chosenId === answer.id;
-            const isCorrectAnswer = currentAnswerState?.correctId === answer.id;
-            const revealed = !!currentAnswerState;
+          <div className="space-y-2">
+            {currentQ.answers.map((answer) => {
+              const chosen = currentAnswerState?.chosenId === answer.id;
+              const isCorrectAnswer = currentAnswerState?.correctId === answer.id;
+              const revealed = !!currentAnswerState;
 
-            return (
-              <button
-                key={answer.id}
-                className={cn(
-                  "w-full text-left p-4 rounded-lg border-2 transition-all text-sm",
-                  !revealed && "border-border hover:border-primary/50 hover:bg-primary/5",
-                  revealed && isCorrectAnswer && "border-emerald-500/50 bg-emerald-950/30 text-emerald-300",
-                  revealed && chosen && !isCorrectAnswer && "border-red-500/50 bg-red-950/30 text-red-300",
-                  revealed && !chosen && !isCorrectAnswer && "border-border opacity-50",
-                  (revealed || finished || answerMutation.isPending) && "cursor-default"
-                )}
-                onClick={() => handleAnswer(currentQ.questionId, answer.id)}
-                disabled={!!currentAnswerState || finished || answerMutation.isPending}
-              >
-                <div className="flex items-center gap-3">
-                  <span
+              return (
+                <button
+                  key={answer.id}
+                  className={cn(
+                    "w-full text-left p-3 rounded-lg border-2 transition-all text-sm",
+                    !revealed && "border-border hover:border-primary/50 hover:bg-primary/5",
+                    revealed && isCorrectAnswer && "border-emerald-500/50 bg-emerald-950/30 text-emerald-300",
+                    revealed && chosen && !isCorrectAnswer && "border-red-500/50 bg-red-950/30 text-red-300",
+                    revealed && !chosen && !isCorrectAnswer && "border-border opacity-50",
+                    (revealed || finished || answerMutation.isPending) && "cursor-default"
+                  )}
+                  onClick={() => handleAnswer(currentQ.questionId, answer.id)}
+                  disabled={!!currentAnswerState || finished || answerMutation.isPending}
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={cn(
+                        "flex-shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center text-xs font-bold",
+                        !revealed && "border-muted-foreground/30",
+                        revealed && isCorrectAnswer && "border-emerald-600 bg-emerald-600 text-white",
+                        revealed && chosen && !isCorrectAnswer && "border-red-600 bg-red-600 text-white",
+                        revealed && !chosen && !isCorrectAnswer && "border-muted-foreground/20"
+                      )}
+                    >
+                      {`F${currentQ.answers.indexOf(answer) + 1}`}
+                    </span>
+                    <span>{answer.text}</span>
+                    {revealed && isCorrectAnswer && (
+                      <CheckCircle className="h-4 w-4 text-emerald-400 ml-auto flex-shrink-0" />
+                    )}
+                    {revealed && chosen && !isCorrectAnswer && (
+                      <XCircle className="h-4 w-4 text-red-400 ml-auto flex-shrink-0" />
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Right: Image or logo placeholder */}
+        <div className="flex items-start justify-center order-1 md:order-2">
+          <img
+            src={currentQ.imageUrl || "/pravadrive-logo-stacked.svg"}
+            alt=""
+            className={cn(
+              "w-full rounded-lg",
+              currentQ.imageUrl ? "max-h-80 object-contain bg-muted" : "max-h-64 object-contain p-8"
+            )}
+          />
+        </div>
+      </div>
+
+      {/* Spacer for fixed bottom nav */}
+      <div className="h-20" />
+
+      {/* Fixed bottom navigation */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-border px-4 py-3">
+        <div className="max-w-4xl mx-auto flex items-center justify-between gap-2">
+          <Button variant="outline" onClick={goPrev} disabled={currentIndex === 0} className="flex-shrink-0">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            {t.prev}
+          </Button>
+
+          {/* Question navigation dots — between prev/next, hidden for Marathon */}
+          {!isMarathon && (
+            <div className="flex flex-wrap gap-1 justify-center flex-1 max-h-14 overflow-y-auto px-2">
+              {questions.map((q, i) => {
+                const state = answerStates[q.questionId];
+                return (
+                  <button
+                    key={q.questionId}
+                    onClick={() => goTo(i)}
                     className={cn(
-                      "flex-shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center text-xs font-bold",
-                      !revealed && "border-muted-foreground/30",
-                      revealed && isCorrectAnswer && "border-emerald-600 bg-emerald-600 text-white",
-                      revealed && chosen && !isCorrectAnswer && "border-red-600 bg-red-600 text-white",
-                      revealed && !chosen && !isCorrectAnswer && "border-muted-foreground/20"
+                      "w-7 h-7 rounded text-xs font-medium transition-colors",
+                      i === currentIndex && "ring-2 ring-primary ring-offset-1 ring-offset-background",
+                      state?.isCorrect === true && "bg-green-500 text-white",
+                      state?.isCorrect === false && "bg-red-500 text-white",
+                      !state && "bg-secondary text-secondary-foreground hover:bg-secondary/70"
                     )}
                   >
-                    {`F${currentQ.answers.indexOf(answer) + 1}`}
-                  </span>
-                  <span>{answer.text}</span>
-                  {revealed && isCorrectAnswer && (
-                    <CheckCircle className="h-4 w-4 text-emerald-400 ml-auto flex-shrink-0" />
-                  )}
-                  {revealed && chosen && !isCorrectAnswer && (
-                    <XCircle className="h-4 w-4 text-red-400 ml-auto flex-shrink-0" />
-                  )}
-                </div>
-              </button>
-            );
-          })}
-        </CardContent>
-      </Card>
+                    {i + 1}
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
-      {/* Navigation: Prev / Next only */}
-      <div className="flex items-center justify-between">
-        <Button variant="outline" onClick={goPrev} disabled={currentIndex === 0}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          {t.prev}
-        </Button>
-
-        <Button variant="outline" onClick={goNext} disabled={currentIndex === questions.length - 1}>
-          {t.next}
-          <ArrowRight className="h-4 w-4 ml-2" />
-        </Button>
+          <Button variant="outline" onClick={goNext} disabled={currentIndex === questions.length - 1} className="flex-shrink-0">
+            {t.next}
+            <ArrowRight className="h-4 w-4 ml-2" />
+          </Button>
+        </div>
       </div>
     </div>
   );
