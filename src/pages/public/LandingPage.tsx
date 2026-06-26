@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/auth";
 import { subscriptionsApi } from "@/api/subscriptions";
+import { biletsApi } from "@/api/bilets";
+import { attemptsApi } from "@/api/attempts";
 import { useTranslation } from "@/lib/i18n";
 import { useLanguageStore, type LangCode } from "@/store/language";
 import { Users, Link2, BarChart3, Zap } from "lucide-react";
@@ -114,6 +116,23 @@ export function LandingPage() {
   });
 
   const hasAccess = isPrivileged || (isLoggedIn && subscription?.isActive === true);
+
+  const [startingDemo, setStartingDemo] = useState(false);
+
+  const startDemoTest = async () => {
+    setStartingDemo(true);
+    try {
+      const bilets = await biletsApi.list();
+      const demo = bilets.find((b) => b.isDemo);
+      if (!demo) { navigate("/bilets"); return; }
+      const { id } = await attemptsApi.start({ flowType: 1, biletId: demo.id });
+      navigate(`/attempts/${id}`);
+    } catch {
+      navigate("/bilets");
+    } finally {
+      setStartingDemo(false);
+    }
+  };
 
   const MODES = [
     { id: "topics", icon: "/pravadrive-icon-mavzular.svg", title: t.modeTopics, desc: t.modeTopicsDesc, color: "#38bdf8", badge: t.badgeRecommend, to: "/topics", freeAccess: true },
@@ -232,8 +251,13 @@ export function LandingPage() {
             <p style={{ fontSize: "clamp(15px, 2vw, 18px)", color: "#64748b", maxWidth: 560, margin: "0 auto 40px", lineHeight: 1.7 }}>{t.heroDesc}</p>
 
             <div className="lp-hero-btns">
-              <button className="lp-btn-primary" style={{ fontSize: 15, padding: "14px 36px" }} onClick={() => isLoggedIn ? navigate("/dashboard") : navigate("/register")}>
-                {isLoggedIn ? `${t.goToDashboard} →` : `${t.startFree} →`}
+              <button
+                className="lp-btn-primary"
+                style={{ fontSize: 15, padding: "14px 36px", opacity: startingDemo ? 0.7 : 1 }}
+                disabled={startingDemo}
+                onClick={() => startDemoTest()}
+              >
+                {startingDemo ? t.loading : `${t.startTrialTest} →`}
               </button>
               {!isLoggedIn && (
                 <button className="lp-btn-outline" style={{ fontSize: 15, padding: "14px 36px" }} onClick={() => navigate("/login")}>{t.login}</button>

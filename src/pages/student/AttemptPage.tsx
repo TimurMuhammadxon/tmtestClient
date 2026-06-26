@@ -220,6 +220,29 @@ export function AttemptPage() {
     setCurrentIndex(index);
   };
 
+  const goPrev = () => goTo(Math.max(0, currentIndex - 1));
+  const goNext = () => goTo(Math.min((attempt?.questions.length ?? 1) - 1, currentIndex + 1));
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") goPrev();
+      if (e.key === "ArrowRight") goNext();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  });
+
+  const touchStartX = useRef<number | null>(null);
+  const handleTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const diff = e.changedTouches[0].clientX - touchStartX.current;
+    touchStartX.current = null;
+    if (Math.abs(diff) < 50) return;
+    if (diff < 0) goNext();
+    else goPrev();
+  };
+
   const handleFinish = () => {
     if (finished || finishMutation.isPending) return;
     if (autoAdvanceRef.current) {
@@ -328,7 +351,7 @@ export function AttemptPage() {
 
   // ─── Active test ───────────────────────────────────────────────────────────
   return (
-    <div className="max-w-2xl mx-auto space-y-4">
+    <div className="max-w-2xl mx-auto space-y-4" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
       {/* Header row */}
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
@@ -477,20 +500,12 @@ export function AttemptPage() {
 
       {/* Navigation: Prev / Next only */}
       <div className="flex items-center justify-between">
-        <Button
-          variant="outline"
-          onClick={() => goTo(Math.max(0, currentIndex - 1))}
-          disabled={currentIndex === 0}
-        >
+        <Button variant="outline" onClick={goPrev} disabled={currentIndex === 0}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           {t.prev}
         </Button>
 
-        <Button
-          variant="outline"
-          onClick={() => goTo(Math.min(questions.length - 1, currentIndex + 1))}
-          disabled={currentIndex === questions.length - 1}
-        >
+        <Button variant="outline" onClick={goNext} disabled={currentIndex === questions.length - 1}>
           {t.next}
           <ArrowRight className="h-4 w-4 ml-2" />
         </Button>

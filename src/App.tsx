@@ -5,6 +5,7 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import { router } from "@/router";
 import { authApi } from "@/api/auth";
 import { useAuthStore } from "@/store/auth";
+import { useLanguageStore } from "@/store/language";
 
 const GOOGLE_CLIENT_ID = "1074843019354-g7erdamv4pr2r3mvcd1ko7v0m1cqh4b6.apps.googleusercontent.com";
 
@@ -80,10 +81,19 @@ function TelegramAutoLogin({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
+function LanguageSync() {
+  const lang = useLanguageStore((s) => s.lang);
+  useEffect(() => {
+    queryClient.invalidateQueries();
+  }, [lang]);
+  return null;
+}
+
 export default function App() {
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <QueryClientProvider client={queryClient}>
+        <LanguageSync />
         <TelegramAutoLogin>
           <RouterProvider router={router} />
         </TelegramAutoLogin>

@@ -45,8 +45,6 @@ export function BiletsPage() {
 
   if (isLoading) return <PageLoader />;
   const allBilets = bilets ?? [];
-  const demoBilets = allBilets.filter((b) => b.isDemo);
-  const regularBilets = allBilets.filter((b) => !b.isDemo);
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -58,33 +56,17 @@ export function BiletsPage() {
         </div>
       </div>
 
-      {allBilets.length === 0 && (
+      {allBilets.length === 0 ? (
         <Card><CardContent className="flex flex-col items-center justify-center py-16 text-center gap-3">
           <BookOpen className="h-12 w-12 text-muted-foreground" />
           <p className="text-muted-foreground">{t.noActiveBilets}</p>
         </CardContent></Card>
-      )}
-
-      {demoBilets.length > 0 && (
-        <section className="space-y-3">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">{t.demoBilets}</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {demoBilets.map((bilet) => (
-              <BiletCard key={bilet.id} bilet={bilet} isLoading={starting === bilet.id} disabled={!!starting} isTeacher={!!isTeacher} locked={false} onClick={() => handleStart(bilet)} onCreateLink={() => setLinkBilet(bilet)} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {regularBilets.length > 0 && (
-        <section className="space-y-3">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">{t.allBilets} ({regularBilets.length})</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {regularBilets.map((bilet) => (
-              <BiletCard key={bilet.id} bilet={bilet} isLoading={starting === bilet.id} disabled={!!starting} isTeacher={!!isTeacher} locked={!hasAccess} onClick={() => handleStart(bilet)} onCreateLink={() => setLinkBilet(bilet)} />
-            ))}
-          </div>
-        </section>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {allBilets.map((bilet) => (
+            <BiletCard key={bilet.id} bilet={bilet} isLoading={starting === bilet.id} disabled={!!starting} isTeacher={!!isTeacher} locked={!bilet.isDemo && !hasAccess} onClick={() => handleStart(bilet)} onCreateLink={() => setLinkBilet(bilet)} />
+          ))}
+        </div>
       )}
 
       {linkBilet && <CreateTestLinkDialog open={!!linkBilet} onClose={() => setLinkBilet(null)} defaultTitle={`${t.bilet} #${linkBilet.number}`} flowType={1} biletId={linkBilet.id} />}
