@@ -15,6 +15,7 @@ export interface CreateTestLinkRequest {
   groupId?: string;
   maxAttempts: number;
   expiresAt: string;
+  showExplanations?: boolean;
 }
 
 export const testLinksApi = {

@@ -203,11 +203,8 @@ export function DashboardPage() {
         {/* Header */}
         <div className="dp-header" style={{ animation: mounted ? "dp-fadeIn .6s ease" : "none" }}>
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
-              <img src="/pravadrive-logo-horizontal.svg" alt="pravadrive" style={{ height: 40, width: "auto" }} />
-            </div>
-            <p style={{ fontSize: 13, color: "#64748b", marginLeft: 54 }}>
-              {t.hello}, <span style={{ color: "#94a3b8", fontWeight: 500 }}>{user?.firstName ?? user?.email?.split("@")[0]}</span>! {t.practiceToday}
+            <p style={{ fontSize: 15, color: "#64748b" }}>
+              {t.hello}, <span style={{ color: "#e2e8f0", fontWeight: 600 }}>{user?.firstName ?? user?.email?.split("@")[0]}</span>! {t.practiceToday}
             </p>
           </div>
           <div className="dp-header-btns">

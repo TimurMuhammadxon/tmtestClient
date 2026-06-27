@@ -53,7 +53,7 @@ const CSS = `
   .lp-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,.07);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
   .lp-hero-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
   .lp-nav{display:flex;align-items:center;gap:8px}
-  .lp-header-inner{max-width:1280px;margin:0 auto;padding:0 28px;height:64px;display:flex;align-items:center;justify-content:space-between}
+  .lp-header-inner{max-width:1280px;margin:0 auto;padding:0 28px;height:64px;display:flex;align-items:center;justify-content:flex-end}
   @media(max-width:640px){
     .lp-modes-grid{grid-template-columns:1fr;gap:12px}
     .lp-modes-grid>*{grid-column:auto!important}
@@ -183,10 +183,6 @@ export function LandingPage() {
           background: "rgba(10,10,15,.7)",
         }}>
           <div className="lp-header-inner">
-            <div style={{ display: "flex", alignItems: "center", cursor: "pointer" }} onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-              <img src="/pravadrive-logo-horizontal.svg" alt="pravadrive" style={{ height: 42, width: "auto" }} />
-            </div>
-
             <nav className="lp-nav" style={{ gap: 8 }}>
               {/* Language switcher */}
               <div style={{ display: "flex", gap: 2, padding: 2, borderRadius: 8, background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.08)", marginRight: 4 }}>
@@ -210,12 +206,12 @@ export function LandingPage() {
                   <span className="lp-username" style={{ fontSize: 13, color: "#64748b", marginRight: 4 }}>
                     {user?.firstName ?? user?.email?.split("@")[0]}
                   </span>
-                  <button className="lp-btn-outline" style={{ padding: "9px 16px", fontSize: 13, display: "flex", alignItems: "center", gap: 7 }} onClick={() => navigate("/subscription")}>
+                  <button className="lp-btn-outline" style={{ padding: "9px 18px", fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }} onClick={() => navigate("/subscription")}>
                     <img src="/pravadrive-icon-obuna.svg" alt="" style={{ width: 16, height: 16 }} />
                     {t.subscription}
                   </button>
-                  <button className="lp-btn-primary" style={{ padding: "9px 22px", fontSize: 13 }} onClick={() => navigate("/dashboard")}>
-                    {t.dashboard} →
+                  <button className="lp-btn-primary" style={{ padding: "9px 22px", fontSize: 13, whiteSpace: "nowrap" }} onClick={() => navigate("/dashboard")}>
+                    {t.account} →
                   </button>
                 </>
               ) : (
@@ -228,7 +224,11 @@ export function LandingPage() {
           </div>
         </header>
 
-        <section style={{ maxWidth: 1280, margin: "0 auto", padding: "100px 28px 80px", textAlign: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, padding: "48px 28px 0", animation: mounted ? "lp-fadeUp .7s ease both" : "none" }}>
+          <img src="/pravadrive-logo-horizontal.svg" alt="PravaDrive" style={{ height: 72, width: "auto" }} />
+        </div>
+
+        <section style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 28px 80px", textAlign: "center" }}>
           <div style={{ animation: mounted ? "lp-fadeUp .8s ease both" : "none" }}>
             <div style={{
               display: "inline-flex", alignItems: "center", gap: 8,

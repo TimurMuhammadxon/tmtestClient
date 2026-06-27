@@ -50,6 +50,7 @@ export function TestLinksPage() {
     topicId: "",
     maxAttempts: "1",
     expiresAt: format(addDays(new Date(), 1), "yyyy-MM-dd'T'HH:mm"),
+    showExplanations: false,
   });
 
   const { data: linksData, isLoading } = useQuery({
@@ -124,6 +125,7 @@ export function TestLinksPage() {
       flowType: parseInt(form.flowType),
       maxAttempts: parseInt(form.maxAttempts),
       expiresAt: new Date(form.expiresAt).toISOString(),
+      showExplanations: form.showExplanations,
     };
     if (form.flowType === "1" && form.biletId) req.biletId = form.biletId;
     if (form.flowType === "2" && form.topicId) req.topicIds = [form.topicId];
@@ -376,6 +378,10 @@ export function TestLinksPage() {
                 />
               </div>
             </div>
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input type="checkbox" checked={form.showExplanations} onChange={(e) => setForm((f) => ({ ...f, showExplanations: e.target.checked }))} className="w-4 h-4 rounded border-border accent-primary" />
+              <span className="text-sm">{t.showExplanationsLabel}</span>
+            </label>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateOpen(false)}>{t.cancel}</Button>

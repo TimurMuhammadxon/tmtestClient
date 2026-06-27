@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { useEffect, useState, useRef } from "react";
 import {
   CheckCircle, XCircle, Clock, ArrowLeft, ArrowRight, Flag, AlertTriangle,
+  BookOpen, Volume2,
 } from "lucide-react";
 import type { AttemptQuestionDto, SubmitAnswerResult } from "@/types";
 import { toast } from "@/components/ui/use-toast";
@@ -49,6 +50,7 @@ export function AttemptPage() {
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [finished, setFinished] = useState(false);
   const [finishResult, setFinishResult] = useState<FinishResultState | null>(null);
+  const [showQoida, setShowQoida] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const autoAdvanceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -218,6 +220,7 @@ export function AttemptPage() {
       autoAdvanceRef.current = null;
     }
     setCurrentIndex(index);
+    setShowQoida(false);
   };
 
   const goPrev = () => goTo(Math.max(0, currentIndex - 1));
@@ -392,7 +395,30 @@ export function AttemptPage() {
             </div>
           )}
 
-          {/* Finish button — always visible */}
+          {attempt?.showExplanations && (
+            <>
+              <Button
+                variant={showQoida ? "default" : "outline"}
+                size="sm"
+                onClick={() => setShowQoida((v) => !v)}
+                className={showQoida ? "" : "text-muted-foreground"}
+              >
+                <BookOpen className="h-4 w-4 mr-1.5" />
+                {t.qoida}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled
+                className="text-muted-foreground opacity-50"
+                title={t.comingSoon}
+              >
+                <Volume2 className="h-4 w-4 mr-1.5" />
+                {t.audioLearn}
+              </Button>
+            </>
+          )}
+
           <Button
             variant="outline"
             size="sm"
@@ -463,6 +489,26 @@ export function AttemptPage() {
               );
             })}
           </div>
+
+          {showQoida && currentQ.explanation && !!currentAnswerState && (
+            <div className="rounded-lg border border-cyan-500/20 bg-cyan-950/15 p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <BookOpen className="h-4 w-4 text-cyan-400" />
+                <span className="text-sm font-semibold text-cyan-400">{t.qoida}</span>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed" style={{ whiteSpace: "pre-wrap" }}>
+                {currentQ.explanation}
+              </p>
+            </div>
+          )}
+
+          {showQoida && !currentAnswerState && (
+            <div className="rounded-lg border border-border/50 bg-muted/20 p-4">
+              <p className="text-sm text-muted-foreground text-center">
+                {t.answerFirst}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Right: Image or logo placeholder */}
@@ -491,7 +537,7 @@ export function AttemptPage() {
 
           {/* Question navigation dots — between prev/next, hidden for Marathon */}
           {!isMarathon && (
-            <div className="flex flex-wrap gap-1 justify-center flex-1 max-h-14 overflow-y-auto px-2">
+            <div className="flex flex-wrap gap-1 justify-center flex-1 px-2">
               {questions.map((q, i) => {
                 const state = answerStates[q.questionId];
                 return (
@@ -499,7 +545,7 @@ export function AttemptPage() {
                     key={q.questionId}
                     onClick={() => goTo(i)}
                     className={cn(
-                      "w-7 h-7 rounded text-xs font-medium transition-colors",
+                      "w-6 h-6 rounded text-[10px] font-medium transition-colors",
                       i === currentIndex && "ring-2 ring-primary ring-offset-1 ring-offset-background",
                       state?.isCorrect === true && "bg-green-500 text-white",
                       state?.isCorrect === false && "bg-red-500 text-white",

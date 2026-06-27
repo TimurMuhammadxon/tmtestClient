@@ -25,11 +25,12 @@ export function CreateTestLinkDialog({ open, onClose, defaultTitle, flowType, bi
   const [maxAttempts, setMaxAttempts] = useState("1");
   const [expiresAt, setExpiresAt] = useState(format(addDays(new Date(), 7), "yyyy-MM-dd'T'HH:mm"));
   const [createdCode, setCreatedCode] = useState<string | null>(null);
+  const [showExplanations, setShowExplanations] = useState(false);
   const [copied, setCopied] = useState(false);
   const [copiedTg, setCopiedTg] = useState(false);
 
   const createMutation = useMutation({
-    mutationFn: () => testLinksApi.create({ title: title.trim() || defaultTitle, flowType, biletId, topicIds, maxAttempts: parseInt(maxAttempts) || 1, expiresAt: new Date(expiresAt).toISOString() }),
+    mutationFn: () => testLinksApi.create({ title: title.trim() || defaultTitle, flowType, biletId, topicIds, maxAttempts: parseInt(maxAttempts) || 1, expiresAt: new Date(expiresAt).toISOString(), showExplanations }),
     onSuccess: (link) => setCreatedCode(link.code),
     onError: (e: unknown) => {
       const data = (e as any)?.response?.data;
@@ -41,7 +42,7 @@ export function CreateTestLinkDialog({ open, onClose, defaultTitle, flowType, bi
   const telegramUrl = createdCode ? `https://t.me/${import.meta.env.VITE_TELEGRAM_BOT_USERNAME ?? "pravadrive_bot"}/${import.meta.env.VITE_TELEGRAM_APP_NAME ?? "PravaDrive"}?startapp=${createdCode}` : null;
   const handleCopy = () => { if (!linkUrl) return; navigator.clipboard.writeText(linkUrl); setCopied(true); setTimeout(() => setCopied(false), 2000); };
   const handleCopyTg = () => { if (!telegramUrl) return; navigator.clipboard.writeText(telegramUrl); setCopiedTg(true); setTimeout(() => setCopiedTg(false), 2000); };
-  const handleClose = () => { setCreatedCode(null); setTitle(defaultTitle); setMaxAttempts("1"); setExpiresAt(format(addDays(new Date(), 7), "yyyy-MM-dd'T'HH:mm")); onClose(); };
+  const handleClose = () => { setCreatedCode(null); setTitle(defaultTitle); setMaxAttempts("1"); setShowExplanations(false); setExpiresAt(format(addDays(new Date(), 7), "yyyy-MM-dd'T'HH:mm")); onClose(); };
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
@@ -87,6 +88,10 @@ export function CreateTestLinkDialog({ open, onClose, defaultTitle, flowType, bi
                 <Label htmlFor="expires-at">{t.endTime}</Label>
                 <Input id="expires-at" type="datetime-local" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} />
               </div>
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input type="checkbox" checked={showExplanations} onChange={(e) => setShowExplanations(e.target.checked)} className="w-4 h-4 rounded border-border accent-primary" />
+                <span className="text-sm">{t.showExplanationsLabel}</span>
+              </label>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={handleClose}>{t.cancel}</Button>

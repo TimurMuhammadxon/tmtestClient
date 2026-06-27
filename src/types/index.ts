@@ -96,6 +96,7 @@ export interface AttemptQuestionDto {
   chosenAnswerId?: string;
   isCorrect?: boolean;
   answeredAt?: string;
+  explanation?: string;
   answers: AttemptAnswerDto[];
 }
 
@@ -108,6 +109,7 @@ export interface AttemptDto {
   correctCount?: number;
   totalQuestions: number;
   remainingSeconds?: number;
+  showExplanations: boolean;
   questions: AttemptQuestionDto[];
 }
 
@@ -239,6 +241,7 @@ export interface TestLinkDto {
   maxAttempts: number;
   expiresAt: string;
   isActive: boolean;
+  showExplanations: boolean;
   attemptsCount: number;
   createdAt: string;
 }

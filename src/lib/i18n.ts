@@ -17,6 +17,7 @@ const translations = {
 
     // Navigation
     dashboard: "Bosh sahifa",
+    account: "Akkaunt",
     bilets: "Biletlar",
     progress: "Natijalarim",
     subscription: "Obuna",
@@ -52,6 +53,11 @@ const translations = {
     next: "Keyingisi",
     prev: "Oldingi",
     finish: "Yakunlash",
+    qoida: "Qoida",
+    audioLearn: "Ovozli o'rganish",
+    comingSoon: "Tez kunda",
+    answerFirst: "Avval savolga javob bering",
+    showExplanationsLabel: "Qoida va tushuntirishlarni ko'rsatish",
     timeLeft: "Qolgan vaqt",
     correct: "To'g'ri",
     incorrect: "Noto'g'ri",
@@ -398,6 +404,7 @@ const translations = {
 
     // Navigation
     dashboard: "Главная",
+    account: "Аккаунт",
     bilets: "Билеты",
     progress: "Мои результаты",
     subscription: "Подписка",
@@ -433,6 +440,11 @@ const translations = {
     next: "Следующий",
     prev: "Предыдущий",
     finish: "Завершить",
+    qoida: "Правило",
+    audioLearn: "Аудио обучение",
+    comingSoon: "Скоро",
+    answerFirst: "Сначала ответьте на вопрос",
+    showExplanationsLabel: "Показать правила и объяснения",
     timeLeft: "Осталось времени",
     correct: "Правильно",
     incorrect: "Неправильно",
@@ -779,6 +791,7 @@ const translations = {
 
     // Navigation
     dashboard: "Бош саҳифа",
+    account: "Аккаунт",
     bilets: "Билетлар",
     progress: "Натижаларим",
     subscription: "Обуна",
@@ -814,6 +827,11 @@ const translations = {
     next: "Кейингиси",
     prev: "Олдинги",
     finish: "Якунлаш",
+    qoida: "Қоида",
+    audioLearn: "Овозли ўрганиш",
+    comingSoon: "Тез кунда",
+    answerFirst: "Аввал саволга жавоб беринг",
+    showExplanationsLabel: "Қоида ва тушунтиришларни кўрсатиш",
     timeLeft: "Қолган вақт",
     correct: "Тўғри",
     incorrect: "Нотўғри",
