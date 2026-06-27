@@ -25,7 +25,7 @@ import type { SubscriptionPlanDto } from "@/types";
 function PricingCard({
   plan,
   isPopular,
-  onPayme,
+  onPayme: _onPayme,
   onClickPay,
 }: {
   plan: SubscriptionPlanDto;
@@ -33,6 +33,7 @@ function PricingCard({
   onPayme: () => void;
   onClickPay: () => void;
 }) {
+  void _onPayme;
   const t = useTranslation();
   const [paying, setPaying] = useState<"payme" | "click" | null>(null);
 
@@ -52,10 +53,6 @@ function PricingCard({
 
   const features = plan.type === "Teacher" ? TEACHER_FEATURES : STUDENT_FEATURES;
 
-  const handlePayme = async () => {
-    setPaying("payme");
-    try { onPayme(); } finally { setPaying(null); }
-  };
   const handleClick = async () => {
     setPaying("click");
     try { onClickPay(); } finally { setPaying(null); }
@@ -107,18 +104,17 @@ function PricingCard({
 
       <div className="space-y-2 pt-1">
         <Button
-          className="w-full font-semibold bg-[#00AEFF] hover:bg-[#0092d9] text-white border-0"
-          onClick={handlePayme}
-          disabled={paying !== null}
-        >
-          {paying === "payme" ? t.redirecting : "Payme"}
-        </Button>
-        <Button
           className="w-full font-semibold bg-[#57A826] hover:bg-[#4a9020] text-white border-0"
           onClick={handleClick}
           disabled={paying !== null}
         >
           {paying === "click" ? t.redirecting : "Click"}
+        </Button>
+        <Button
+          className="w-full font-semibold bg-[#00AEFF] hover:bg-[#0092d9] text-white border-0 opacity-50 cursor-not-allowed"
+          disabled
+        >
+          Payme
         </Button>
       </div>
     </div>
