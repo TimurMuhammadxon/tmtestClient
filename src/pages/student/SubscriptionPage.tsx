@@ -298,6 +298,21 @@ export function SubscriptionPage() {
         </TabsContent>
       </Tabs>
 
+      <div className="rounded-xl border border-border/50 bg-muted/20 p-5 flex flex-col sm:flex-row items-center justify-center gap-4 text-sm">
+        <span className="text-muted-foreground">{t.paymentQuestions}</span>
+        <div className="flex items-center gap-3 flex-wrap justify-center">
+          <a href="tel:+998999852570" className="inline-flex items-center gap-1.5 text-foreground hover:text-primary transition-colors">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+            +998 99 985 25 70
+          </a>
+          <span className="text-muted-foreground/30">|</span>
+          <a href="https://t.me/PravaDriveUz" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-foreground hover:text-primary transition-colors">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.19 13.65l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.958.909z"/></svg>
+            Telegram guruh
+          </a>
+        </div>
+      </div>
+
       <p className="text-center text-xs text-muted-foreground pb-4">
         {t.paymentSecure}
       </p>
