@@ -241,8 +241,8 @@ export function LandingPage() {
             </div>
 
             <h1 style={{
-              fontSize: "clamp(36px, 6vw, 72px)", fontWeight: 900, letterSpacing: "-0.03em", lineHeight: 1.1, marginBottom: 24,
-              background: "linear-gradient(135deg, #ffffff 20%, #94a3b8 60%, #6366f1 100%)", backgroundSize: "200% auto",
+              fontSize: "clamp(36px, 6vw, 72px)", fontWeight: 900, letterSpacing: "0.02em", lineHeight: 1.2, marginBottom: 24,
+              background: "linear-gradient(135deg, #ffffff 0%, #e0f9ff 40%, #00e5ff 100%)", backgroundSize: "200% auto",
               WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", animation: "lp-shimmer 6s linear infinite",
             }}>
               {t.heroTitle1}<br />{t.heroTitle2}
@@ -280,7 +280,7 @@ export function LandingPage() {
 
         <section style={{ maxWidth: 1280, margin: "0 auto", padding: "0 28px 100px" }}>
           <div style={{ textAlign: "center", marginBottom: 56, animation: mounted ? "lp-fadeUp .8s ease .2s both" : "none" }}>
-            <h2 style={{ fontSize: "clamp(24px, 4vw, 40px)", fontWeight: 800, letterSpacing: "-0.02em", marginBottom: 14, background: "linear-gradient(135deg,#fff,#94a3b8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+            <h2 style={{ fontSize: "clamp(24px, 4vw, 40px)", fontWeight: 800, letterSpacing: "0.01em", marginBottom: 14, background: "linear-gradient(135deg,#fff,#e0f9ff)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
               {t.testModes}
             </h2>
             <p style={{ fontSize: 15, color: "#64748b", maxWidth: 480, margin: "0 auto" }}>
@@ -321,7 +321,7 @@ export function LandingPage() {
                       }}>
                         <img src={mode.icon} alt={mode.title} style={{ width: 24, height: 24 }} />
                       </div>
-                      <h3 style={{ fontSize: 22, fontWeight: 800, color: "#e2e8f0", letterSpacing: "-0.02em", margin: 0 }}>{mode.title}</h3>
+                      <h3 style={{ fontSize: 22, fontWeight: 800, color: "#e2e8f0", letterSpacing: "0.01em", margin: 0 }}>{mode.title}</h3>
                       <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 100, background: `${mode.color}15`, color: mode.color, letterSpacing: "0.04em", textTransform: "uppercase", flexShrink: 0 }}>{mode.badge}</span>
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -369,7 +369,7 @@ export function LandingPage() {
               <span style={{ fontSize: 14 }}>🎓</span>
               <span style={{ fontSize: 12, fontWeight: 600, color: "#a78bfa", letterSpacing: "0.04em" }}>{t.teacher}</span>
             </div>
-            <h2 style={{ fontSize: "clamp(24px, 4vw, 40px)", fontWeight: 800, letterSpacing: "-0.02em", marginBottom: 14, background: "linear-gradient(135deg,#a78bfa,#fff)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+            <h2 style={{ fontSize: "clamp(24px, 4vw, 40px)", fontWeight: 800, letterSpacing: "0.01em", marginBottom: 14, background: "linear-gradient(135deg,#a78bfa,#fff)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
               {t.teacherSectionTitle}
             </h2>
             <p style={{ fontSize: 15, color: "#64748b", maxWidth: 520, margin: "0 auto" }}>
