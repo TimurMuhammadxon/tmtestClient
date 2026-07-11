@@ -16,6 +16,9 @@ declare global {
       WebApp: {
         initData: string;
         ready(): void;
+        expand?(): void;
+        requestFullscreen?(): void;
+        platform?: string;
         initDataUnsafe?: { start_param?: string };
         onEvent?(event: string, cb: () => void): void;
         offEvent?(event: string, cb: () => void): void;
@@ -79,6 +82,22 @@ function TelegramAutoLogin({ children }: { children: ReactNode }) {
   useEffect(() => {
     const tg = window.Telegram?.WebApp;
     const initData = tg?.initData;
+
+    // Enlarge the mini app: full height everywhere; on desktop clients request
+    // fullscreen so it opens at a browser-like size instead of a narrow column.
+    tg?.expand?.();
+    const desktop =
+      tg?.platform === "tdesktop" ||
+      tg?.platform === "macos" ||
+      tg?.platform === "web" ||
+      tg?.platform === "weba";
+    if (desktop) {
+      try {
+        tg?.requestFullscreen?.();
+      } catch {
+        /* older client without fullscreen support */
+      }
+    }
 
     if (!initData || isAuthenticated()) {
       tg?.ready();

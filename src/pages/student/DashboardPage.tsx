@@ -16,7 +16,6 @@ import { CompleteProfileModal } from "@/components/shared/CompleteProfileModal";
 import { useAuthStore } from "@/store/auth";
 import { toast } from "@/components/ui/use-toast";
 import { useTranslation } from "@/lib/i18n";
-import type { RecentAttemptDto } from "@/types";
 
 function AnimatedNumber({ value, suffix = "", duration = 1200 }: {
   value: number; suffix?: string; duration?: number;
@@ -52,32 +51,6 @@ function CircularProgress({ value, size = 100, stroke = 8, color = "#00f0ff" }: 
   );
 }
 
-function MiniBar({ value, max = 100, color }: { value: number; max?: number; color: string }) {
-  return (
-    <div style={{ width: "100%", height: 6, borderRadius: 3, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
-      <div style={{ width: `${Math.min((value / max) * 100, 100)}%`, height: "100%", borderRadius: 3, background: `linear-gradient(90deg, ${color}, ${color}cc)`, boxShadow: `0 0 12px ${color}60`, transition: "width 1.2s cubic-bezier(0.4,0,0.2,1)" }} />
-    </div>
-  );
-}
-
-const DAY_LABELS_KEY = ["daySun", "dayMon", "dayTue", "dayWed", "dayThu", "dayFri", "daySat"] as const;
-
-function deriveWeeklyData(recentAttempts: RecentAttemptDto[] | undefined, dayLabels: string[]) {
-  const today = new Date();
-  return Array.from({ length: 7 }, (_, i) => {
-    const target = new Date(today);
-    target.setDate(today.getDate() - (6 - i));
-    const day = dayLabels[target.getDay()];
-    const dayAttempts = (recentAttempts ?? []).filter((a) => {
-      const d = new Date(a.startedAt);
-      return d.toDateString() === target.toDateString() && a.status !== "InProgress";
-    });
-    const totalCorrect = dayAttempts.reduce((s, a) => s + (a.correctCount ?? 0), 0);
-    const totalQ = dayAttempts.reduce((s, a) => s + a.totalQuestions, 0);
-    return { day, tests: dayAttempts.length, correct: totalQ > 0 ? Math.round((totalCorrect / totalQ) * 100) : 0 };
-  });
-}
-
 const CSS = `
   @keyframes dp-pulse1{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.15);opacity:1}}
   @keyframes dp-pulse2{0%,100%{transform:scale(1.1);opacity:.5}50%{transform:scale(1);opacity:.8}}
@@ -88,8 +61,8 @@ const CSS = `
   .dp-root::-webkit-scrollbar{width:6px}
   .dp-root::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
   .dp-container{padding:28px}
-  .dp-stats-grid{display:grid;grid-template-columns:1fr repeat(3,1fr);gap:14px;margin-bottom:24px}
-  .dp-modes-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:24px}
+  .dp-stats-grid{display:grid;grid-template-columns:1fr repeat(3,1fr);gap:16px;margin-bottom:26px}
+  .dp-modes-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:24px}
   .dp-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px}
   .dp-exam-btn{padding:10px 20px;border-radius:12px;background:linear-gradient(135deg,rgba(0,240,255,.12),rgba(99,102,241,.12));border:1px solid rgba(0,240,255,.2);font-size:13px;font-weight:600;color:#00f0ff;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .3s;white-space:nowrap}
   .dp-header-btns{display:flex;gap:10px;align-items:center}
@@ -99,6 +72,7 @@ const CSS = `
   @media(max-width:640px){
     .dp-container{padding:16px}
     .dp-stats-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+    .dp-stats-grid>:first-child{grid-column:1/-1}
     .dp-modes-grid{grid-template-columns:repeat(2,1fr);gap:10px}
     .dp-header{flex-direction:column;align-items:flex-start;gap:14px;margin-bottom:20px}
     .dp-header-btns{width:100%}
@@ -158,8 +132,6 @@ export function DashboardPage() {
     } finally { setStarting(null); }
   };
 
-  const dayLabels = DAY_LABELS_KEY.map((k) => t[k]);
-  const weeklyData = deriveWeeklyData(dashboard?.recentAttempts, dayLabels);
   const activeTopics = (topics ?? []).filter((tp) => !tp.isDemo);
 
   const examPrediction = dashboard?.examPassPrediction ?? 0;
@@ -185,7 +157,7 @@ export function DashboardPage() {
         <div style={{ position: "absolute", bottom: "-20%", right: "-10%", width: "60vw", height: "60vw", borderRadius: "50%", background: "radial-gradient(circle,rgba(139,92,246,.06) 0%,transparent 70%)", filter: "blur(100px)", animation: "dp-pulse2 10s ease-in-out infinite" }} />
       </div>
 
-      <div className="dp-container" style={{ position: "relative", zIndex: 1, maxWidth: 1200, margin: "0 auto" }}>
+      <div className="dp-container" style={{ position: "relative", zIndex: 1, maxWidth: 1320, margin: "0 auto" }}>
 
         {/* Subscription expiry banner */}
         {subDaysLeft !== null && subDaysLeft <= 3 && (
@@ -224,21 +196,21 @@ export function DashboardPage() {
         {/* Stats: Ring + 3 cards */}
         <div className="dp-stats-grid" style={{ animation: mounted ? "dp-slideUp .6s ease .1s both" : "none" }}>
           {/* Readiness ring card */}
-          <div style={{ padding: "20px 18px", borderRadius: 16, background: "rgba(255,255,255,.025)", border: "1px solid rgba(255,255,255,.07)", display: "flex", alignItems: "center", gap: 16, position: "relative", overflow: "hidden", transition: "all .3s" }}
+          <div style={{ padding: "26px 22px", borderRadius: 18, background: "rgba(255,255,255,.025)", border: "1px solid rgba(255,255,255,.07)", display: "flex", alignItems: "center", gap: 18, position: "relative", overflow: "hidden", transition: "all .3s" }}
             onMouseEnter={(e) => { e.currentTarget.style.border = "1px solid rgba(0,240,255,0.3)"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,240,255,0.15)"; }}
             onMouseLeave={(e) => { e.currentTarget.style.border = "1px solid rgba(255,255,255,.07)"; e.currentTarget.style.boxShadow = "none"; }}
           >
             <div style={{ position: "relative", flexShrink: 0 }}>
-              <CircularProgress value={examPrediction} size={80} stroke={7} />
+              <CircularProgress value={examPrediction} size={96} stroke={8} />
               <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <span style={{ fontSize: 20, fontWeight: 800, color: "#00f0ff", fontFamily: "'JetBrains Mono', monospace" }}>
+                <span style={{ fontSize: 24, fontWeight: 800, color: "#00f0ff", fontFamily: "'JetBrains Mono', monospace" }}>
                   <AnimatedNumber value={examPrediction} suffix="%" />
                 </span>
               </div>
             </div>
             <div>
-              <span style={{ fontSize: 11, color: "#64748b", fontWeight: 500 }}>{t.examReadiness}</span>
-              <p style={{ fontSize: 11, color: "#475569", marginTop: 4 }}>
+              <span style={{ fontSize: 13, color: "#94a3b8", fontWeight: 600 }}>{t.examReadiness}</span>
+              <p style={{ fontSize: 12, color: "#64748b", marginTop: 5 }}>
                 {examPrediction >= 80 ? t.readinessGreat : examPrediction >= 60 ? t.readinessGood : t.readinessNeedMore}
               </p>
             </div>
@@ -250,19 +222,19 @@ export function DashboardPage() {
             { label: t.correctAnswers, value: totalCorrect, suffix: "", color: "#8b5cf6", icon: "/pravadrive-icon-natijalarim.svg", sub: `${totalAnswered} ${t.outOfQuestions}` },
             { label: t.consecutiveDays, value: streak, suffix: "", color: "#f59e0b", icon: "🔥", sub: `${t.record}: ${dashboard?.longestStreak ?? 0} ${t.days}` },
           ] as const).map((card, i) => (
-            <div key={i} style={{ padding: "20px 18px", borderRadius: 16, background: "rgba(255,255,255,.025)", border: "1px solid rgba(255,255,255,.07)", position: "relative", overflow: "hidden", transition: "all .3s", cursor: "default" }}
+            <div key={i} style={{ padding: "26px 22px", borderRadius: 18, background: "rgba(255,255,255,.025)", border: "1px solid rgba(255,255,255,.07)", position: "relative", overflow: "hidden", transition: "all .3s", cursor: "default" }}
               onMouseEnter={(e) => { e.currentTarget.style.border = `1px solid ${card.color}30`; e.currentTarget.style.boxShadow = `0 8px 32px ${card.color}15`; e.currentTarget.style.transform = "translateY(-2px)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.border = "1px solid rgba(255,255,255,.07)"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translateY(0)"; }}
             >
-              <div style={{ position: "absolute", top: -20, right: -20, width: 80, height: 80, borderRadius: "50%", background: `radial-gradient(circle,${card.color}08,transparent)` }} />
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-                <span style={{ fontSize: 11, color: "#64748b", fontWeight: 500 }}>{card.label}</span>
-                {card.icon.startsWith("/") ? <img src={card.icon} alt="" style={{ width: 22, height: 22 }} /> : <span style={{ fontSize: 18 }}>{card.icon}</span>}
+              <div style={{ position: "absolute", top: -20, right: -20, width: 90, height: 90, borderRadius: "50%", background: `radial-gradient(circle,${card.color}08,transparent)` }} />
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
+                <span style={{ fontSize: 13, color: "#94a3b8", fontWeight: 600 }}>{card.label}</span>
+                {card.icon.startsWith("/") ? <img src={card.icon} alt="" style={{ width: 26, height: 26 }} /> : <span style={{ fontSize: 22 }}>{card.icon}</span>}
               </div>
-              <div style={{ fontSize: 32, fontWeight: 800, color: card.color, marginBottom: 4, textShadow: `0 0 30px ${card.color}40`, fontFamily: "'JetBrains Mono', monospace" }}>
+              <div style={{ fontSize: 42, fontWeight: 800, color: card.color, marginBottom: 6, textShadow: `0 0 30px ${card.color}40`, fontFamily: "'JetBrains Mono', monospace", lineHeight: 1 }}>
                 <AnimatedNumber value={card.value} suffix={card.suffix} />
               </div>
-              <span style={{ fontSize: 11, color: "#475569" }}>{card.sub}</span>
+              <span style={{ fontSize: 12, color: "#64748b" }}>{card.sub}</span>
             </div>
           ))}
         </div>
@@ -282,7 +254,7 @@ export function DashboardPage() {
                 onMouseLeave={() => setHoveredMode(null)}
                 onClick={() => { if (!starting) mode.action(); }}
                 style={{
-                  padding: "22px 20px", borderRadius: 18,
+                  padding: "28px 24px", borderRadius: 20,
                   background: hovered ? `linear-gradient(135deg,${mode.color}08,${mode.color}12)` : "rgba(255,255,255,.025)",
                   border: `1px solid ${hovered ? mode.color + "30" : "rgba(255,255,255,.07)"}`,
                   cursor: isStarting ? "wait" : "pointer",
@@ -302,76 +274,18 @@ export function DashboardPage() {
                     title={t.createLink}
                   >🔗</button>
                 )}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 44, height: 44, borderRadius: 12, background: `linear-gradient(135deg, ${mode.color}20, ${mode.color}10)`, border: `1px solid ${mode.color}25`, marginBottom: 14, boxShadow: hovered ? `0 0 16px ${mode.color}25` : "none", transition: "box-shadow .3s" }}>
-                  <img src={mode.icon} alt={mode.title} style={{ width: 24, height: 24 }} />
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 54, height: 54, borderRadius: 14, background: `linear-gradient(135deg, ${mode.color}20, ${mode.color}10)`, border: `1px solid ${mode.color}25`, marginBottom: 16, boxShadow: hovered ? `0 0 16px ${mode.color}25` : "none", transition: "box-shadow .3s" }}>
+                  <img src={mode.icon} alt={mode.title} style={{ width: 30, height: 30 }} />
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                  <h3 style={{ fontSize: 15, fontWeight: 700, color: "#e2e8f0", margin: 0 }}>{mode.title}</h3>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <h3 style={{ fontSize: 19, fontWeight: 700, color: "#f1f5f9", margin: 0, letterSpacing: "-0.01em" }}>{mode.title}</h3>
                   <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 100, background: `${mode.color}15`, color: mode.color, textTransform: "uppercase", flexShrink: 0 }}>{mode.badge}</span>
                 </div>
-                <p style={{ fontSize: 11, color: "#64748b", lineHeight: 1.5, margin: 0 }}>{mode.desc}</p>
               </div>
             );
           })}
         </div>
 
-        {/* Overview: Weekly chart + Weak topics */}
-        <div style={{ padding: 26, borderRadius: 20, background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)", animation: mounted ? "dp-slideUp .6s ease .2s both" : "none" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-            <h2 style={{ fontSize: 15, fontWeight: 700, color: "#e2e8f0" }}>{t.weeklyActivity}</h2>
-            <span style={{ fontSize: 11, color: "#64748b", padding: "4px 12px", borderRadius: 8, background: "rgba(255,255,255,.04)" }}>{t.last7Days}</span>
-          </div>
-
-          <div style={{ display: "flex", alignItems: "flex-end", gap: 12, height: 200, paddingBottom: 28, position: "relative" }}>
-            <div style={{ position: "absolute", left: 0, top: 0, bottom: 28, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-              {[100, 75, 50, 25, 0].map((v) => (
-                <span key={v} style={{ fontSize: 9, color: "#475569", fontFamily: "'JetBrains Mono', monospace" }}>{v}%</span>
-              ))}
-            </div>
-            {[0, 25, 50, 75, 100].map((v) => (
-              <div key={v} style={{ position: "absolute", left: 28, right: 0, bottom: `${28 + (v / 100) * 160}px`, borderBottom: "1px solid rgba(255,255,255,.03)" }} />
-            ))}
-            <div style={{ display: "flex", alignItems: "flex-end", gap: 10, flex: 1, marginLeft: 34, height: 160 }}>
-              {weeklyData.map((d, i) => (
-                <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-                  <div style={{ width: "100%", maxWidth: 40, borderRadius: 6, height: d.correct > 0 ? `${(d.correct / 100) * 148}px` : "3px", background: d.correct > 0 ? "linear-gradient(180deg,#00f0ff,#6366f1)" : "rgba(255,255,255,.06)", boxShadow: d.correct > 0 ? "0 0 16px rgba(0,240,255,.15)" : "none", transformOrigin: "bottom", animation: `dp-bar .8s ease ${i * 0.07}s both`, position: "relative", cursor: "default", transition: "filter .3s" }}
-                    onMouseEnter={(e) => d.correct > 0 && (e.currentTarget.style.filter = "brightness(1.3)")}
-                    onMouseLeave={(e) => (e.currentTarget.style.filter = "brightness(1)")}
-                  >
-                    {d.correct > 0 && (
-                      <div style={{ position: "absolute", top: -20, left: "50%", transform: "translateX(-50%)", fontSize: 9, fontWeight: 600, color: "#00f0ff", fontFamily: "'JetBrains Mono', monospace", whiteSpace: "nowrap" }}>{d.correct}%</div>
-                    )}
-                  </div>
-                  <span style={{ fontSize: 10, color: d.tests > 0 ? "#94a3b8" : "#475569", fontWeight: 500 }}>{d.day}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {(dashboard?.weakTopics ?? []).length > 0 && (
-            <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px solid rgba(255,255,255,.06)" }}>
-              <h3 style={{ fontSize: 11, fontWeight: 600, color: "#64748b", marginBottom: 14, textTransform: "uppercase", letterSpacing: "0.08em" }}>{t.weakTopicsLabel}</h3>
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {(dashboard?.weakTopics ?? []).slice(0, 4).map((topic, i) => (
-                  <div key={i}>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                      <span style={{ fontSize: 13, color: "#94a3b8" }}>{topic.topicName}</span>
-                      <span style={{ fontSize: 12, color: "#ef4444", fontFamily: "'JetBrains Mono', monospace" }}>{topic.accuracyPercent.toFixed(0)}%</span>
-                    </div>
-                    <MiniBar value={topic.accuracyPercent} color="#ef4444" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {!dashboard && (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 200, color: "#475569" }}>
-              <span style={{ fontSize: 40, marginBottom: 12 }}>📊</span>
-              <p style={{ fontSize: 13 }}>{t.noStatsYet}</p>
-            </div>
-          )}
-        </div>
       </div>
 
       {/* Complete profile modal */}

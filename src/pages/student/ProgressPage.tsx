@@ -12,7 +12,33 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, CheckCircle, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { ErrorQuestionDetailDto } from "@/types";
+import type { ErrorQuestionDetailDto, RecentAttemptDto } from "@/types";
+
+const DAY_LABELS_KEY = ["daySun", "dayMon", "dayTue", "dayWed", "dayThu", "dayFri", "daySat"] as const;
+
+function deriveWeeklyData(recentAttempts: RecentAttemptDto[] | undefined, dayLabels: string[]) {
+  const today = new Date();
+  return Array.from({ length: 7 }, (_, i) => {
+    const target = new Date(today);
+    target.setDate(today.getDate() - (6 - i));
+    const day = dayLabels[target.getDay()];
+    const dayAttempts = (recentAttempts ?? []).filter((a) => {
+      const d = new Date(a.startedAt);
+      return d.toDateString() === target.toDateString() && a.status !== "InProgress";
+    });
+    const totalCorrect = dayAttempts.reduce((s, a) => s + (a.correctCount ?? 0), 0);
+    const totalQ = dayAttempts.reduce((s, a) => s + a.totalQuestions, 0);
+    return { day, tests: dayAttempts.length, correct: totalQ > 0 ? Math.round((totalCorrect / totalQ) * 100) : 0 };
+  });
+}
+
+function MiniBar({ value, color }: { value: number; color: string }) {
+  return (
+    <div style={{ width: "100%", height: 6, borderRadius: 3, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+      <div style={{ width: `${Math.min(value, 100)}%`, height: "100%", borderRadius: 3, background: `linear-gradient(90deg, ${color}, ${color}cc)`, boxShadow: `0 0 12px ${color}60`, transition: "width 1.2s cubic-bezier(0.4,0,0.2,1)" }} />
+    </div>
+  );
+}
 
 function useGradeBadge() {
   const t = useTranslation();
@@ -72,6 +98,12 @@ export function ProgressPage() {
     queryFn: () => progressApi.history({ page: historyPage, pageSize: 20 }),
   });
 
+  const { data: dashboard } = useQuery({ queryKey: ["dashboard"], queryFn: progressApi.dashboard });
+
+  const dayLabels = DAY_LABELS_KEY.map((k) => t[k]);
+  const weeklyData = deriveWeeklyData(dashboard?.recentAttempts, dayLabels);
+  const weakTopics = dashboard?.weakTopics ?? [];
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
@@ -80,10 +112,11 @@ export function ProgressPage() {
       </div>
 
       <Tabs defaultValue="topics">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="topics">{t.topicsProgress}</TabsTrigger>
-          <TabsTrigger value="errors">{t.errorsAnalysis}</TabsTrigger>
-          <TabsTrigger value="history">{t.history}</TabsTrigger>
+        <TabsList className="flex w-full justify-start overflow-x-auto sm:grid sm:grid-cols-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <TabsTrigger value="topics" className="flex-shrink-0 sm:flex-1 text-xs sm:text-sm whitespace-nowrap">{t.topicsProgress}</TabsTrigger>
+          <TabsTrigger value="errors" className="flex-shrink-0 sm:flex-1 text-xs sm:text-sm whitespace-nowrap">{t.errorsAnalysis}</TabsTrigger>
+          <TabsTrigger value="history" className="flex-shrink-0 sm:flex-1 text-xs sm:text-sm whitespace-nowrap">{t.history}</TabsTrigger>
+          <TabsTrigger value="activity" className="flex-shrink-0 sm:flex-1 text-xs sm:text-sm whitespace-nowrap">{t.activityTab}</TabsTrigger>
         </TabsList>
 
         {/* Topics */}
@@ -246,6 +279,69 @@ export function ProgressPage() {
               )}
             </div>
           )}
+        </TabsContent>
+
+        {/* Weekly activity */}
+        <TabsContent value="activity">
+          <Card>
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-base font-semibold">{t.weeklyActivity}</h2>
+                <span className="text-xs text-muted-foreground px-3 py-1 rounded-md bg-muted">{t.last7Days}</span>
+              </div>
+
+              {!dashboard ? (
+                <div className="flex flex-col items-center justify-center h-48 text-muted-foreground">
+                  <span className="text-4xl mb-3">📊</span>
+                  <p className="text-sm">{t.noStatsYet}</p>
+                </div>
+              ) : (
+                <>
+                  {/* Bar chart */}
+                  <div style={{ display: "flex", alignItems: "flex-end", gap: 12, height: 200, paddingBottom: 28, position: "relative" }}>
+                    <div style={{ position: "absolute", left: 0, top: 0, bottom: 28, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                      {[100, 75, 50, 25, 0].map((v) => (
+                        <span key={v} style={{ fontSize: 9, color: "#475569", fontFamily: "'JetBrains Mono', monospace" }}>{v}%</span>
+                      ))}
+                    </div>
+                    {[0, 25, 50, 75, 100].map((v) => (
+                      <div key={v} style={{ position: "absolute", left: 28, right: 0, bottom: `${28 + (v / 100) * 160}px`, borderBottom: "1px solid rgba(255,255,255,.05)" }} />
+                    ))}
+                    <div style={{ display: "flex", alignItems: "flex-end", gap: 10, flex: 1, marginLeft: 34, height: 160 }}>
+                      {weeklyData.map((d, i) => (
+                        <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+                          <div style={{ width: "100%", maxWidth: 44, borderRadius: 6, height: d.correct > 0 ? `${(d.correct / 100) * 148}px` : "3px", background: d.correct > 0 ? "linear-gradient(180deg,#00f0ff,#6366f1)" : "rgba(255,255,255,.06)", boxShadow: d.correct > 0 ? "0 0 16px rgba(0,240,255,.15)" : "none", position: "relative", transition: "height 1s cubic-bezier(0.4,0,0.2,1)" }}>
+                            {d.correct > 0 && (
+                              <div style={{ position: "absolute", top: -20, left: "50%", transform: "translateX(-50%)", fontSize: 9, fontWeight: 600, color: "#00f0ff", fontFamily: "'JetBrains Mono', monospace", whiteSpace: "nowrap" }}>{d.correct}%</div>
+                            )}
+                          </div>
+                          <span style={{ fontSize: 10, color: d.tests > 0 ? "#94a3b8" : "#475569", fontWeight: 500 }}>{d.day}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Weak topics */}
+                  {weakTopics.length > 0 && (
+                    <div className="mt-5 pt-5 border-t border-border/60">
+                      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">{t.weakTopicsLabel}</h3>
+                      <div className="flex flex-col gap-3">
+                        {weakTopics.slice(0, 6).map((topic, i) => (
+                          <div key={i}>
+                            <div className="flex justify-between mb-1.5">
+                              <span className="text-sm text-muted-foreground">{topic.topicName}</span>
+                              <span className="text-xs font-mono text-red-400">{topic.accuracyPercent.toFixed(0)}%</span>
+                            </div>
+                            <MiniBar value={topic.accuracyPercent} color="#ef4444" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 

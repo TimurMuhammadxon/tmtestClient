@@ -352,22 +352,22 @@ export function AttemptPage() {
 
   // ─── Active test ───────────────────────────────────────────────────────────
   return (
-    <div className="max-w-4xl mx-auto space-y-4" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-      {/* Header row */}
-      <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div>
-          <span className="text-sm text-muted-foreground">{getFlowLabel(attempt.flowType)}</span>
-          <div className="text-lg font-semibold">
+    <div className="max-w-4xl lg:max-w-5xl mx-auto space-y-3" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+      {/* Header row — single line: counter left, actions right */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="min-w-0">
+          <span className="block text-xs text-muted-foreground leading-tight">{getFlowLabel(attempt.flowType)}</span>
+          <div className="text-base font-semibold leading-tight whitespace-nowrap">
             {t.question} {currentIndex + 1} {t.of} {questions.length}
           </div>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-1.5 flex-shrink-0">
           {/* Exam mistake counter */}
           {isExam && (
             <div
               className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold border",
+                "flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold border",
                 wrongCount >= 2
                   ? "bg-red-500/15 text-red-400 border-red-500/30"
                   : wrongCount === 1
@@ -376,7 +376,7 @@ export function AttemptPage() {
               )}
             >
               <AlertTriangle className="h-3.5 w-3.5" />
-              {wrongCount} / 3 {t.mistakes}
+              {wrongCount}/3
             </div>
           )}
 
@@ -384,50 +384,32 @@ export function AttemptPage() {
           {timeLeft !== null && (
             <div
               className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-full font-mono font-semibold",
+                "flex items-center gap-1 px-2.5 py-1 rounded-full font-mono font-semibold text-sm",
                 timeLeft < 60
                   ? "bg-destructive/10 text-destructive"
                   : "bg-secondary text-foreground"
               )}
             >
-              <Clock className="h-4 w-4" />
+              <Clock className="h-3.5 w-3.5" />
               {formatTime(timeLeft)}
             </div>
           )}
 
-          {attempt?.showExplanations && (
-            <>
-              <Button
-                variant={showQoida ? "default" : "outline"}
-                size="sm"
-                onClick={() => setShowQoida((v) => !v)}
-                className={showQoida ? "" : "text-muted-foreground"}
-              >
-                <BookOpen className="h-4 w-4 mr-1.5" />
-                {t.qoida}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled
-                className="text-muted-foreground opacity-50"
-                title={t.comingSoon}
-              >
-                <Volume2 className="h-4 w-4 mr-1.5" />
-                {t.audioLearn}
-              </Button>
-            </>
-          )}
-
+          {/* Finish — icon-only in exam (chips take the row), text elsewhere */}
           <Button
             variant="outline"
             size="sm"
             onClick={handleFinish}
             disabled={finishMutation.isPending || finished}
-            className="text-muted-foreground hover:text-destructive hover:border-destructive/50"
+            className={cn(
+              "text-muted-foreground hover:text-destructive hover:border-destructive/50",
+              isExam ? "w-9 px-0" : "px-2.5"
+            )}
+            title={isExam ? t.finish : undefined}
+            aria-label={t.finish}
           >
-            <Flag className="h-4 w-4 mr-1.5" />
-            {finishMutation.isPending ? t.loading : t.finish}
+            <Flag className="h-4 w-4" />
+            {!isExam && <span className="ml-1.5">{finishMutation.isPending ? t.loading : t.finish}</span>}
           </Button>
         </div>
       </div>
@@ -442,35 +424,61 @@ export function AttemptPage() {
 
       {/* Question navigator — single scrollable row above the content */}
       {!isMarathon && (
-        <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {questions.map((q, i) => {
-            const state = answerStates[q.questionId];
-            return (
-              <button
-                key={q.questionId}
-                onClick={() => goTo(i)}
-                className={cn(
-                  "flex-shrink-0 w-7 h-7 rounded-md text-[11px] font-semibold transition-colors",
-                  i === currentIndex && "ring-2 ring-primary ring-offset-1 ring-offset-background",
-                  state?.isCorrect === true && "bg-green-500 text-white",
-                  state?.isCorrect === false && "bg-red-500 text-white",
-                  !state && "bg-secondary text-secondary-foreground hover:bg-secondary/70"
-                )}
-              >
-                {i + 1}
-              </button>
-            );
-          })}
+        <div className="relative">
+          <div className="flex gap-1.5 overflow-x-auto py-1.5 -mx-1 px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {questions.map((q, i) => {
+              const state = answerStates[q.questionId];
+              return (
+                <button
+                  key={q.questionId}
+                  onClick={() => goTo(i)}
+                  className={cn(
+                    "flex-shrink-0 w-7 h-7 rounded-md text-[11px] font-semibold transition-colors",
+                    i === currentIndex && "ring-2 ring-primary ring-offset-1 ring-offset-background",
+                    state?.isCorrect === true && "bg-green-500 text-white",
+                    state?.isCorrect === false && "bg-red-500 text-white",
+                    !state && "bg-secondary text-secondary-foreground hover:bg-secondary/70"
+                  )}
+                >
+                  {i + 1}
+                </button>
+              );
+            })}
+          </div>
+          {/* fade hint that the row scrolls */}
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent" />
         </div>
       )}
 
       {/* Question: two-column when image exists, single column otherwise */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Left: Question text + Answers */}
-        <div className="space-y-3 order-2 md:order-1">
-          <p className="text-base font-medium leading-relaxed">{currentQ.text}</p>
-          <div className="space-y-2">
-            {currentQ.answers.map((answer) => {
+      <div className={cn(
+        currentQ.imageUrl
+          ? "lg:grid lg:grid-cols-2 lg:gap-x-6 lg:gap-y-4 lg:items-start space-y-4 lg:space-y-0"
+          : "space-y-4"
+      )}>
+        {/* Question — top-left on wide screens */}
+        <p
+          className="font-medium leading-relaxed lg:col-start-1 lg:row-start-1"
+          style={{ fontSize: "clamp(1.05rem, 0.95rem + 0.7vw, 1.6rem)" }}
+        >
+          {currentQ.text}
+        </p>
+
+        {/* Image — right column on wide screens (spans both rows); after question on phone */}
+        {currentQ.imageUrl && (
+          <div className="flex items-start justify-center lg:col-start-2 lg:row-start-1 lg:row-span-2">
+            <img
+              src={currentQ.imageUrl}
+              alt=""
+              className="w-full rounded-lg max-h-[38vh] lg:max-h-[28rem] object-contain bg-muted"
+            />
+          </div>
+        )}
+
+        {/* Answers — left column, below the question on wide screens */}
+        <div className="space-y-3 lg:col-start-1 lg:row-start-2">
+            <div className="space-y-2">
+              {currentQ.answers.map((answer) => {
               const chosen = currentAnswerState?.chosenId === answer.id;
               const isCorrectAnswer = currentAnswerState?.correctId === answer.id;
               const revealed = !!currentAnswerState;
@@ -479,7 +487,7 @@ export function AttemptPage() {
                 <button
                   key={answer.id}
                   className={cn(
-                    "w-full text-left p-3 rounded-lg border-2 transition-all text-sm",
+                    "w-full text-left p-2.5 rounded-lg border-2 transition-all text-sm",
                     !revealed && "border-border hover:border-primary/50 hover:bg-primary/5",
                     revealed && isCorrectAnswer && "border-emerald-500/50 bg-emerald-950/30 text-emerald-300",
                     revealed && chosen && !isCorrectAnswer && "border-red-500/50 bg-red-950/30 text-red-300",
@@ -501,7 +509,7 @@ export function AttemptPage() {
                     >
                       {`F${currentQ.answers.indexOf(answer) + 1}`}
                     </span>
-                    <span>{answer.text}</span>
+                    <span style={{ fontSize: "clamp(0.9rem, 0.85rem + 0.4vw, 1.2rem)" }}>{answer.text}</span>
                     {revealed && isCorrectAnswer && (
                       <CheckCircle className="h-4 w-4 text-emerald-400 ml-auto flex-shrink-0" />
                     )}
@@ -534,18 +542,6 @@ export function AttemptPage() {
             </div>
           )}
         </div>
-
-        {/* Right: Image or logo placeholder */}
-        <div className="flex items-start justify-center order-1 md:order-2">
-          <img
-            src={currentQ.imageUrl || "/pravadrive-logo-stacked.svg"}
-            alt=""
-            className={cn(
-              "w-full rounded-lg",
-              currentQ.imageUrl ? "max-h-80 object-contain bg-muted" : "max-h-64 object-contain p-8"
-            )}
-          />
-        </div>
       </div>
 
       {/* Spacer for fixed bottom nav */}
@@ -553,15 +549,49 @@ export function AttemptPage() {
 
       {/* Fixed bottom navigation */}
       <div className="fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-border px-4 py-3">
-        <div className="max-w-4xl mx-auto flex items-center justify-between gap-2">
-          <Button variant="outline" onClick={goPrev} disabled={currentIndex === 0} className="flex-1">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            {t.prev}
+        <div className="max-w-4xl lg:max-w-5xl mx-auto flex items-center justify-between gap-2">
+          <Button
+            variant="outline"
+            onClick={goPrev}
+            disabled={currentIndex === 0}
+            className="w-14 flex-shrink-0"
+            aria-label={t.prev}
+          >
+            <ArrowLeft className="h-5 w-5" />
           </Button>
 
-          <Button variant="outline" onClick={goNext} disabled={currentIndex === questions.length - 1} className="flex-1">
-            {t.next}
-            <ArrowRight className="h-4 w-4 ml-2" />
+          {attempt?.showExplanations && (
+            <div className="flex items-center gap-2 justify-center flex-1">
+              <Button
+                variant={showQoida ? "default" : "outline"}
+                size="sm"
+                onClick={() => setShowQoida((v) => !v)}
+                className={cn("px-3", showQoida ? "" : "text-muted-foreground")}
+              >
+                <BookOpen className="h-4 w-4 mr-1.5" />
+                {t.qoida}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled
+                className="w-9 px-0 text-muted-foreground opacity-50"
+                title={`${t.audioLearn} · ${t.comingSoon}`}
+                aria-label={t.audioLearn}
+              >
+                <Volume2 className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+
+          <Button
+            variant="outline"
+            onClick={goNext}
+            disabled={currentIndex === questions.length - 1}
+            className="w-14 flex-shrink-0"
+            aria-label={t.next}
+          >
+            <ArrowRight className="h-5 w-5" />
           </Button>
         </div>
       </div>
