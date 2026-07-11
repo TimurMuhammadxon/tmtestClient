@@ -16,11 +16,17 @@ import {
   BookOpen,
   Zap,
   CalendarCheck,
+  ArrowRight,
+  Clock,
+  TrendingDown,
 } from "lucide-react";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import type { SubscriptionPlanDto } from "@/types";
+
+// Июльская акция: реальная цена в 3 раза выше показанной → скидка 66%
+const SALE_MULTIPLIER = 3;
 
 function PricingCard({
   plan,
@@ -53,6 +59,10 @@ function PricingCard({
 
   const features = plan.type === "Teacher" ? TEACHER_FEATURES : STUDENT_FEATURES;
 
+  const originalPrice = plan.price * SALE_MULTIPLIER;
+  const savings = originalPrice - plan.price;
+  const discountPercent = Math.floor((1 - 1 / SALE_MULTIPLIER) * 100);
+
   const handleClick = async () => {
     setPaying("click");
     try { onClickPay(); } finally { setPaying(null); }
@@ -61,30 +71,56 @@ function PricingCard({
   return (
     <div
       className={cn(
-        "relative rounded-2xl border flex flex-col gap-5 p-6 transition-all duration-200 hover:shadow-lg",
+        "relative rounded-3xl border flex flex-col gap-6 p-6 transition-all duration-300 will-change-transform",
         isPopular
-          ? "border-primary shadow-md bg-gradient-to-b from-primary/8 to-primary/3"
-          : "border-border bg-card hover:border-primary/40"
+          ? "border-primary/50 bg-gradient-to-b from-primary/[0.10] via-card to-card shadow-[0_0_60px_-15px_hsl(var(--primary)/0.55)] lg:scale-[1.05] hover:-translate-y-1.5 hover:shadow-[0_0_70px_-12px_hsl(var(--primary)/0.7)] z-10"
+          : "border-border bg-card hover:border-primary/30 hover:-translate-y-1 hover:shadow-lg"
       )}
     >
       {isPopular && (
-        <div className="absolute -top-3.5 left-0 right-0 flex justify-center">
-          <span className="inline-flex items-center gap-1 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full shadow-sm">
+        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
+          <span className="inline-flex items-center gap-1.5 bg-primary text-primary-foreground text-[11px] font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-full shadow-lg shadow-primary/40">
             <Star className="h-3 w-3 fill-current" />
             {t.mostPopular}
           </span>
         </div>
       )}
 
-      <div className="space-y-1">
-        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-          {getDurationLabel(plan.duration)}
-        </p>
-        <div className="flex items-end gap-1">
-          <span className="text-4xl font-bold tracking-tight leading-none">
+      {/* ── Price block: hierarchy = badge → new price → old price ── */}
+      <div className="space-y-3 pt-1">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            {getDurationLabel(plan.duration)}
+          </p>
+          {/* 1st focal point: bold amber-gold badge, warm complement to cyan → maximum pop */}
+          <span className="inline-flex items-center rounded-full bg-gradient-to-r from-amber-300 to-orange-400 px-2.5 py-1 text-[13px] font-extrabold leading-none text-neutral-900 shadow-[0_0_22px_-4px_rgba(251,146,60,0.75)]">
+            −{discountPercent}%
+          </span>
+        </div>
+
+        {/* 3rd focal point: old price, minimal weight */}
+        <span className="block text-[13px] text-muted-foreground/70 line-through decoration-1">
+          {originalPrice.toLocaleString()} {t.uzs}
+        </span>
+
+        {/* 2nd focal point: discounted price, largest element */}
+        <div className="flex items-end gap-1.5 -mt-1">
+          <span className="text-[2.75rem] font-extrabold tracking-tight leading-[0.95] text-foreground">
             {plan.price.toLocaleString()}
           </span>
-          <span className="text-muted-foreground text-sm mb-0.5">{t.uzs}</span>
+          <span className="text-muted-foreground text-sm mb-1.5">{t.uzs}</span>
+        </div>
+
+        {/* savings + urgency */}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+          <span className="inline-flex items-center gap-1 font-semibold text-emerald-400">
+            <TrendingDown className="h-3.5 w-3.5" />
+            {savings.toLocaleString()} {t.uzs} {t.saveLabel}
+          </span>
+          <span className="inline-flex items-center gap-1 font-medium text-amber-400/90">
+            <Clock className="h-3 w-3" />
+            {t.saleBadge}
+          </span>
         </div>
       </div>
 
@@ -102,19 +138,32 @@ function PricingCard({
         ))}
       </ul>
 
-      <div className="space-y-2 pt-1">
-        <Button
-          className="w-full font-semibold bg-[#57A826] hover:bg-[#4a9020] text-white border-0"
+      <div className="space-y-2.5 pt-1">
+        <button
           onClick={handleClick}
           disabled={paying !== null}
+          className={cn(
+            "group w-full h-12 inline-flex items-center justify-center gap-2 rounded-xl font-semibold text-white transition-all duration-200",
+            "bg-[#57A826] hover:bg-[#4f9c22] shadow-lg shadow-[#57A826]/25",
+            "hover:shadow-xl hover:shadow-[#57A826]/40 hover:-translate-y-0.5 active:translate-y-0",
+            "disabled:opacity-70 disabled:hover:translate-y-0 disabled:cursor-wait",
+            isPopular && "ring-1 ring-white/10"
+          )}
         >
-          {paying === "click" ? t.redirecting : "Click"}
-        </Button>
+          {paying === "click" ? (
+            t.redirecting
+          ) : (
+            <>
+              {t.subscribeNow}
+              <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+            </>
+          )}
+        </button>
         <Button
-          className="w-full font-semibold bg-[#00AEFF] hover:bg-[#0092d9] text-white border-0 opacity-50 cursor-not-allowed"
+          className="w-full h-9 text-xs font-medium bg-transparent border border-border text-muted-foreground hover:bg-transparent hover:text-muted-foreground opacity-60 cursor-not-allowed"
           disabled
         >
-          Payme
+          Payme · {t.comingSoon}
         </Button>
       </div>
     </div>

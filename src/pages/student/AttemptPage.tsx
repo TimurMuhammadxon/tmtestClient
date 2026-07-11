@@ -440,6 +440,30 @@ export function AttemptPage() {
         </p>
       </div>
 
+      {/* Question navigator — single scrollable row above the content */}
+      {!isMarathon && (
+        <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {questions.map((q, i) => {
+            const state = answerStates[q.questionId];
+            return (
+              <button
+                key={q.questionId}
+                onClick={() => goTo(i)}
+                className={cn(
+                  "flex-shrink-0 w-7 h-7 rounded-md text-[11px] font-semibold transition-colors",
+                  i === currentIndex && "ring-2 ring-primary ring-offset-1 ring-offset-background",
+                  state?.isCorrect === true && "bg-green-500 text-white",
+                  state?.isCorrect === false && "bg-red-500 text-white",
+                  !state && "bg-secondary text-secondary-foreground hover:bg-secondary/70"
+                )}
+              >
+                {i + 1}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* Question: two-column when image exists, single column otherwise */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Left: Question text + Answers */}
@@ -530,36 +554,12 @@ export function AttemptPage() {
       {/* Fixed bottom navigation */}
       <div className="fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-border px-4 py-3">
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-2">
-          <Button variant="outline" onClick={goPrev} disabled={currentIndex === 0} className="flex-shrink-0">
+          <Button variant="outline" onClick={goPrev} disabled={currentIndex === 0} className="flex-1">
             <ArrowLeft className="h-4 w-4 mr-2" />
             {t.prev}
           </Button>
 
-          {/* Question navigation dots — between prev/next, hidden for Marathon */}
-          {!isMarathon && (
-            <div className="flex flex-wrap gap-1 justify-center flex-1 px-2">
-              {questions.map((q, i) => {
-                const state = answerStates[q.questionId];
-                return (
-                  <button
-                    key={q.questionId}
-                    onClick={() => goTo(i)}
-                    className={cn(
-                      "w-6 h-6 rounded text-[10px] font-medium transition-colors",
-                      i === currentIndex && "ring-2 ring-primary ring-offset-1 ring-offset-background",
-                      state?.isCorrect === true && "bg-green-500 text-white",
-                      state?.isCorrect === false && "bg-red-500 text-white",
-                      !state && "bg-secondary text-secondary-foreground hover:bg-secondary/70"
-                    )}
-                  >
-                    {i + 1}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
-          <Button variant="outline" onClick={goNext} disabled={currentIndex === questions.length - 1} className="flex-shrink-0">
+          <Button variant="outline" onClick={goNext} disabled={currentIndex === questions.length - 1} className="flex-1">
             {t.next}
             <ArrowRight className="h-4 w-4 ml-2" />
           </Button>

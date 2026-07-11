@@ -6,6 +6,7 @@ import { router } from "@/router";
 import { authApi } from "@/api/auth";
 import { useAuthStore } from "@/store/auth";
 import { useLanguageStore } from "@/store/language";
+import { ensureValidSession } from "@/lib/session";
 
 const GOOGLE_CLIENT_ID = "1074843019354-g7erdamv4pr2r3mvcd1ko7v0m1cqh4b6.apps.googleusercontent.com";
 
@@ -16,6 +17,8 @@ declare global {
         initData: string;
         ready(): void;
         initDataUnsafe?: { start_param?: string };
+        onEvent?(event: string, cb: () => void): void;
+        offEvent?(event: string, cb: () => void): void;
       };
     };
   }
@@ -27,9 +30,46 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1,
       staleTime: 5 * 60 * 1000,
+      // Resume is handled explicitly by SessionRevalidator (token first, then refetch),
+      // so we disable the default focus storm that fired many requests before refresh.
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: true,
     },
   },
 });
+
+// On return from background (an hour idle is fine), make sure the session is
+// valid *before* any query refetches, then revalidate data. Never hangs:
+// refresh is single-flight and falls back to Telegram initData re-login.
+function SessionRevalidator() {
+  useEffect(() => {
+    let running = false;
+    const revalidate = async () => {
+      if (running) return;
+      if (document.visibilityState !== "visible") return;
+      if (!useAuthStore.getState().refreshToken && !window.Telegram?.WebApp?.initData) return;
+      running = true;
+      try {
+        const token = await ensureValidSession();
+        if (token) queryClient.invalidateQueries();
+      } finally {
+        running = false;
+      }
+    };
+
+    document.addEventListener("visibilitychange", revalidate);
+    window.addEventListener("focus", revalidate);
+    const tg = window.Telegram?.WebApp;
+    tg?.onEvent?.("activated", revalidate);
+
+    return () => {
+      document.removeEventListener("visibilitychange", revalidate);
+      window.removeEventListener("focus", revalidate);
+      tg?.offEvent?.("activated", revalidate);
+    };
+  }, []);
+  return null;
+}
 
 function TelegramAutoLogin({ children }: { children: ReactNode }) {
   const setTokens = useAuthStore((s) => s.setTokens);
@@ -94,6 +134,7 @@ export default function App() {
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <QueryClientProvider client={queryClient}>
         <LanguageSync />
+        <SessionRevalidator />
         <TelegramAutoLogin>
           <RouterProvider router={router} />
         </TelegramAutoLogin>
