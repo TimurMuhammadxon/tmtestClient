@@ -454,7 +454,7 @@ export function AttemptPage() {
       <div className={cn(
         currentQ.imageUrl
           ? "lg:grid lg:grid-cols-2 lg:gap-x-6 lg:gap-y-4 lg:items-start space-y-4 lg:space-y-0"
-          : "space-y-4"
+          : "space-y-4 lg:max-w-3xl"
       )}>
         {/* Question — top-left on wide screens */}
         <p
@@ -477,7 +477,7 @@ export function AttemptPage() {
 
         {/* Answers — left column, below the question on wide screens */}
         <div className="space-y-3 lg:col-start-1 lg:row-start-2">
-            <div className="space-y-2">
+            <div className="space-y-3">
               {currentQ.answers.map((answer) => {
               const chosen = currentAnswerState?.chosenId === answer.id;
               const isCorrectAnswer = currentAnswerState?.correctId === answer.id;
@@ -487,7 +487,7 @@ export function AttemptPage() {
                 <button
                   key={answer.id}
                   className={cn(
-                    "w-full text-left p-2.5 rounded-lg border-2 transition-all text-sm",
+                    "w-full text-left p-3.5 rounded-lg border-2 transition-all text-sm",
                     !revealed && "border-border hover:border-primary/50 hover:bg-primary/5",
                     revealed && isCorrectAnswer && "border-emerald-500/50 bg-emerald-950/30 text-emerald-300",
                     revealed && chosen && !isCorrectAnswer && "border-red-500/50 bg-red-950/30 text-red-300",
@@ -509,7 +509,7 @@ export function AttemptPage() {
                     >
                       {`F${currentQ.answers.indexOf(answer) + 1}`}
                     </span>
-                    <span style={{ fontSize: "clamp(0.9rem, 0.85rem + 0.4vw, 1.2rem)" }}>{answer.text}</span>
+                    <span className="leading-relaxed" style={{ fontSize: "clamp(0.9rem, 0.85rem + 0.4vw, 1.2rem)" }}>{answer.text}</span>
                     {revealed && isCorrectAnswer && (
                       <CheckCircle className="h-4 w-4 text-emerald-400 ml-auto flex-shrink-0" />
                     )}
