@@ -19,6 +19,7 @@ import {
   ArrowRight,
   Clock,
   TrendingDown,
+  Gift,
 } from "lucide-react";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -246,7 +247,22 @@ export function SubscriptionPage() {
         <p className="text-muted-foreground">{t.choosePlan}</p>
       </div>
 
-      {mySub ? (
+      {mySub?.isTrial ? (
+        <div className="rounded-2xl border border-primary/40 bg-primary/5 p-5 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0">
+            <Gift className="h-6 w-6 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-semibold">{t.trialActive}</span>
+              <Badge variant="secondary">
+                {t.trialHoursLeft.replace("{hours}", String(Math.max(0, Math.ceil((new Date(mySub.expiresAt).getTime() - Date.now()) / 3600000))))}
+              </Badge>
+            </div>
+            <p className="text-sm text-muted-foreground mt-0.5">{t.selectPlanBelow}</p>
+          </div>
+        </div>
+      ) : mySub ? (
         <div className={cn(
           "rounded-2xl border p-5 flex items-center gap-4",
           mySub.isActive

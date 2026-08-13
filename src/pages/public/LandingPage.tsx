@@ -98,6 +98,11 @@ export function LandingPage() {
       navigate(`/t/${startParam}`, { replace: true });
       return;
     }
+    // Opened inside Telegram (no test-link param) → go straight to the app.
+    if (window.Telegram?.WebApp?.initData) {
+      navigate("/dashboard", { replace: true });
+      return;
+    }
     setMounted(true);
     if (!document.getElementById("lp-fonts")) {
       const link = document.createElement("link");

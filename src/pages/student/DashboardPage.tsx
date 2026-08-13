@@ -52,8 +52,6 @@ function CircularProgress({ value, size = 100, stroke = 8, color = "#00f0ff" }: 
 }
 
 const CSS = `
-  @keyframes dp-pulse1{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.15);opacity:1}}
-  @keyframes dp-pulse2{0%,100%{transform:scale(1.1);opacity:.5}50%{transform:scale(1);opacity:.8}}
   @keyframes dp-slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
   @keyframes dp-fadeIn{from{opacity:0}to{opacity:1}}
   @keyframes dp-bar{from{transform:scaleY(0)}to{transform:scaleY(1)}}
@@ -153,14 +151,27 @@ export function DashboardPage() {
       <style>{CSS}</style>
 
       <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0 }}>
-        <div style={{ position: "absolute", top: "-20%", left: "-10%", width: "50vw", height: "50vw", borderRadius: "50%", background: "radial-gradient(circle,rgba(0,240,255,.06) 0%,transparent 70%)", filter: "blur(80px)", animation: "dp-pulse1 8s ease-in-out infinite" }} />
-        <div style={{ position: "absolute", bottom: "-20%", right: "-10%", width: "60vw", height: "60vw", borderRadius: "50%", background: "radial-gradient(circle,rgba(139,92,246,.06) 0%,transparent 70%)", filter: "blur(100px)", animation: "dp-pulse2 10s ease-in-out infinite" }} />
+        <div style={{ position: "absolute", top: "-20%", left: "-10%", width: "50vw", height: "50vw", borderRadius: "50%", background: "radial-gradient(circle,rgba(0,240,255,.05) 0%,transparent 65%)" }} />
+        <div style={{ position: "absolute", bottom: "-20%", right: "-10%", width: "60vw", height: "60vw", borderRadius: "50%", background: "radial-gradient(circle,rgba(139,92,246,.05) 0%,transparent 65%)" }} />
       </div>
 
       <div className="dp-container" style={{ position: "relative", zIndex: 1, maxWidth: 1320, margin: "0 auto" }}>
 
+        {/* Free-trial banner (first 24h) */}
+        {mySubscription?.isTrial && (
+          <div onClick={() => navigate("/subscription")} style={{ cursor: "pointer", marginBottom: 16, padding: "12px 18px", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, background: "rgba(0,240,255,0.08)", border: "1px solid rgba(0,240,255,0.25)", animation: "dp-fadeIn .4s ease" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 20 }}>🎁</span>
+              <span style={{ fontSize: 14, color: "#00f0ff", fontWeight: 500 }}>
+                {t.trialActive} · {t.trialHoursLeft.replace("{hours}", String(Math.max(0, Math.ceil((new Date(mySubscription.expiresAt).getTime() - Date.now()) / 3600000))))}
+              </span>
+            </div>
+            <span style={{ fontSize: 13, color: "#94a3b8", whiteSpace: "nowrap" }}>{t.subscription} →</span>
+          </div>
+        )}
+
         {/* Subscription expiry banner */}
-        {subDaysLeft !== null && subDaysLeft <= 3 && (
+        {!mySubscription?.isTrial && subDaysLeft !== null && subDaysLeft <= 3 && (
           <div onClick={() => navigate("/subscription")} style={{ cursor: "pointer", marginBottom: 16, padding: "12px 18px", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, background: subDaysLeft <= 0 ? "rgba(239,68,68,0.12)" : "rgba(245,158,11,0.10)", border: `1px solid ${subDaysLeft <= 0 ? "rgba(239,68,68,0.3)" : "rgba(245,158,11,0.3)"}`, animation: "dp-fadeIn .4s ease" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ fontSize: 20 }}>{subDaysLeft <= 0 ? "🔴" : "⚠️"}</span>

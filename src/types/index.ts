@@ -37,6 +37,7 @@ export interface MySubscriptionDto {
   startsAt: string;
   expiresAt: string;
   isActive: boolean;
+  isTrial: boolean;
 }
 
 // Payment
