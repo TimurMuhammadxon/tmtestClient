@@ -204,57 +204,9 @@ export function DashboardPage() {
           </div>
         </div>
 
-        {/* Stats: Ring + 3 cards */}
-        <div className="dp-stats-grid" style={{ animation: mounted ? "dp-slideUp .6s ease .1s both" : "none" }}>
-          {/* Readiness ring card */}
-          <div style={{ padding: "26px 22px", borderRadius: 18, background: "rgba(255,255,255,.025)", border: "1px solid rgba(255,255,255,.07)", display: "flex", alignItems: "center", gap: 18, position: "relative", overflow: "hidden", transition: "all .3s" }}
-            onMouseEnter={(e) => { e.currentTarget.style.border = "1px solid rgba(0,240,255,0.3)"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,240,255,0.15)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.border = "1px solid rgba(255,255,255,.07)"; e.currentTarget.style.boxShadow = "none"; }}
-          >
-            <div style={{ position: "relative", flexShrink: 0 }}>
-              <CircularProgress value={examPrediction} size={96} stroke={8} />
-              <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <span style={{ fontSize: 24, fontWeight: 800, color: "#00f0ff", fontFamily: "'JetBrains Mono', monospace" }}>
-                  <AnimatedNumber value={examPrediction} suffix="%" />
-                </span>
-              </div>
-            </div>
-            <div>
-              <span style={{ fontSize: 13, color: "#94a3b8", fontWeight: 600 }}>{t.examReadiness}</span>
-              <p style={{ fontSize: 12, color: "#64748b", marginTop: 5 }}>
-                {examPrediction >= 80 ? t.readinessGreat : examPrediction >= 60 ? t.readinessGood : t.readinessNeedMore}
-              </p>
-            </div>
-          </div>
-
-          {/* 3 stat cards */}
-          {([
-            { label: t.accuracyRate, value: accuracy, suffix: "%", color: "#10b981", icon: "/pravadrive-icon-togrilik.svg", sub: `${totalAnswered} ${t.answersGiven}` },
-            { label: t.correctAnswers, value: totalCorrect, suffix: "", color: "#8b5cf6", icon: "/pravadrive-icon-natijalarim.svg", sub: `${totalAnswered} ${t.outOfQuestions}` },
-            { label: t.consecutiveDays, value: streak, suffix: "", color: "#f59e0b", icon: "🔥", sub: `${t.record}: ${dashboard?.longestStreak ?? 0} ${t.days}` },
-          ] as const).map((card, i) => (
-            <div key={i} style={{ padding: "26px 22px", borderRadius: 18, background: "rgba(255,255,255,.025)", border: "1px solid rgba(255,255,255,.07)", position: "relative", overflow: "hidden", transition: "all .3s", cursor: "default" }}
-              onMouseEnter={(e) => { e.currentTarget.style.border = `1px solid ${card.color}30`; e.currentTarget.style.boxShadow = `0 8px 32px ${card.color}15`; e.currentTarget.style.transform = "translateY(-2px)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.border = "1px solid rgba(255,255,255,.07)"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translateY(0)"; }}
-            >
-              <div style={{ position: "absolute", top: -20, right: -20, width: 90, height: 90, borderRadius: "50%", background: `radial-gradient(circle,${card.color}08,transparent)` }} />
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
-                <span style={{ fontSize: 13, color: "#94a3b8", fontWeight: 600 }}>{card.label}</span>
-                {card.icon.startsWith("/") ? <img src={card.icon} alt="" style={{ width: 26, height: 26 }} /> : <span style={{ fontSize: 22 }}>{card.icon}</span>}
-              </div>
-              <div style={{ fontSize: 42, fontWeight: 800, color: card.color, marginBottom: 6, textShadow: `0 0 30px ${card.color}40`, fontFamily: "'JetBrains Mono', monospace", lineHeight: 1 }}>
-                <AnimatedNumber value={card.value} suffix={card.suffix} />
-              </div>
-              <span style={{ fontSize: 12, color: "#64748b" }}>{card.sub}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Mode cards (like LandingPage) */}
-        <div style={{ borderTop: "1px solid rgba(255,255,255,.06)", marginBottom: 20, paddingTop: 20, animation: mounted ? "dp-slideUp .6s ease .15s both" : "none" }}>
-          <h2 style={{ fontSize: 11, fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 16 }}>{t.testModes}</h2>
-        </div>
-        <div className="dp-modes-grid" style={{ animation: mounted ? "dp-slideUp .6s ease .15s both" : "none" }}>
+        {/* Test modes — action first */}
+        <h2 style={{ fontSize: 11, fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 16, animation: mounted ? "dp-fadeIn .6s ease" : "none" }}>{t.testModes}</h2>
+        <div className="dp-modes-grid" style={{ animation: mounted ? "dp-slideUp .6s ease .1s both" : "none" }}>
           {MODES.map((mode) => {
             const hovered = hoveredMode === mode.id;
             const isStarting = starting === (mode.id === "exam" ? "4" : mode.id === "marathon" ? "5" : "");
@@ -288,14 +240,97 @@ export function DashboardPage() {
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 54, height: 54, borderRadius: 14, background: `linear-gradient(135deg, ${mode.color}20, ${mode.color}10)`, border: `1px solid ${mode.color}25`, marginBottom: 16, boxShadow: hovered ? `0 0 16px ${mode.color}25` : "none", transition: "box-shadow .3s" }}>
                   <img src={mode.icon} alt={mode.title} style={{ width: 30, height: 30 }} />
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                   <h3 style={{ fontSize: 19, fontWeight: 700, color: "#f1f5f9", margin: 0, letterSpacing: "-0.01em" }}>{mode.title}</h3>
-                  <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 100, background: `${mode.color}15`, color: mode.color, textTransform: "uppercase", flexShrink: 0 }}>{mode.badge}</span>
+                  <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 100, background: `${mode.color}15`, color: mode.color, textTransform: "uppercase", flexShrink: 0, whiteSpace: "nowrap" }}>{mode.badge}</span>
                 </div>
               </div>
             );
           })}
         </div>
+
+        {/* Separator before stats */}
+        <div style={{ height: 1, background: "rgba(255,255,255,.06)", margin: "6px 0 24px" }} />
+
+        {/* Stats: Ring + 3 cards */}
+        <div className="dp-stats-grid" style={{ animation: mounted ? "dp-slideUp .6s ease .15s both" : "none" }}>
+          {/* Readiness ring card */}
+          <div style={{ padding: "22px 20px", borderRadius: 18, background: "rgba(255,255,255,.025)", border: "1px solid rgba(255,255,255,.07)", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", position: "relative", overflow: "hidden", transition: "all .3s" }}
+            onMouseEnter={(e) => { e.currentTarget.style.border = "1px solid rgba(0,240,255,0.3)"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,240,255,0.15)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.border = "1px solid rgba(255,255,255,.07)"; e.currentTarget.style.boxShadow = "none"; }}
+          >
+            <span style={{ fontSize: 13, color: "#94a3b8", fontWeight: 600, marginBottom: 16 }}>{t.examReadiness}</span>
+            <div style={{ position: "relative", width: 96, height: 96, marginBottom: 12 }}>
+              <CircularProgress value={examPrediction} size={96} stroke={8} />
+              <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <span style={{ fontSize: 24, fontWeight: 800, color: "#00f0ff", fontFamily: "'JetBrains Mono', monospace" }}>
+                  <AnimatedNumber value={examPrediction} suffix="%" />
+                </span>
+              </div>
+            </div>
+            <p style={{ fontSize: 12, color: "#64748b" }}>
+              {examPrediction >= 80 ? t.readinessGreat : examPrediction >= 60 ? t.readinessGood : t.readinessNeedMore}
+            </p>
+          </div>
+
+          {/* 3 stat cards */}
+          {([
+            { label: t.accuracyRate, value: accuracy, suffix: "%", color: "#10b981", icon: "/pravadrive-icon-togrilik.svg", sub: `${totalAnswered} ${t.answersGiven}` },
+            { label: t.correctAnswers, value: totalCorrect, suffix: "", color: "#8b5cf6", icon: "/pravadrive-icon-natijalarim.svg", sub: `${totalAnswered} ${t.outOfQuestions}` },
+            { label: t.consecutiveDays, value: streak, suffix: "", color: "#f59e0b", icon: "🔥", sub: `${t.record}: ${dashboard?.longestStreak ?? 0} ${t.days}` },
+          ] as const).map((card, i) => (
+            <div key={i} style={{ padding: "26px 22px", borderRadius: 18, background: "rgba(255,255,255,.025)", border: "1px solid rgba(255,255,255,.07)", position: "relative", overflow: "hidden", transition: "all .3s", cursor: "default" }}
+              onMouseEnter={(e) => { e.currentTarget.style.border = `1px solid ${card.color}30`; e.currentTarget.style.boxShadow = `0 8px 32px ${card.color}15`; e.currentTarget.style.transform = "translateY(-2px)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.border = "1px solid rgba(255,255,255,.07)"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translateY(0)"; }}
+            >
+              <div style={{ position: "absolute", top: -20, right: -20, width: 90, height: 90, borderRadius: "50%", background: `radial-gradient(circle,${card.color}08,transparent)` }} />
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
+                <span style={{ fontSize: 13, color: "#94a3b8", fontWeight: 600 }}>{card.label}</span>
+                {card.icon.startsWith("/") ? <img src={card.icon} alt="" style={{ width: 26, height: 26 }} /> : <span style={{ fontSize: 22 }}>{card.icon}</span>}
+              </div>
+              <div style={{ fontSize: 42, fontWeight: 800, color: card.color, marginBottom: 6, textShadow: `0 0 30px ${card.color}40`, fontFamily: "'JetBrains Mono', monospace", lineHeight: 1 }}>
+                <AnimatedNumber value={card.value} suffix={card.suffix} />
+              </div>
+              <span style={{ fontSize: 12, color: "#64748b" }}>{card.sub}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Mastery / coverage — unique active questions (not inflated by repeats) */}
+        {(() => {
+          const total = dashboard?.totalQuestions ?? 0;
+          const covered = dashboard?.coveredQuestions ?? 0;
+          const mastered = dashboard?.masteredQuestions ?? 0;
+          const mPct = total > 0 ? Math.round((mastered / total) * 100) : 0;
+          const cPct = total > 0 ? Math.round((covered / total) * 100) : 0;
+          const bar = (pct: number, grad: string) => (
+            <div style={{ height: 8, borderRadius: 4, background: "rgba(255,255,255,.06)", overflow: "hidden" }}>
+              <div style={{ width: `${pct}%`, height: "100%", borderRadius: 4, background: grad, transition: "width 1s cubic-bezier(.4,0,.2,1)" }} />
+            </div>
+          );
+          return (
+            <div style={{ padding: "22px 22px", borderRadius: 18, background: "rgba(255,255,255,.025)", border: "1px solid rgba(255,255,255,.07)", marginBottom: 24, animation: mounted ? "dp-slideUp .6s ease .12s both" : "none" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 18 }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: "#94a3b8" }}>{t.masteryTitle}</span>
+                <span style={{ fontSize: 24, fontWeight: 800, color: "#00f0ff", fontFamily: "'JetBrains Mono', monospace" }}>
+                  {mastered}<span style={{ color: "#475569", fontSize: 16 }}> / {total}</span>
+                </span>
+              </div>
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#64748b", marginBottom: 6 }}>
+                  <span>{t.masteredLabel}</span><span>{mPct}%</span>
+                </div>
+                {bar(mPct, "linear-gradient(90deg,#00f0ff,#6366f1)")}
+              </div>
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#64748b", marginBottom: 6 }}>
+                  <span>{t.coveredLabel}</span><span>{cPct}%</span>
+                </div>
+                {bar(cPct, "linear-gradient(90deg,#8b5cf6,#6366f1)")}
+              </div>
+            </div>
+          );
+        })()}
 
       </div>
 

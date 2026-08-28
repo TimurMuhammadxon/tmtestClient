@@ -149,6 +149,12 @@ export interface RecentAttemptDto {
   finishedAt?: string;
 }
 
+export interface DailyActivityDto {
+  date: string; // ISO date, e.g. "2026-08-18"
+  answersCount: number;
+  accuracyPercent: number;
+}
+
 export interface DashboardDto {
   currentStreak: number;
   longestStreak: number;
@@ -159,6 +165,10 @@ export interface DashboardDto {
   examPassPrediction: number;
   weakTopics: WeakTopicDto[];
   recentAttempts: RecentAttemptDto[];
+  weeklyActivity: DailyActivityDto[];
+  totalQuestions: number;
+  coveredQuestions: number;
+  masteredQuestions: number;
 }
 
 export interface TopicProgressDto {

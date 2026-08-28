@@ -12,24 +12,17 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, CheckCircle, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { ErrorQuestionDetailDto, RecentAttemptDto } from "@/types";
+import type { ErrorQuestionDetailDto, DailyActivityDto } from "@/types";
 
 const DAY_LABELS_KEY = ["daySun", "dayMon", "dayTue", "dayWed", "dayThu", "dayFri", "daySat"] as const;
 
-function deriveWeeklyData(recentAttempts: RecentAttemptDto[] | undefined, dayLabels: string[]) {
-  const today = new Date();
-  return Array.from({ length: 7 }, (_, i) => {
-    const target = new Date(today);
-    target.setDate(today.getDate() - (6 - i));
-    const day = dayLabels[target.getDay()];
-    const dayAttempts = (recentAttempts ?? []).filter((a) => {
-      const d = new Date(a.startedAt);
-      return d.toDateString() === target.toDateString() && a.status !== "InProgress";
-    });
-    const totalCorrect = dayAttempts.reduce((s, a) => s + (a.correctCount ?? 0), 0);
-    const totalQ = dayAttempts.reduce((s, a) => s + a.totalQuestions, 0);
-    return { day, tests: dayAttempts.length, correct: totalQ > 0 ? Math.round((totalCorrect / totalQ) * 100) : 0 };
-  });
+// Server already returns the accurate 7-day series (UTC+5); just map to the chart shape.
+function mapWeekly(weekly: DailyActivityDto[] | undefined, dayLabels: string[]) {
+  return (weekly ?? []).map((d) => ({
+    day: dayLabels[new Date(`${d.date}T00:00:00`).getDay()],
+    tests: d.answersCount,
+    correct: Math.round(d.accuracyPercent),
+  }));
 }
 
 function MiniBar({ value, color }: { value: number; color: string }) {
@@ -101,7 +94,7 @@ export function ProgressPage() {
   const { data: dashboard } = useQuery({ queryKey: ["dashboard"], queryFn: progressApi.dashboard });
 
   const dayLabels = DAY_LABELS_KEY.map((k) => t[k]);
-  const weeklyData = deriveWeeklyData(dashboard?.recentAttempts, dayLabels);
+  const weeklyData = mapWeekly(dashboard?.weeklyActivity, dayLabels);
   const weakTopics = dashboard?.weakTopics ?? [];
 
   return (

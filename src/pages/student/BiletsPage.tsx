@@ -11,7 +11,7 @@ import { PageLoader } from "@/components/shared/LoadingSpinner";
 import { CreateTestLinkDialog } from "@/components/shared/CreateTestLinkDialog";
 import { useAuthStore } from "@/store/auth";
 import { useTranslation } from "@/lib/i18n";
-import { BookOpen, ChevronLeft, Play, Link2, Lock } from "lucide-react";
+import { BookOpen, ChevronLeft, Link2, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/use-toast";
 import type { PublicBiletListItemDto } from "@/types";
@@ -94,28 +94,22 @@ function BiletCard({ bilet, isLoading, disabled, isTeacher, locked, onClick, onC
   const t = useTranslation();
   return (
     <Card className={cn("cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5", locked ? "hover:border-amber-500/30" : "hover:border-primary/40", isLoading && "opacity-70 pointer-events-none", disabled && !isLoading && "opacity-60")} onClick={onClick}>
-      <CardContent className="p-5 space-y-4">
-        <div className="flex items-start justify-between">
-          <div className={cn("w-10 h-10 rounded-full flex items-center justify-center", locked ? "bg-amber-500/10" : "bg-primary/10")}>
-            <span className={cn("text-sm font-bold", locked ? "text-amber-500" : "text-primary")}>{bilet.number}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            {bilet.isDemo && <Badge variant="default" className="text-xs">Demo</Badge>}
-            {isTeacher && (
-              <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground hover:text-primary" onClick={(e) => { e.stopPropagation(); onCreateLink(); }} title={t.createLink}>
-                <Link2 className="h-3.5 w-3.5" />
-              </Button>
-            )}
-          </div>
+      <CardContent className="relative p-6 min-h-[120px] flex items-center justify-center">
+        {/* corner markers */}
+        {locked && <Lock className="absolute top-3 left-3 h-4 w-4 text-amber-500" />}
+        <div className="absolute top-3 right-3 flex items-center gap-1">
+          {bilet.isDemo && <Badge variant="default" className="text-xs">Demo</Badge>}
+          {isTeacher && (
+            <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground hover:text-primary" onClick={(e) => { e.stopPropagation(); onCreateLink(); }} title={t.createLink}>
+              <Link2 className="h-3.5 w-3.5" />
+            </Button>
+          )}
         </div>
-        <div>
-          <p className="font-medium">{t.bilet} #{bilet.number}</p>
-          <p className="text-sm text-muted-foreground mt-0.5">{bilet.questionCount} {t.questionsCount}</p>
-        </div>
-        <div className={cn("flex items-center gap-1.5 text-xs font-medium", locked ? "text-amber-500" : "text-primary")}>
-          {locked ? <Lock className="h-3 w-3" /> : <Play className="h-3 w-3" />}
-          {isLoading ? t.loading : locked ? t.subscriptionRequired : t.start}
-        </div>
+
+        {/* centered big title */}
+        <span className={cn("text-3xl font-bold tracking-tight", locked ? "text-amber-500" : "text-foreground")}>
+          {isLoading ? t.loading : `${t.bilet} ${bilet.number}`}
+        </span>
       </CardContent>
     </Card>
   );
